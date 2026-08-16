@@ -1,0 +1,14 @@
+download/*
+!download/.gitkeep
+
+state/*
+!state/.gitkeep
+
+logs/*
+!logs/.gitkeep
+
+.env
+
+__pycache__/
+*.pyc
+.pytest_cache/

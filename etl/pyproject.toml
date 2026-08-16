@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vydavky-etl"
+version = "0.1.0"
+description = "ETL pipeline pre verejné výdavky"
+authors = [
+    { name = "Adam Sima" }
+]
+requires-python = ">=3.10"
+
+dependencies = [
+    "requests>=2.31.0",
+    "sparqlwrapper>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "sqlalchemy>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
