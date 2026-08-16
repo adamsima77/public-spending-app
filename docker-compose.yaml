@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: vydavky_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: vydavky_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vydavky_backend
+    restart: always
+    user: "${UID:-1000}:${GID:-1000}"  # Pridané pre zhodu UID/GID s hostiteľom
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/var/www
+      - /var/www/vendor
+
+  etl:
+    build:
+      context: ./etl
+      dockerfile: Dockerfile
+    container_name: vydavky_etl
+    user: "${UID:-1000}:${GID:-1000}"
+    depends_on:
+      - db
+    env_file:
+      - ./etl/.env
+    volumes:
+      - ./etl/download:/app/download
+      - ./etl/logs:/app/logs
+      - ./etl/state:/app/state
+
+volumes:
+  postgres_data:
