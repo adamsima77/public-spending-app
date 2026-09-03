@@ -11,6 +11,27 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vydavky_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vydavky_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/var/lib/redis/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -18,11 +39,14 @@ services:
       dockerfile: Dockerfile
     container_name: vydavky_backend
     restart: always
-    user: "${UID:-1000}:${GID:-1000}"  # Pridané pre zhodu UID/GID s hostiteľom
+    user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
       - ./backend/.env
     volumes:
@@ -34,15 +58,19 @@ services:
       context: ./etl
       dockerfile: Dockerfile
     container_name: vydavky_etl
+    restart: always
     user: "${UID:-1000}:${GID:-1000}"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
       - ./etl/.env
     volumes:
-      - ./etl/download:/app/download
-      - ./etl/logs:/app/logs
-      - ./etl/state:/app/state
+      - etl_data:/app/data
 
 volumes:
   postgres_data:
+  redis_data:
+  etl_data:

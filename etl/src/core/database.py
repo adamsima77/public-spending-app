@@ -1,53 +1,57 @@
-from typing import Any, Dict, List
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, Session
-
+from typing import Any, Dict, List, Optional
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from config import settings
-
 
 class Database:
     def __init__(self, db_url: str | None = None) -> None:
         self._db_url: str = db_url or settings.DATABASE_URL
-        self._engine = create_engine(
+        self._engine = create_async_engine(
             self._db_url,
             pool_size=10,
             max_overflow=20,
             pool_pre_ping=True,
         )
-        self._session_factory = sessionmaker(
+        self._session_factory = async_sessionmaker(
+            bind=self._engine,
             autocommit=False,
             autoflush=False,
-            bind=self._engine,
+            expire_on_commit=False,
         )
 
-    def execute(self, query: str, params: dict | None = None) -> None:
-        session: Session = self._session_factory()
-        try:
-            session.execute(text(query), params or {})
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-        finally:
-            session.close()
+    async def execute(self, query: str, params: Optional[dict] = None) -> None:
+        async with self._session_factory() as session:
+            try:
+                await session.execute(text(query), params or {})
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
 
-    def fetch_all(self, query: str, params: dict | None = None) -> List[Dict[str, Any]]:
-        session: Session = self._session_factory()
-        try:
-            result = session.execute(text(query), params or {})
+    async def execute_many(self, query: str, params_list: List[dict]) -> None:
+        if not params_list:
+            return
+        async with self._session_factory() as session:
+            try:
+                await session.execute(text(query), params_list)
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    async def fetch_all(self, query: str, params: Optional[dict] = None) -> List[Dict[str, Any]]:
+        async with self._session_factory() as session:
+            result = await session.execute(text(query), params or {})
             return [dict(row._mapping) for row in result]
-        finally:
-            session.close()
 
-    def fetch_one(self, query: str, params: dict | None = None) -> Dict[str, Any] | None:
-        session: Session = self._session_factory()
-        try:
-            result = session.execute(text(query), params or {})
+    async def fetch_one(self, query: str, params: Optional[dict] = None) -> Optional[Dict[str, Any]]:
+        async with self._session_factory() as session:
+            result = await session.execute(text(query), params or {})
             row = result.first()
             return dict(row._mapping) if row else None
-        finally:
-            session.close()
+
+    async def close(self) -> None:
+        await self._engine.dispose()
 
 
-# Singleton
 db = Database()

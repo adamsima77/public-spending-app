@@ -1,7 +1,12 @@
+import asyncio
+from core.database import db
 from downloaders.download_data import Download
-def main():
-    download = Download()
-    download.download_data()
+async def main():
+    downloader = Download()
+    try:
+        await downloader.download_data()
+    finally:
+        await db.close()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

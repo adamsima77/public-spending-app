@@ -1,152 +1,178 @@
-import concurrent.futures
+import asyncio
 import datetime
+import hashlib
 import random
-
-from pathlib import Path
-from threading import Lock
-from typing import Any, Dict, List, Set
 import time
-
+from pathlib import Path
+from typing import Any, Dict, List, Set
+import redis.asyncio as redis
+import aiofiles
+import httpx
 from SPARQLWrapper import JSON, SPARQLWrapper
-import requests
 
-from core.database import db
+from core.database import db, Database
+from core.logger import Logger
+from config import DOWNLOAD_DIR, DOWNLOAD_LINKS_QUERY, settings
 
-from config import (
-    ACTIVITY_LOG,
-    DOWNLOAD_DIR,
-    DOWNLOAD_LINKS_QUERY,
-    DOWNLOADED_LINKS_LOG_FILE,
-    ERROR_LOG,
-    settings,
-)
+def _extension_from_format(fmt: str) -> str:
+    fmt = fmt.lower()
+    if "json" in fmt:
+        return ".json"
+    if "csv" in fmt:
+        return ".csv"
+    if "xml" in fmt:
+        return ".xml"
+    return ""
 
 class Download:
-
-    def __init__(self) -> None:
+    def __init__(self, database: Database = db) -> None:
+        self._db = database
         self.number_of_downloaded_links: int = 0
         self.number_of_all_links: int = 0
         self.number_of_retries: int = 3
-        self.lock: Lock = Lock()
+        self._counter_lock = asyncio.Lock()
 
-    def get_download_links(self) -> List[str]:
+    async def get_download_links(self, logger: Logger) -> List[Dict[str, str]]:
         try:
-            sparql: SPARQLWrapper = SPARQLWrapper(settings.SPARQL_ENDPOINT)
-            sparql.setQuery(DOWNLOAD_LINKS_QUERY)
-            sparql.setReturnFormat(JSON)
-            results: Dict[str, Any] = sparql.query().convert()
-            links: List[str] = []
-            for row in results["results"]["bindings"]:
-                links.append(row["downloadURL"]["value"])
-            return links
+            def _run_query() -> Dict[str, Any]:
+                sparql = SPARQLWrapper(settings.SPARQL_ENDPOINT)
+                sparql.setTimeout(30)  
+                sparql.setQuery(DOWNLOAD_LINKS_QUERY)
+                sparql.setReturnFormat(JSON)
+                return sparql.query().convert()
+
+            results = await asyncio.to_thread(_run_query)
+            return [
+                {"url": row["downloadURL"]["value"], "format": row["format"]["value"]}
+                for row in results["results"]["bindings"]
+            ]
         except Exception as e:
-            print(f"Problem with fetching data, Error: {e}")
-            self.log_error(f"Problem with fetching data from API. Error: {e}")
+            await logger.log("error", f"Problem with fetching data from SPARQL endpoint. Error: {e}")
             return []
 
-    def download_one_file(self, link: str) -> None:
-        file_id: str = link.split("id=")[-1]
-        filename: Path = DOWNLOAD_DIR / file_id
-        start_of_download: float = time.perf_counter()
-        self.log_process(f"Starting download: {link}")
+    async def load_downloaded_urls(self) -> Set[str]:
+        try:
+            rows = await self._db.fetch_all("SELECT url FROM downloaded_files")
+            return {row["url"] for row in rows}
+        except Exception:
+            return set()
 
-        for attempt in range(1, self.number_of_retries + 1):
-            try:
-                with requests.get(link, stream=True, timeout=30) as response:
-                    response.raise_for_status()
-                    with open(filename, "wb") as f:
-                        for chunk in response.iter_content(chunk_size=settings.CHUNK_SIZE):
-                            if chunk:
-                                f.write(chunk)
+    async def download_one_file(
+        self,
+        client: httpx.AsyncClient,
+        semaphore: asyncio.Semaphore,
+        file_id: str,
+        url: str,
+        fmt: str,
+        logger: Logger,
+    ) -> Dict[str, Any]:
+        filename: Path = DOWNLOAD_DIR / f"{file_id}{_extension_from_format(fmt)}"
+        start = time.perf_counter()
 
-                with self.lock:
-                    self.number_of_downloaded_links += 1
-                    print(f"Progress: {self.number_of_downloaded_links} / {self.number_of_all_links}")
-                    self.save_downloaded_link(link)
+        async with semaphore:
+            for attempt in range(1, self.number_of_retries + 1):
+                try:
+                    hasher = hashlib.sha256()
+                    async with client.stream("GET", url, timeout=30.0) as response:
+                        response.raise_for_status()
+                        async with aiofiles.open(filename, "wb") as f:
+                            async for chunk in response.aiter_bytes(chunk_size=settings.CHUNK_SIZE):
+                                if chunk:
+                                    await f.write(chunk)
+                                    hasher.update(chunk)
 
-                elapsed: float = time.perf_counter() - start_of_download
-                self.log_process(f"Downloaded: {link} in {elapsed:.2f} seconds")
-                time.sleep(random.uniform(0.5, 0.8))
+                    async with self._counter_lock:
+                        self.number_of_downloaded_links += 1
+                        print(f"Progress: {self.number_of_downloaded_links} / {self.number_of_all_links}")
+
+                    elapsed = time.perf_counter() - start
+                    await logger.log("info", f"Downloaded: {url} in {elapsed:.2f}s")
+                    await asyncio.sleep(random.uniform(0.1, 0.3))
+
+                    return {
+                        "file_id": file_id,
+                        "url": url,
+                        "filename": filename.name,
+                        "format": fmt,
+                        "file_hash": hasher.hexdigest(),
+                        "downloaded_at": datetime.datetime.now(datetime.timezone.utc),
+                        "status": "success",
+                    }
+
+                except (httpx.HTTPError, Exception) as e:
+                    if filename.exists():
+                        filename.unlink(missing_ok=True)
+
+                    await logger.log("warning", f"Retry {attempt} failed for {url}: {e}")
+                    await asyncio.sleep(random.uniform(1, 1.5))
+
+        await logger.log("error", f"Failed to download {url} after {self.number_of_retries} attempts")
+        return {"file_id": file_id, "url": url, "status": "failed"}
+
+    async def download_data(self) -> None:
+        self.number_of_downloaded_links = 0
+        start = time.perf_counter()
+
+        # Vytvorí celý adresár pre sťahovanie, ak neexistuje
+        DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        
+        async with redis.from_url(settings.REDIS_URL) as redis_client:
+            logger = Logger(self._db, redis_client=redis_client)
+
+            raw_links = await self.get_download_links(logger)
+            if not raw_links:
+                await logger.log("error", "No download links retrieved. Stopping.")
                 return
 
-            except requests.exceptions.RequestException as e:
-                print(f"Retry {attempt} failed for {link}: {e}")
-                self.log_error(f"Retry {attempt} failed for {link}: {e}")
-                time.sleep(random.uniform(1, 1.5))
+            already_downloaded = await self.load_downloaded_urls()
+            links_to_download = [l for l in raw_links if l["url"] not in already_downloaded]
 
-        print(f"Failed to download {link}")
-        self.log_error(f"Failed to download {link}")
+            self.number_of_all_links = len(links_to_download)
+            if self.number_of_all_links == 0:
+                print("No new files to download.")
+                return
 
-    def download_data(self) -> None:
-        self.number_of_downloaded_links = 0
-        start_of_download: float = time.perf_counter()
-        download_links: List[str] = self.get_download_links()
+            semaphore = asyncio.Semaphore(settings.MAX_WORKERS)
+            buffer: List[Dict[str, Any]] = []
 
-        if not download_links:
-            self.log_error("No download links retrieved. Stopping.")
+            async with httpx.AsyncClient(follow_redirects=True) as client:
+                tasks = [
+                    self.download_one_file(
+                        client, semaphore, link["url"].split("id=")[-1], link["url"], link["format"], logger
+                    )
+                    for link in links_to_download
+                ]
+
+                for coro in asyncio.as_completed(tasks):
+                    result = await coro
+                    buffer.append(result)
+                    if len(buffer) >= 20:
+                        await self._flush(buffer)
+                        buffer = []
+
+            if buffer:
+                await self._flush(buffer)
+
+            elapsed = time.perf_counter() - start
+            summary = (
+                f"Download finished: {self.number_of_downloaded_links} / "
+                f"{self.number_of_all_links} files in {elapsed:.2f} seconds"
+            )
+            print(summary)
+            await logger.log("info", summary)
+
+    async def _flush(self, buffer: List[Dict[str, Any]]) -> None:
+        successful = [r for r in buffer if r["status"] == "success"]
+        if not successful:
             return
 
-        already_downloaded: Set[str] = self.load_downloaded_links()
-        links_to_download = [
-            link for link in download_links if link not in already_downloaded
-        ]
-
-        self.number_of_all_links = len(links_to_download)
-
-        if self.number_of_all_links == 0:
-            print("No new files to download.")
-            return
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=settings.MAX_WORKERS) as executor:
-            futures = [
-                executor.submit(self.download_one_file, link)
-                for link in links_to_download
-            ]
-
-            for future in concurrent.futures.as_completed(futures):
-                future.result()
-
-        elapsed: float = time.perf_counter() - start_of_download
-
-        summary_msg = f"Download finished: {self.number_of_downloaded_links} / {self.number_of_all_links} files in {elapsed:.2f} seconds"
-        print(summary_msg)
-        self.log_process(summary_msg)
-
-    def save_downloaded_link(self, link: str) -> None:
-        try:
-            with open(DOWNLOADED_LINKS_LOG_FILE, "a") as f:
-                f.write(link + "\n")
-        except Exception as e:
-            print(f"Error saving link {link}: {e}")
-            self.log_error(f"Error saving link {link}: {e}")
-
-    def load_downloaded_links(self) -> Set[str]:
-        links: Set[str] = set()
-        try:
-            with open(DOWNLOADED_LINKS_LOG_FILE, "r") as f:
-                for row in f:
-                    links.add(row.strip())
-        except FileNotFoundError:
-            pass
-        except Exception as e:
-            print(f"Failed to load downloaded links: {e}")
-            self.log_error(f"Failed to load downloaded links: {e}")
-        return links
-
-    def log_error(self, message: str) -> None:
-        log_message: str = f"[{datetime.datetime.now()}] - {message}\n"
-        try:
-            with self.lock:
-                with open(ERROR_LOG, "a") as f:
-                    f.write(log_message)
-        except Exception as e:
-            print(f"Error writing error log: {e}")
-
-    def log_process(self, message: str) -> None:
-        log_message: str = f"[{datetime.datetime.now()}] - {message}\n"
-        try:
-            with self.lock:
-                with open(ACTIVITY_LOG, "a") as f:
-                    f.write(log_message)
-        except Exception as e:
-            print(f"Error writing activity log: {e}")
+        query = """
+            INSERT INTO downloaded_files
+                (file_id, url, filename, format, status_id, downloaded_at, file_hash, created_at, updated_at)
+            VALUES
+                (:file_id, :url, :filename, :format,
+                 (SELECT id FROM etl_statuses WHERE name = 'downloaded'),
+                 :downloaded_at, :file_hash, :downloaded_at, :downloaded_at)
+            ON CONFLICT (file_id) DO NOTHING
+        """
+        await self._db.execute_many(query, successful)

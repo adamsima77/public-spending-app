@@ -13,9 +13,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir .
 
 RUN useradd --create-home --uid 1000 appuser && \
-    mkdir -p /app/download /app/logs /app/state && \
-    chown -R appuser:appuser /app && \
-    chmod -R 777 /app/download /app/logs /app/state
+    mkdir -p /app/data /app/download /app/logs /app/state && \
+    chown -R appuser:appuser /app
 
 USER appuser
 

@@ -13,14 +13,10 @@ class EtlStatusSeeder extends Seeder
      */
     public function run(): void
     {
-        $etlStatuses = [
-            ['code' => 'pending',    'name' => 'Čaká na stiahnutie', 'created_at' => now(), 'updated_at' => now()],
-            ['code' => 'downloaded', 'name' => 'Stiahnuté',          'created_at' => now(), 'updated_at' => now()],
-            ['code' => 'processing', 'name' => 'Spracováva sa',      'created_at' => now(), 'updated_at' => now()],
-            ['code' => 'parsed',     'name' => 'Spracované',         'created_at' => now(), 'updated_at' => now()],
-            ['code' => 'failed',     'name' => 'Chyba',              'created_at' => now(), 'updated_at' => now()],
-        ];
+        $statuses = ['pending', 'downloading', 'downloaded', 'failed', 'parsed'];
         
-        EtlStatus::upsert($etlStatuses, ['code'], ['name', 'updated_at']);
+        foreach ($statuses as $name) {
+            EtlStatus::updateOrInsert(['name' => $name]);
+        }
     }
 }
