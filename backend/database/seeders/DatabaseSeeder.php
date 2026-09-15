@@ -17,11 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             EtlStatusSeeder::class,
-        ]);
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            NutCodeSeeder::class
         ]);
     }
 }

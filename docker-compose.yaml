@@ -58,7 +58,7 @@ services:
       context: ./etl
       dockerfile: Dockerfile
     container_name: vydavky_etl
-    restart: always
+    restart: on-failure
     user: "${UID:-1000}:${GID:-1000}"
     depends_on:
       db:
