@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('notice_lots', function (Blueprint $table) {
              $table->foreignId('procedure_id')->constrained('procedures')->cascadeOnDelete();
+             $table->unique(['procedure_id', 'lot_reference']);
         });
     }
 

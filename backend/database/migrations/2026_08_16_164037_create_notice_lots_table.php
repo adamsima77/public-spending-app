@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('notice_lots', function (Blueprint $table) {
             $table->id();
-            $table->string('lot_reference', 64)->unique(); // BT-137-Lot - identifikátor lotu v rámci procedúry
+            $table->string('lot_reference', 64); // BT-137-Lot - identifikátor lotu v rámci procedúry
             $table->string('title')->nullable();                 // DL-Title-Lot / BT-23-Lot
             $table->text('description')->nullable();             // BT-24-Lot
             $table->decimal('value', 14, 2)->nullable();          // BT-27-Lot_value
@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('award_criterion', 32)->nullable();    // BT-539-Lot
             $table->timestamps();
             $table->jsonb('extra_fields')->nullable();
+            
         });
     }
 
