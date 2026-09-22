@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('organizations', function (Blueprint $table) {
             $table->id();
-            $table->string('cin', 20)->nullable();   // BT-501-Organization-Company-CIN (IČO)
-            $table->string('tin', 20)->nullable();   // BT-501-Organization-Company-TIN (DIČ)
-            $table->string('name');                  // BT-500-Organization-Company
+            $table->string('cin', 100)->nullable();   // BT-501-Organization-Company-CIN (IČO)
+            $table->string('tin', 100)->nullable();   // BT-501-Organization-Company-TIN (DIČ)
+            $table->string('name')->nullable();                  // BT-500-Organization-Company
             $table->string('address')->nullable();   // BT-503
             $table->string('town')->nullable();      // BT-513-Organization-Company
             $table->string('postal_code', 20)->nullable(); // BT-512-Organization-Company

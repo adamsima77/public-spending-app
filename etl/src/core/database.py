@@ -1,6 +1,7 @@
-from typing import Any, Dict, List, Optional
+from contextlib import asynccontextmanager
+from typing import Any, AsyncIterator, Dict, List, Optional, AsyncGenerator
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from config import settings
 
 class Database:
@@ -18,6 +19,16 @@ class Database:
             autoflush=False,
             expire_on_commit=False,
         )
+
+    @asynccontextmanager
+    async def transaction(self) -> AsyncGenerator[AsyncSession, None]:
+        async with self._session_factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
 
     async def execute(self, query: str, params: Optional[dict] = None) -> None:
         async with self._session_factory() as session:

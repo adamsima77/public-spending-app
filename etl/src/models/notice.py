@@ -1,18 +1,21 @@
-from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
-from models.procedure import ProcedureDto
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, Field
 from models.lot import LotDto
 from models.organization import OrganizationDto
+from models.procedure import ProcedureDto
 
 
-@dataclass
-class NoticeDto:
+class NoticeDto(BaseModel):
+    model_config = ConfigDict(validate_assignment=True)
+
     notice_id: Optional[str] = None
     notice_version: Optional[str] = None
     notice_type: Optional[str] = None
     form_type: Optional[str] = None
     title: Optional[str] = None
-    extra_fields: Dict[str, Any] = field(default_factory=dict)
-    organizations: List[OrganizationDto] = field(default_factory=list)
-    lots: List[LotDto] = field(default_factory=list)
-    procedure: ProcedureDto = field(default_factory=ProcedureDto)
+    legal_basis: Optional[str] = None
+    dispatch_date: Optional[str] = None
+    extra_fields: Dict[str, Any] = Field(default_factory=dict)
+    organizations: List[OrganizationDto] = Field(default_factory=list)
+    lots: List[LotDto] = Field(default_factory=list)
+    procedure: ProcedureDto = Field(default_factory=ProcedureDto)

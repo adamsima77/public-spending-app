@@ -24,7 +24,7 @@ return new class extends Migration
             $table->text('description')->nullable();              // BT-24-Procedure
             $table->timestamps();
             $table->jsonb('extra_fields')->nullable();
-            $table->unique('procedure_reference');
+            $table->unique(['procedure_reference', 'buyer_id']);
         });
     }
 

@@ -46,27 +46,43 @@ WHERE {
 NOTICE_FIELDS = {
     "BT-701-notice": "notice_id",
     "BT-757-notice": "notice_version",
-    "BT-03-notice": "notice_type",
-    "OPP-070-notice": "form_type",
+    "BT-03-notice": "form_type",
+    "BT-02-notice": "notice_type",
+    "BT-01-notice": "legal_basis",
+    "BT-05-notice": "dispatch_date",
     "DL-Metadata-Order": "title",
 }
+
 ORGANIZATION_FIELDS = {
+    "OPT-200-Organization-Company": "org_ref",
     "BT-500-Organization-Company": "name",
     "BT-501-Organization-Company-CIN": "cin",
     "BT-501-Organization-Company-TIN": "tin",
+    "BT-503-Organization-Company": "address",
     "BT-513-Organization-Company": "town",
+    "BT-512-Organization-Company": "postal_code",
     "BT-514-Organization-Company": "country",
 }
+
 PROCEDURE_FIELDS = {
     "BT-22-Procedure": "reference",
+    "BT-105-Procedure": "procedure_type",
     "BT-21-Procedure": "title",
     "BT-24-Procedure": "description",
     "BT-262-Procedure": "main_cpv",
+    "BT-27-Procedure_value": "total_value",
+    "BT-27-Procedure_currency": "currency",
 }
+
 LOT_FIELDS = {
-    "BT-22-Lot": "lot_reference",
+    "DL-Context-Lot": "lot_reference",   
+    "DL-Title-Lot": "title",              
     "BT-21-Lot": "title",
+    "BT-24-Lot": "description",
+    "BT-27-Lot_value": "value",
+    "BT-27-Lot_currency": "currency",
     "BT-262-Lot": "main_cpv",
+    "BT-5071-Lot": "nuts_code",
     "BT-539-Lot": "award_criterion",
 }
 

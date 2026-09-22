@@ -25,7 +25,7 @@ class Logger:
             print(f"Redis dedup check failed: {e}")
             return True
 
-    async def log(self, level: str, message: str, context: Optional[Dict[str, Any]] = None, file_id: Optional[str] = None) -> None:
+    async def log(self, level: str, message: str, context: Optional[Dict[str, Any]] = None, file_id: Optional[int] = None) -> None:
         if not await self._should_log(level, message):
             return
 

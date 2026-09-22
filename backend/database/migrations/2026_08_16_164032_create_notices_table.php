@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('notice_type', 32)->nullable();  // BT-02-notice 
             $table->string('legal_basis', 64)->nullable();  // BT-01-notice
             $table->date('dispatch_date')->nullable();      // BT-05-notice / OPT-002-notice 
-            $table->string('title')->nullable();            // DL-Metadata-Order
+            $table->text('title')->nullable();            // DL-Metadata-Order
             $table->foreignId('supersedes_id')->nullable()->constrained('notices')->nullOnDelete(); // Versioning
             $table->timestamps();
             $table->unique(['notice_id', 'notice_version']);

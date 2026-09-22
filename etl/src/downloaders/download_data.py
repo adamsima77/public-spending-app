@@ -4,8 +4,7 @@ import hashlib
 import random
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Set
-import redis.asyncio as redis
+from typing import Any, Dict, List, Optional, Set
 import aiofiles
 import httpx
 from SPARQLWrapper import JSON, SPARQLWrapper
@@ -25,18 +24,19 @@ def _extension_from_format(fmt: str) -> str:
     return ""
 
 class Download:
-    def __init__(self, database: Database = db) -> None:
+    def __init__(self, logger: Logger, database: Database = db) -> None:
         self._db = database
+        self._logger = logger
         self.number_of_downloaded_links: int = 0
         self.number_of_all_links: int = 0
         self.number_of_retries: int = 3
         self._counter_lock = asyncio.Lock()
 
-    async def get_download_links(self, logger: Logger) -> List[Dict[str, str]]:
+    async def get_download_links(self) -> List[Dict[str, str]]:
         try:
             def _run_query() -> Dict[str, Any]:
                 sparql = SPARQLWrapper(settings.SPARQL_ENDPOINT)
-                sparql.setTimeout(30)  
+                sparql.setTimeout(30)
                 sparql.setQuery(DOWNLOAD_LINKS_QUERY)
                 sparql.setReturnFormat(JSON)
                 return sparql.query().convert()
@@ -47,7 +47,7 @@ class Download:
                 for row in results["results"]["bindings"]
             ]
         except Exception as e:
-            await logger.log("error", f"Problem with fetching data from SPARQL endpoint. Error: {e}")
+            await self._logger.log("error", f"Problem with fetching data from SPARQL endpoint. Error: {e}")
             return []
 
     async def load_downloaded_urls(self) -> Set[str]:
@@ -64,7 +64,6 @@ class Download:
         file_id: str,
         url: str,
         fmt: str,
-        logger: Logger,
     ) -> Dict[str, Any]:
         filename: Path = DOWNLOAD_DIR / f"{file_id}{_extension_from_format(fmt)}"
         start = time.perf_counter()
@@ -86,7 +85,7 @@ class Download:
                         print(f"Progress: {self.number_of_downloaded_links} / {self.number_of_all_links}")
 
                     elapsed = time.perf_counter() - start
-                    await logger.log("info", f"Downloaded: {url} in {elapsed:.2f}s")
+                    await self._logger.log("info", f"Downloaded: {url} in {elapsed:.2f}s")
                     await asyncio.sleep(random.uniform(0.1, 0.3))
 
                     return {
@@ -103,63 +102,59 @@ class Download:
                     if filename.exists():
                         filename.unlink(missing_ok=True)
 
-                    await logger.log("warning", f"Retry {attempt} failed for {url}: {e}")
+                    await self._logger.log("warning", f"Retry {attempt} failed for {url}: {e}")
                     await asyncio.sleep(random.uniform(1, 1.5))
 
-        await logger.log("error", f"Failed to download {url} after {self.number_of_retries} attempts")
+        await self._logger.log("error", f"Failed to download {url} after {self.number_of_retries} attempts")
         return {"file_id": file_id, "url": url, "status": "failed"}
 
     async def download_data(self) -> None:
         self.number_of_downloaded_links = 0
         start = time.perf_counter()
 
-        # Vytvorí celý adresár pre sťahovanie, ak neexistuje
         DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
-        
-        async with redis.from_url(settings.REDIS_URL) as redis_client:
-            logger = Logger(self._db, redis_client=redis_client)
 
-            raw_links = await self.get_download_links(logger)
-            if not raw_links:
-                await logger.log("error", "No download links retrieved. Stopping.")
-                return
+        raw_links = await self.get_download_links()
+        if not raw_links:
+            await self._logger.log("error", "No download links retrieved. Stopping.")
+            return
 
-            already_downloaded = await self.load_downloaded_urls()
-            links_to_download = [l for l in raw_links if l["url"] not in already_downloaded]
+        already_downloaded = await self.load_downloaded_urls()
+        links_to_download = [l for l in raw_links if l["url"] not in already_downloaded]
 
-            self.number_of_all_links = len(links_to_download)
-            if self.number_of_all_links == 0:
-                print("No new files to download.")
-                return
+        self.number_of_all_links = len(links_to_download)
+        if self.number_of_all_links == 0:
+            print("No new files to download.")
+            return
 
-            semaphore = asyncio.Semaphore(settings.MAX_WORKERS)
-            buffer: List[Dict[str, Any]] = []
+        semaphore = asyncio.Semaphore(settings.MAX_WORKERS)
+        buffer: List[Dict[str, Any]] = []
 
-            async with httpx.AsyncClient(follow_redirects=True) as client:
-                tasks = [
-                    self.download_one_file(
-                        client, semaphore, link["url"].split("id=")[-1], link["url"], link["format"], logger
-                    )
-                    for link in links_to_download
-                ]
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            tasks = [
+                self.download_one_file(
+                    client, semaphore, link["url"].split("id=")[-1], link["url"], link["format"]
+                )
+                for link in links_to_download
+            ]
 
-                for coro in asyncio.as_completed(tasks):
-                    result = await coro
-                    buffer.append(result)
-                    if len(buffer) >= 20:
-                        await self._flush(buffer)
-                        buffer = []
+            for coro in asyncio.as_completed(tasks):
+                result = await coro
+                buffer.append(result)
+                if len(buffer) >= 20:
+                    await self._flush(buffer)
+                    buffer = []
 
-            if buffer:
-                await self._flush(buffer)
+        if buffer:
+            await self._flush(buffer)
 
-            elapsed = time.perf_counter() - start
-            summary = (
-                f"Download finished: {self.number_of_downloaded_links} / "
-                f"{self.number_of_all_links} files in {elapsed:.2f} seconds"
-            )
-            print(summary)
-            await logger.log("info", summary)
+        elapsed = time.perf_counter() - start
+        summary = (
+            f"Download finished: {self.number_of_downloaded_links} / "
+            f"{self.number_of_all_links} files in {elapsed:.2f} seconds"
+        )
+        print(summary)
+        await self._logger.log("info", summary)
 
     async def _flush(self, buffer: List[Dict[str, Any]]) -> None:
         successful = [r for r in buffer if r["status"] == "success"]
