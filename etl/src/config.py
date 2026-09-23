@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     REDIS_URL: str
     DOWNLOAD_DIR_NAME: str
+    DISCORD_WEBHOOK: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -50,6 +51,7 @@ NOTICE_FIELDS = {
     "BT-02-notice": "notice_type",
     "BT-01-notice": "legal_basis",
     "BT-05-notice": "dispatch_date",
+    "BT-05(a)-notice": "dispatch_date",
     "DL-Metadata-Order": "title",
 }
 
@@ -59,19 +61,25 @@ ORGANIZATION_FIELDS = {
     "BT-501-Organization-Company-CIN": "cin",
     "BT-501-Organization-Company-TIN": "tin",
     "BT-503-Organization-Company": "address",
+    "BT-510(a)-Organization-Company": "street_name",
+    "BT-510(b)-Organization-Company": "street_number",
     "BT-513-Organization-Company": "town",
     "BT-512-Organization-Company": "postal_code",
+    "BT-507-Organization-Company": "nuts_code",
     "BT-514-Organization-Company": "country",
 }
 
 PROCEDURE_FIELDS = {
     "BT-22-Procedure": "reference",
     "BT-105-Procedure": "procedure_type",
+    "BT-23-Procedure": "contract_type",
     "BT-21-Procedure": "title",
     "BT-24-Procedure": "description",
     "BT-262-Procedure": "main_cpv",
     "BT-27-Procedure_value": "total_value",
     "BT-27-Procedure_currency": "currency",
+    "BT-5071-Procedure": "nuts_code",
+    "BT-508-Procedure-Buyer": "buyer_profile_url",
 }
 
 LOT_FIELDS = {
@@ -84,6 +92,8 @@ LOT_FIELDS = {
     "BT-262-Lot": "main_cpv",
     "BT-5071-Lot": "nuts_code",
     "BT-539-Lot": "award_criterion",
+    "BT-15-Lot": "document_url",
+    "BT-18-Lot": "detail_url",
 }
 
 ANCHOR_ORGANIZATION = "GR-Organisations_panel"

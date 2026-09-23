@@ -38,7 +38,7 @@ async def main():
                 try:
                     async for notice_dto in json_parser.parse_file(str(file_path), db_file_id=db_file_id):
                         await notice_loader.upsert_notice(notice_dto, db_file_id=db_file_id)
-                    file_path.unlink()
+                   # file_path.unlink() uncommnent when done fixing
                 except Exception as e:
                     await logger.log(
                         "error",

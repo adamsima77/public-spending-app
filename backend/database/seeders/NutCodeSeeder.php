@@ -28,7 +28,10 @@ class NutCodeSeeder extends Seeder
             ['code' => 'SK04',  'name_sk' => 'Východné Slovensko',     'level' => 2, 'parent_code' => 'SK0'],
             ['code' => 'SK041', 'name_sk' => 'Prešovský kraj',         'level' => 3, 'parent_code' => 'SK04'],
             ['code' => 'SK042', 'name_sk' => 'Košický kraj',           'level' => 3, 'parent_code' => 'SK04'],
-       ];
+            ['code' => 'SKZ',   'name_sk' => 'Extra-Regio', 'level' => 1, 'parent_code' => 'SK'],
+            ['code' => 'SKZZ',  'name_sk' => 'Extra-Regio', 'level' => 2, 'parent_code' => 'SKZ'],
+            ['code' => 'SKZZZ', 'name_sk' => 'Extra-Regio', 'level' => 3, 'parent_code' => 'SKZZ']
+        ];
 
        foreach ($codes as $code) {
            NutCode::create($code);

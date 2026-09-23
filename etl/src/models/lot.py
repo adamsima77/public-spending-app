@@ -13,4 +13,7 @@ class LotDto(BaseModel):
     main_cpv: Optional[str] = None
     nuts_code: Optional[str] = None
     award_criterion: Optional[str] = None
+    submission_deadline: Optional[str] = None
+    document_url: Optional[str] = None
+    detail_url: Optional[str] = None
     extra_fields: Dict[str, Any] = Field(default_factory=dict)
