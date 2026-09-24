@@ -14,7 +14,7 @@ class NoticeLoader:
     def __init__(self, db: Database, logger: Optional[Logger] = None):
         self.db = db
         self._logger = logger
-        
+
         self._known_nuts_codes: Set[str] = set()
 
     async def upsert_notice(self, notice_dto: NoticeDto, db_file_id: Optional[int] = None) -> None:
@@ -31,7 +31,7 @@ class NoticeLoader:
         async with self.db.transaction() as session:
             org_ids: Dict[int, int] = {}
             for index, org in enumerate(notice_dto.organizations):
-                
+
                 await self._ensure_nuts_code(session, org.nuts_code)
                 org_ids[index] = await self._upsert_organization(session, org)
 
@@ -98,24 +98,27 @@ class NoticeLoader:
     async def _upsert_organization(self, session: AsyncSession, org: OrganizationDto) -> int:
         if org.cin:
             query = """
-                INSERT INTO organizations (cin, tin, name, address, town, postal_code, country, nuts_code, extra_fields, created_at, updated_at)
-                VALUES (:cin, :tin, :name, :address, :town, :postal_code, :country, :nuts_code, CAST(:extra_fields AS jsonb), now(), now())
+                INSERT INTO organizations (cin, tin, name, address, street_name, street_number, phone, town, postal_code, country, nuts_code, extra_fields, created_at, updated_at)
+                VALUES (:cin, :tin, :name, :address, :street_name, :street_number, :phone, :town, :postal_code, :country, :nuts_code, CAST(:extra_fields AS jsonb), now(), now())
                 ON CONFLICT (cin) DO UPDATE SET
-                    tin = EXCLUDED.tin,
-                    name = EXCLUDED.name,
-                    address = EXCLUDED.address,
-                    town = EXCLUDED.town,
-                    postal_code = EXCLUDED.postal_code,
-                    country = EXCLUDED.country,
-                    nuts_code = EXCLUDED.nuts_code,
-                    extra_fields = EXCLUDED.extra_fields,
+                    tin = COALESCE(EXCLUDED.tin, organizations.tin),
+                    name = COALESCE(EXCLUDED.name, organizations.name),
+                    address = COALESCE(EXCLUDED.address, organizations.address),
+                    street_name = COALESCE(EXCLUDED.street_name, organizations.street_name),
+                    street_number = COALESCE(EXCLUDED.street_number, organizations.street_number),
+                    phone = COALESCE(EXCLUDED.phone, organizations.phone),
+                    town = COALESCE(EXCLUDED.town, organizations.town),
+                    postal_code = COALESCE(EXCLUDED.postal_code, organizations.postal_code),
+                    country = COALESCE(EXCLUDED.country, organizations.country),
+                    nuts_code = COALESCE(EXCLUDED.nuts_code, organizations.nuts_code),
+                    extra_fields = organizations.extra_fields || EXCLUDED.extra_fields,
                     updated_at = now()
                 RETURNING id
             """
         else:
             query = """
-                INSERT INTO organizations (cin, tin, name, address, town, postal_code, country, nuts_code, extra_fields, created_at, updated_at)
-                VALUES (:cin, :tin, :name, :address, :town, :postal_code, :country, :nuts_code, CAST(:extra_fields AS jsonb), now(), now())
+                INSERT INTO organizations (cin, tin, name, address, street_name, street_number, phone, town, postal_code, country, nuts_code, extra_fields, created_at, updated_at)
+                VALUES (:cin, :tin, :name, :address, :street_name, :street_number, :phone, :town, :postal_code, :country, :nuts_code, CAST(:extra_fields AS jsonb), now(), now())
                 RETURNING id
             """
 
@@ -126,6 +129,9 @@ class NoticeLoader:
                 "tin": org.tin,
                 "name": org.name,
                 "address": org.address,
+                "street_name": org.street_name,
+                "street_number": org.street_number,
+                "phone": org.phone,
                 "town": org.town,
                 "postal_code": org.postal_code,
                 "country": org.country,
@@ -168,22 +174,22 @@ class NoticeLoader:
             INSERT INTO procedures (procedure_reference, buyer_id, procedure_type, contract_type, main_cpv, total_value, currency, nuts_code, title, description, buyer_profile_url, extra_fields, created_at, updated_at)
             VALUES (:reference, :buyer_id, :procedure_type, :contract_type, :main_cpv, :total_value, :currency, :nuts_code, :title, :description, :buyer_profile_url, CAST(:extra_fields AS jsonb), now(), now())
             ON CONFLICT (procedure_reference, buyer_id) DO UPDATE SET
-                procedure_type = EXCLUDED.procedure_type,
-                contract_type = EXCLUDED.contract_type,
-                main_cpv = EXCLUDED.main_cpv,
-                total_value = EXCLUDED.total_value,
-                currency = EXCLUDED.currency,
-                nuts_code = EXCLUDED.nuts_code,
-                title = EXCLUDED.title,
-                description = EXCLUDED.description,
-                buyer_profile_url = EXCLUDED.buyer_profile_url,
-                extra_fields = EXCLUDED.extra_fields,
+                procedure_type = COALESCE(EXCLUDED.procedure_type, procedures.procedure_type),
+                contract_type = COALESCE(EXCLUDED.contract_type, procedures.contract_type),
+                main_cpv = COALESCE(EXCLUDED.main_cpv, procedures.main_cpv),
+                total_value = COALESCE(EXCLUDED.total_value, procedures.total_value),
+                currency = COALESCE(EXCLUDED.currency, procedures.currency),
+                nuts_code = COALESCE(EXCLUDED.nuts_code, procedures.nuts_code),
+                title = COALESCE(EXCLUDED.title, procedures.title),
+                description = COALESCE(EXCLUDED.description, procedures.description),
+                buyer_profile_url = COALESCE(EXCLUDED.buyer_profile_url, procedures.buyer_profile_url),
+                extra_fields = procedures.extra_fields || EXCLUDED.extra_fields,
                 updated_at = now()
             RETURNING id
         """
         result = await session.execute(
             text(query),
-            { 
+            {
                 "reference": procedure.reference,
                 "buyer_id": buyer_id,
                 "procedure_type": procedure.procedure_type,
@@ -209,24 +215,24 @@ class NoticeLoader:
                     context={"procedure_id": procedure_id, "extra_fields_keys": list(lot.extra_fields.keys())[:10]},
                 )
             return
-        
+
         await self._ensure_nuts_code(session, lot.nuts_code)
 
         query = """
             INSERT INTO notice_lots (lot_reference, title, description, value, currency, main_cpv, nuts_code, award_criterion, submission_deadline, document_url, detail_url, procedure_id, extra_fields, created_at, updated_at)
             VALUES (:lot_reference, :title, :description, :value, :currency, :main_cpv, :nuts_code, :award_criterion, :submission_deadline, :document_url, :detail_url, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
             ON CONFLICT (lot_reference, procedure_id) DO UPDATE SET
-                title = EXCLUDED.title,
-                description = EXCLUDED.description,
-                value = EXCLUDED.value,
-                currency = EXCLUDED.currency,
-                main_cpv = EXCLUDED.main_cpv,
-                nuts_code = EXCLUDED.nuts_code,
-                award_criterion = EXCLUDED.award_criterion,
-                submission_deadline = EXCLUDED.submission_deadline,
-                document_url = EXCLUDED.document_url,
-                detail_url = EXCLUDED.detail_url,
-                extra_fields = EXCLUDED.extra_fields,
+                title = COALESCE(EXCLUDED.title, notice_lots.title),
+                description = COALESCE(EXCLUDED.description, notice_lots.description),
+                value = COALESCE(EXCLUDED.value, notice_lots.value),
+                currency = COALESCE(EXCLUDED.currency, notice_lots.currency),
+                main_cpv = COALESCE(EXCLUDED.main_cpv, notice_lots.main_cpv),
+                nuts_code = COALESCE(EXCLUDED.nuts_code, notice_lots.nuts_code),
+                award_criterion = COALESCE(EXCLUDED.award_criterion, notice_lots.award_criterion),
+                submission_deadline = COALESCE(EXCLUDED.submission_deadline, notice_lots.submission_deadline),
+                document_url = COALESCE(EXCLUDED.document_url, notice_lots.document_url),
+                detail_url = COALESCE(EXCLUDED.detail_url, notice_lots.detail_url),
+                extra_fields = notice_lots.extra_fields || EXCLUDED.extra_fields,
                 updated_at = now()
             """
         await session.execute(
@@ -252,8 +258,8 @@ class NoticeLoader:
         self, session: AsyncSession, notice_dto: NoticeDto, procedure_id: Optional[int]
     ) -> None:
         query = """
-            INSERT INTO notices (notice_id, notice_version, notice_type, form_type, legal_basis, dispatch_date, title, procedure_id, extra_fields, created_at, updated_at)
-            VALUES (:notice_id, :notice_version, :notice_type, :form_type, :legal_basis, :dispatch_date, :title, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
+            INSERT INTO notices (notice_id, notice_version, notice_type, form_type, legal_basis, title, procedure_id, extra_fields, created_at, updated_at)
+            VALUES (:notice_id, :notice_version, :notice_type, :form_type, :legal_basis, :title, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
             ON CONFLICT (notice_id, notice_version) DO NOTHING
         """
         await session.execute(
@@ -264,7 +270,6 @@ class NoticeLoader:
                 "notice_type": notice_dto.notice_type,
                 "form_type": notice_dto.form_type,
                 "legal_basis": notice_dto.legal_basis,
-                "dispatch_date": notice_dto.dispatch_date,
                 "title": notice_dto.title,
                 "procedure_id": procedure_id,
                 "extra_fields": json.dumps(notice_dto.extra_fields or {}),

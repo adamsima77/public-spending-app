@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('form_type', 32)->nullable();    // BT-03-notice
             $table->string('notice_type', 32)->nullable();  // BT-02-notice 
             $table->string('legal_basis', 64)->nullable();  // BT-01-notice
-            $table->timestamp('dispatch_date')->nullable(); // BT-05-notice / BT-05(a)-notice
             $table->text('title')->nullable();              // DL-Metadata-Order
             $table->foreignId('supersedes_id')->nullable()->constrained('notices')->nullOnDelete();
             $table->timestamps();

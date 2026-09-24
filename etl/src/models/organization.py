@@ -11,6 +11,7 @@ class OrganizationDto(BaseModel):
     address: Optional[str] = None
     street_name: Optional[str] = None
     street_number: Optional[str] = None
+    phone: Optional[str] = None
     town: Optional[str] = None
     postal_code: Optional[str] = None
     country: Optional[str] = None

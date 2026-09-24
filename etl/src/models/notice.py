@@ -14,7 +14,6 @@ class NoticeDto(BaseModel):
     form_type: Optional[str] = None
     title: Optional[str] = None
     legal_basis: Optional[str] = None
-    dispatch_date: Optional[str] = None
     extra_fields: Dict[str, Any] = Field(default_factory=dict)
     organizations: List[OrganizationDto] = Field(default_factory=list)
     lots: List[LotDto] = Field(default_factory=list)

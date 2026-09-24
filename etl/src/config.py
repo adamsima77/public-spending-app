@@ -43,15 +43,12 @@ WHERE {
   )
 }
 """
-
 NOTICE_FIELDS = {
     "BT-701-notice": "notice_id",
     "BT-757-notice": "notice_version",
     "BT-03-notice": "form_type",
     "BT-02-notice": "notice_type",
-    "BT-01-notice": "legal_basis",
-    "BT-05-notice": "dispatch_date",
-    "BT-05(a)-notice": "dispatch_date",
+    "BT-01-notice": "legal_basis",  
     "DL-Metadata-Order": "title",
 }
 
@@ -60,7 +57,7 @@ ORGANIZATION_FIELDS = {
     "BT-500-Organization-Company": "name",
     "BT-501-Organization-Company-CIN": "cin",
     "BT-501-Organization-Company-TIN": "tin",
-    "BT-503-Organization-Company": "address",
+    "BT-503-Organization-Company": "phone",
     "BT-510(a)-Organization-Company": "street_name",
     "BT-510(b)-Organization-Company": "street_number",
     "BT-513-Organization-Company": "town",
@@ -83,8 +80,8 @@ PROCEDURE_FIELDS = {
 }
 
 LOT_FIELDS = {
-    "DL-Context-Lot": "lot_reference",   
-    "DL-Title-Lot": "title",              
+    "DL-Context-Lot": "lot_reference",
+    "DL-Title-Lot": "title",
     "BT-21-Lot": "title",
     "BT-24-Lot": "description",
     "BT-27-Lot_value": "value",

@@ -107,7 +107,7 @@ class JsonParser:
                     continue
 
                 notice_dto = NoticeDto()
-               
+
                 orphan_lot_fields: Dict[str, Any] = {}
                 for component in inner.get("components", []):
                     self._process_node(component, notice_dto, orphan_lot_fields=orphan_lot_fields)
@@ -126,7 +126,6 @@ class JsonParser:
                         )
                     continue
 
-              
                 if orphan_lot_fields and self._logger:
                     await self._logger.log(
                         "warning",
@@ -140,7 +139,6 @@ class JsonParser:
                         file_id=db_file_id,
                     )
 
-             
                 if notice_dto.form_type == "competition" and not notice_dto.lots:
                     if self._logger:
                         await self._logger.log(
