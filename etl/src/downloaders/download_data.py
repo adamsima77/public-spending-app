@@ -57,6 +57,39 @@ class Download:
         except Exception:
             return set()
 
+    async def ensure_etl_statuses(self) -> None:
+        query = """
+            INSERT INTO etl_statuses (name, created_at, updated_at)
+            VALUES (:name, now(), now())
+            ON CONFLICT (name) DO NOTHING
+        """
+        statuses = ["pending", "downloading", "downloaded", "failed", "parsed"]
+        await self._db.execute_many(query, [{"name": s} for s in statuses])
+
+    async def _mark_downloading(self, file_id: str, url: str, filename: str, fmt: str) -> None:
+        query = """
+            INSERT INTO downloaded_files (file_id, url, filename, format, status_id, created_at, updated_at)
+            VALUES (:file_id, :url, :filename, :format,
+                    (SELECT id FROM etl_statuses WHERE name = 'downloading'),
+                    now(), now())
+            ON CONFLICT (file_id) DO UPDATE SET
+                status_id = (SELECT id FROM etl_statuses WHERE name = 'downloading'),
+                updated_at = now()
+        """
+        await self._db.execute(
+            query,
+            {"file_id": file_id, "url": url, "filename": filename, "format": fmt},
+        )
+
+    async def _mark_failed(self, file_id: str) -> None:
+        query = """
+            UPDATE downloaded_files
+            SET status_id = (SELECT id FROM etl_statuses WHERE name = 'failed'),
+                updated_at = now()
+            WHERE file_id = :file_id
+        """
+        await self._db.execute(query, {"file_id": file_id})
+
     async def download_one_file(
         self,
         client: httpx.AsyncClient,
@@ -69,6 +102,8 @@ class Download:
         start = time.perf_counter()
 
         async with semaphore:
+            await self._mark_downloading(file_id, url, filename.name, fmt)
+
             for attempt in range(1, self.number_of_retries + 1):
                 try:
                     hasher = hashlib.sha256()
@@ -105,14 +140,16 @@ class Download:
                     await self._logger.log("warning", f"Retry {attempt} failed for {url}: {e}")
                     await asyncio.sleep(random.uniform(1, 1.5))
 
-        await self._logger.log("error", f"Failed to download {url} after {self.number_of_retries} attempts")
-        return {"file_id": file_id, "url": url, "status": "failed"}
+            await self._mark_failed(file_id)
+            await self._logger.log("error", f"Failed to download {url} after {self.number_of_retries} attempts")
+            return {"file_id": file_id, "url": url, "status": "failed"}
 
     async def download_data(self) -> None:
         self.number_of_downloaded_links = 0
         start = time.perf_counter()
 
         DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        await self.ensure_etl_statuses()
 
         raw_links = await self.get_download_links()
         if not raw_links:
@@ -168,6 +205,12 @@ class Download:
                 (:file_id, :url, :filename, :format,
                  (SELECT id FROM etl_statuses WHERE name = 'downloaded'),
                  :downloaded_at, :file_hash, :downloaded_at, :downloaded_at)
-            ON CONFLICT (file_id) DO NOTHING
+            ON CONFLICT (file_id) DO UPDATE SET
+                filename = EXCLUDED.filename,
+                format = EXCLUDED.format,
+                status_id = (SELECT id FROM etl_statuses WHERE name = 'downloaded'),
+                downloaded_at = EXCLUDED.downloaded_at,
+                file_hash = EXCLUDED.file_hash,
+                updated_at = EXCLUDED.updated_at
         """
         await self._db.execute_many(query, successful)

@@ -1,51 +1,31 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Services\DownloadedFileService;
-
+use App\Models\DownloadedFile;
+use App\Http\Resources\DownloadedFileResource;
 
 class DownloadedFileController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(DownloadedFileService $downloadedFileService): JsonResponse
+    public function index(DownloadedFileService $downloadedFileService)
     {
-   
+        $this->authorize('viewAny', DownloadedFile::class);
+        $files = $downloadedFileService->getAllDownloadedFiles();
+        return DownloadedFileResource::collection($files);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(DownloadedFile $downloadedFile)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $this->authorize('view', $downloadedFile);
+        return new DownloadedFileResource($downloadedFile);
     }
 }

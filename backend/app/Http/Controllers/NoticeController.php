@@ -3,46 +3,27 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\NoticeService;
+use App\Http\Resources\NoticeResource;
+use Illuminate\Http\Response;
+use App\Models\Notice;
 
 class NoticeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(NoticeService $noticeService)
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        $notices = $noticeService->getNotices();
+        return NoticeResource::collection($notices);  
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Notice $notice, NoticeService $noticeService)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return new NoticeResource($notice);
     }
 }

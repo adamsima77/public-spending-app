@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('legal_basis', 64)->nullable();  // BT-01-notice
             $table->text('title')->nullable();              // DL-Metadata-Order
             $table->foreignId('supersedes_id')->nullable()->constrained('notices')->nullOnDelete();
+            $table->timestamp('contract_conclusion_date')->nullable();
+            $table->timestamp('issue_date')->nullable();
             $table->timestamps();
             $table->unique(['notice_id', 'notice_version']);
             $table->jsonb('extra_fields')->nullable();

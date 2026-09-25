@@ -16,6 +16,7 @@ class DownloadedFile extends Model
         'status_id',
         'downloaded_at',
         'parsed_at',
+        'format'
     ];
 
     
@@ -27,5 +28,10 @@ class DownloadedFile extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(EtlLog::class, 'file_id');
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(EtlStatus::class);
     }
 }

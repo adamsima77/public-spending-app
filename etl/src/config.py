@@ -50,6 +50,8 @@ NOTICE_FIELDS = {
     "BT-02-notice": "notice_type",
     "BT-01-notice": "legal_basis",  
     "DL-Metadata-Order": "title",
+    "BT-05-notice": "issue_date",
+    "BT-145-Contract": "contract_conclusion_date"
 }
 
 ORGANIZATION_FIELDS = {

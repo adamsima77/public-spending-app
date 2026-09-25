@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime
 from typing import Any, Dict, Optional, Set
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -158,6 +159,15 @@ class NoticeLoader:
         match = re.search(r"\d+", str(value))
         return int(match.group(0)) if match else 1
 
+    def _parse_datetime(self, value: Any) -> Optional[str]:
+        if not value:
+            return None
+        val_str = str(value).strip()
+        try:
+            return datetime.fromisoformat(val_str).isoformat()
+        except ValueError:
+            return val_str if len(val_str) >= 10 else None
+
     async def _upsert_procedure(
         self, session: AsyncSession, procedure: ProcedureDto, buyer_id: Optional[int]
     ) -> Optional[int]:
@@ -258,8 +268,8 @@ class NoticeLoader:
         self, session: AsyncSession, notice_dto: NoticeDto, procedure_id: Optional[int]
     ) -> None:
         query = """
-            INSERT INTO notices (notice_id, notice_version, notice_type, form_type, legal_basis, title, procedure_id, extra_fields, created_at, updated_at)
-            VALUES (:notice_id, :notice_version, :notice_type, :form_type, :legal_basis, :title, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
+            INSERT INTO notices (notice_id, notice_version, notice_type, form_type, legal_basis, title, issue_date, contract_conclusion_date, procedure_id, extra_fields, created_at, updated_at)
+            VALUES (:notice_id, :notice_version, :notice_type, :form_type, :legal_basis, :title, :issue_date, :contract_conclusion_date, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
             ON CONFLICT (notice_id, notice_version) DO NOTHING
         """
         await session.execute(
@@ -271,6 +281,8 @@ class NoticeLoader:
                 "form_type": notice_dto.form_type,
                 "legal_basis": notice_dto.legal_basis,
                 "title": notice_dto.title,
+                "issue_date": self._parse_datetime(notice_dto.issue_date),
+                "contract_conclusion_date": self._parse_datetime(notice_dto.contract_conclusion_date),
                 "procedure_id": procedure_id,
                 "extra_fields": json.dumps(notice_dto.extra_fields or {}),
             },

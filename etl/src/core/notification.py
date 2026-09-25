@@ -1,6 +1,6 @@
 import httpx
 from typing import Any, Dict, Optional
-from src.config import settings
+from config import settings
 
 class Notification:
     def __init__(self, logger: Optional[Any] = None) -> None:
@@ -15,7 +15,7 @@ class Notification:
                 {
                     "title": "ETL Pipeline Alert",
                     "description": message,
-                    "color": 15158332,  # Červená
+                    "color": 15158332, 
                     "fields": [
                         {"name": str(k), "value": str(v), "inline": True}
                         for k, v in (context or {}).items()

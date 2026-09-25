@@ -10,6 +10,6 @@ class CpvCode extends Model
         'code',
         'name_sk',
         'level',
-        'parent_code',
+        'parent_code'
     ];
 }

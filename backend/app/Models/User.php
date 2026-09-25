@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -17,14 +18,17 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'surname',
         'email',
-        'password'
+        'password',
+        'role_id'
     ];
 
     protected $hidden = [
         'password',
         'remember_token'
     ];
+
 
     /**
      * Get the attributes that should be cast.
@@ -47,5 +51,10 @@ class User extends Authenticatable
     public function isUser(): bool
     {
         return $this->role()->slug === 'user';
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
     }
 }

@@ -5,38 +5,28 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Services\EtlLogService;
+use App\Models\EtlLog;
+use App\Http\Resources\EtlLogResource;
 
 class EtlLogController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(EtlLogService $etlLogService)
     {
-        //
+        $this->authorize('viewAny', EtlLog::class);
+        $logs = $etlLogService->getAllLogs();
+        return EtlLogResource::collection($logs);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request, EtlLogService $etlLogService)
-    {
-        
-    }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(EtlLog $etlLog)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+        $this->authorize('view', $etlLog);
+        return new EtlLogResource($etlLog);
     }
 }

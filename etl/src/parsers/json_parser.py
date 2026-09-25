@@ -83,6 +83,16 @@ class JsonParser:
                 else:
                     lot.submission_deadline = date_str
 
+        if notice_dto.contract_conclusion_date:
+            date_val = str(notice_dto.contract_conclusion_date).strip()
+            if date_val:
+                notice_dto.contract_conclusion_date = date_val
+
+        if notice_dto.issue_date:
+            issue_val = str(notice_dto.issue_date).strip()
+            if issue_val:
+                notice_dto.issue_date = issue_val
+
     async def parse_file(self, file_path: str, db_file_id: Optional[int] = None):
         notices_parsed = 0
         notices_skipped = 0

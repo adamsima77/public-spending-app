@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notice extends Model
 {
@@ -12,14 +12,20 @@ class Notice extends Model
         'form_type',
         'notice_type',
         'legal_basis',
-        'dispatch_date',
         'title',
         'supersedes_id',
-        'extra_fields'
+        'contract_conclusion_date',
+        'issue_date',
+        'extra_fields',
+        'procedure_id'
     ];
 
     protected $casts = [
-        'extra_fields' => 'array',
-        'dispatch_date' => 'date',
+        'extra_fields' => 'array'
     ];
+
+    public function procedure(): BelongsTo 
+    {
+        return $this->belongsTo(Procedure::class);
+    }
 }
