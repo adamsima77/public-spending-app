@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('notice_lots', function (Blueprint $table) {
              $table->foreignId('procedure_id')->nullable()->constrained('procedures')->cascadeOnDelete();
+             $table->index('procedure_id');
         });
     }
 
@@ -24,6 +25,7 @@ return new class extends Migration
         Schema::table('notice_lots', function (Blueprint $table) {
             $table->dropForeign(['procedure_id']);
             $table->dropColumn('procedure_id');
+            $table->dropIndex(['procedure_id']); 
         });
     }
 };

@@ -20,4 +20,5 @@ class ProcedureDto(BaseModel):
     provider_ref: Optional[str] = None
     buyer: Optional[OrganizationDto] = None
     provider: Optional[OrganizationDto] = None
+    place_of_performance: Optional[str] = None
     extra_fields: Dict[str, Any] = Field(default_factory=dict)

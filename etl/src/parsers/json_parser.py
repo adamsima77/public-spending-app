@@ -7,6 +7,7 @@ from core.logger import Logger
 from models.notice import NoticeDto
 from models.lot import LotDto
 from models.organization import OrganizationDto
+import config
 
 ORG_REF_PATTERN = re.compile(r"ORG-\d+")
 
@@ -64,6 +65,21 @@ class JsonParser:
                     file_id=file_id,
                 )
 
+        for lot in notice_dto.lots:
+            if lot.winner_ref:
+                lot.winner = org_by_index.get(lot.winner_ref)
+                if lot.winner is None and self._logger:
+                    await self._logger.log(
+                        "warning",
+                        f"Nepodarilo sa rozlúštiť winner_ref '{lot.winner_ref}'",
+                        context={
+                            "notice_id": notice_dto.notice_id,
+                            "lot_reference": lot.lot_reference,
+                            "organizations_count": len(orgs),
+                        },
+                        file_id=file_id,
+                    )
+
     def _post_process_dtos(self, notice_dto: NoticeDto) -> None:
         for org in notice_dto.organizations:
             if not org.address and (org.street_name or org.street_number):
@@ -92,6 +108,9 @@ class JsonParser:
             issue_val = str(notice_dto.issue_date).strip()
             if issue_val:
                 notice_dto.issue_date = issue_val
+
+        if not notice_dto.published_at:
+            notice_dto.published_at = notice_dto.issue_date
 
     async def parse_file(self, file_path: str, db_file_id: Optional[int] = None):
         notices_parsed = 0
@@ -238,6 +257,9 @@ class JsonParser:
             return
         if key == "OPT-300-Procedure-SProvider":
             notice_dto.procedure.provider_ref = value
+            return
+        if key == config.WINNER_REF_KEY and current_lot is not None:
+            current_lot.winner_ref = value
             return
 
         if current_lot is not None and key in self.lot_fields:

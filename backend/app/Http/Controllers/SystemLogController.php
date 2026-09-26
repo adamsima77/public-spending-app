@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SystemLogResource;
+use App\Services\SystemLogService;
 use Illuminate\Http\Request;
-use App\Models\SystemLog; 
-use App\Service\SystemLogService;
-use App\Http\Resource\SystemLogResource;
+use Illuminate\Http\Response;
+use App\Models\SystemLog;
 
 class SystemLogController extends Controller
 {
@@ -14,6 +15,7 @@ class SystemLogController extends Controller
      */
     public function index(SystemLogService $systemLogService)
     {
+        $this->authorize('viewAny', SystemLog::class);
         $logs = $systemLogService->getAllLogs();
         return SystemLogResource::collection($logs);
     }
@@ -23,6 +25,7 @@ class SystemLogController extends Controller
      */
     public function show(SystemLog $systemLog)
     {
+        $this->authorize('view', $systemLog);
         return new SystemLogResource($systemLog);
     }
 

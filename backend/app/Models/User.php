@@ -43,18 +43,18 @@ class User extends Authenticatable
         ];
     }
 
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
     public function isAdmin(): bool
     {
-        return $this->role()->slug === 'admin';
+        return $this->role()->slug == 'admin';
     }
 
     public function isUser(): bool
     {
-        return $this->role()->slug === 'user';
-    }
-
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(Role::class);
+        return $this->role()->slug == 'user';
     }
 }

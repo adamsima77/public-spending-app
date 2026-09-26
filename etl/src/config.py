@@ -48,7 +48,7 @@ NOTICE_FIELDS = {
     "BT-757-notice": "notice_version",
     "BT-03-notice": "form_type",
     "BT-02-notice": "notice_type",
-    "BT-01-notice": "legal_basis",  
+    "BT-01-notice": "legal_basis",
     "DL-Metadata-Order": "title",
     "BT-05-notice": "issue_date",
     "BT-145-Contract": "contract_conclusion_date"
@@ -78,6 +78,7 @@ PROCEDURE_FIELDS = {
     "BT-27-Procedure_value": "total_value",
     "BT-27-Procedure_currency": "currency",
     "BT-5071-Procedure": "nuts_code",
+    "BT-5131-Procedure": "place_of_performance",
     "BT-508-Procedure-Buyer": "buyer_profile_url",
 }
 
@@ -90,10 +91,13 @@ LOT_FIELDS = {
     "BT-27-Lot_currency": "currency",
     "BT-262-Lot": "main_cpv",
     "BT-5071-Lot": "nuts_code",
+    "BT-5131-Lot": "place_of_performance",
     "BT-539-Lot": "award_criterion",
     "BT-15-Lot": "document_url",
     "BT-18-Lot": "detail_url",
+    "BT-720-Lot": "winning_amount",
 }
 
 ANCHOR_ORGANIZATION = "GR-Organisations_panel"
 ANCHOR_LOT = "GR-Lot"
+WINNER_REF_KEY = "OPT-300-Contract-Winner"

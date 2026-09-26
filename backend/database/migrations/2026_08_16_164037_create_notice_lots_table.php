@@ -26,6 +26,9 @@ return new class extends Migration
             $table->text('detail_url')->nullable();            // BT-18-Lot
             $table->timestamps();
             $table->jsonb('extra_fields')->nullable();
+            $table->index('main_cpv');
+            $table->index('nuts_code');
+            $table->string('place_of_performance')->nullable()->after('nuts_code');
         });
     }
 

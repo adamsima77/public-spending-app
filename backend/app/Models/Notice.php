@@ -13,7 +13,6 @@ class Notice extends Model
         'notice_type',
         'legal_basis',
         'title',
-        'supersedes_id',
         'contract_conclusion_date',
         'issue_date',
         'extra_fields',

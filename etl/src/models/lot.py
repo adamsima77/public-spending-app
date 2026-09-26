@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional
 from pydantic import BaseModel, ConfigDict, Field
+from models.organization import OrganizationDto
 
 
 class LotDto(BaseModel):
@@ -16,4 +17,8 @@ class LotDto(BaseModel):
     submission_deadline: Optional[str] = None
     document_url: Optional[str] = None
     detail_url: Optional[str] = None
+    winner_ref: Optional[str] = None
+    winning_amount: Optional[str] = None
+    winner: Optional[OrganizationDto] = None
+    place_of_performance: Optional[str] = None
     extra_fields: Dict[str, Any] = Field(default_factory=dict)

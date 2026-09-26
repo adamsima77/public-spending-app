@@ -27,6 +27,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unique('cin');
             $table->jsonb('extra_fields')->nullable();
+            $table->index('nuts_code');
         });
     }
 

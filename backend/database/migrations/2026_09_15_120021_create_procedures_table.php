@@ -28,6 +28,10 @@ return new class extends Migration
             $table->timestamps();
             $table->jsonb('extra_fields')->nullable();
             $table->unique(['procedure_reference', 'buyer_id']);
+            $table->index('buyer_id');
+            $table->text('place_of_performance')->nullable()->after('nuts_code');
+            $table->index('main_cpv');
+            $table->index('nuts_code');
         });
     }
 

@@ -43,9 +43,22 @@ class NoticeLoader:
             )
 
             for lot in notice_dto.lots:
-                await self._upsert_lot(session, lot, procedure_id)
+                lot_id = await self._upsert_lot(session, lot, procedure_id)
+
+                if lot_id is not None:
+                    winner_id = self._resolve_org_db_id(notice_dto, lot.winner, org_ids)
+                    if winner_id is not None:
+                        await self._upsert_lot_supplier(session, lot_id, winner_id, lot.winning_amount)
+                    elif lot.winner_ref and self._logger:
+                        await self._logger.log(
+                            "warning",
+                            f"Víťaz lotu '{lot.winner_ref}' sa nepodarilo priradiť na organizáciu",
+                            context={"notice_id": notice_dto.notice_id, "lot_reference": lot.lot_reference},
+                            file_id=db_file_id,
+                        )
 
             await self._upsert_notice_row(session, notice_dto, procedure_id)
+            await self._refresh_is_latest(session, notice_dto.notice_id)
 
         if self._logger:
             await self._logger.log(
@@ -181,8 +194,8 @@ class NoticeLoader:
             extra_fields["provider_ref"] = procedure.provider_ref
 
         query = """
-            INSERT INTO procedures (procedure_reference, buyer_id, procedure_type, contract_type, main_cpv, total_value, currency, nuts_code, title, description, buyer_profile_url, extra_fields, created_at, updated_at)
-            VALUES (:reference, :buyer_id, :procedure_type, :contract_type, :main_cpv, :total_value, :currency, :nuts_code, :title, :description, :buyer_profile_url, CAST(:extra_fields AS jsonb), now(), now())
+            INSERT INTO procedures (procedure_reference, buyer_id, procedure_type, contract_type, main_cpv, total_value, currency, nuts_code, place_of_performance, title, description, buyer_profile_url, extra_fields, created_at, updated_at)
+            VALUES (:reference, :buyer_id, :procedure_type, :contract_type, :main_cpv, :total_value, :currency, :nuts_code, :place_of_performance, :title, :description, :buyer_profile_url, CAST(:extra_fields AS jsonb), now(), now())
             ON CONFLICT (procedure_reference, buyer_id) DO UPDATE SET
                 procedure_type = COALESCE(EXCLUDED.procedure_type, procedures.procedure_type),
                 contract_type = COALESCE(EXCLUDED.contract_type, procedures.contract_type),
@@ -190,6 +203,7 @@ class NoticeLoader:
                 total_value = COALESCE(EXCLUDED.total_value, procedures.total_value),
                 currency = COALESCE(EXCLUDED.currency, procedures.currency),
                 nuts_code = COALESCE(EXCLUDED.nuts_code, procedures.nuts_code),
+                place_of_performance = COALESCE(EXCLUDED.place_of_performance, procedures.place_of_performance),
                 title = COALESCE(EXCLUDED.title, procedures.title),
                 description = COALESCE(EXCLUDED.description, procedures.description),
                 buyer_profile_url = COALESCE(EXCLUDED.buyer_profile_url, procedures.buyer_profile_url),
@@ -208,6 +222,7 @@ class NoticeLoader:
                 "total_value": self._parse_decimal(procedure.total_value),
                 "currency": procedure.currency,
                 "nuts_code": procedure.nuts_code,
+                "place_of_performance": procedure.place_of_performance,
                 "title": procedure.title,
                 "description": procedure.description,
                 "buyer_profile_url": procedure.buyer_profile_url,
@@ -216,7 +231,7 @@ class NoticeLoader:
         )
         return result.scalar_one()
 
-    async def _upsert_lot(self, session: AsyncSession, lot: LotDto, procedure_id: Optional[int]) -> None:
+    async def _upsert_lot(self, session: AsyncSession, lot: LotDto, procedure_id: Optional[int]) -> Optional[int]:
         if not lot.lot_reference:
             if self._logger:
                 await self._logger.log(
@@ -224,13 +239,13 @@ class NoticeLoader:
                     "Lot bez lot_reference, preskakujem",
                     context={"procedure_id": procedure_id, "extra_fields_keys": list(lot.extra_fields.keys())[:10]},
                 )
-            return
+            return None
 
         await self._ensure_nuts_code(session, lot.nuts_code)
 
         query = """
-            INSERT INTO notice_lots (lot_reference, title, description, value, currency, main_cpv, nuts_code, award_criterion, submission_deadline, document_url, detail_url, procedure_id, extra_fields, created_at, updated_at)
-            VALUES (:lot_reference, :title, :description, :value, :currency, :main_cpv, :nuts_code, :award_criterion, :submission_deadline, :document_url, :detail_url, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
+            INSERT INTO notice_lots (lot_reference, title, description, value, currency, main_cpv, nuts_code, place_of_performance, award_criterion, submission_deadline, document_url, detail_url, procedure_id, extra_fields, created_at, updated_at)
+            VALUES (:lot_reference, :title, :description, :value, :currency, :main_cpv, :nuts_code, :place_of_performance, :award_criterion, :submission_deadline, :document_url, :detail_url, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
             ON CONFLICT (lot_reference, procedure_id) DO UPDATE SET
                 title = COALESCE(EXCLUDED.title, notice_lots.title),
                 description = COALESCE(EXCLUDED.description, notice_lots.description),
@@ -238,14 +253,16 @@ class NoticeLoader:
                 currency = COALESCE(EXCLUDED.currency, notice_lots.currency),
                 main_cpv = COALESCE(EXCLUDED.main_cpv, notice_lots.main_cpv),
                 nuts_code = COALESCE(EXCLUDED.nuts_code, notice_lots.nuts_code),
+                place_of_performance = COALESCE(EXCLUDED.place_of_performance, notice_lots.place_of_performance),
                 award_criterion = COALESCE(EXCLUDED.award_criterion, notice_lots.award_criterion),
                 submission_deadline = COALESCE(EXCLUDED.submission_deadline, notice_lots.submission_deadline),
                 document_url = COALESCE(EXCLUDED.document_url, notice_lots.document_url),
                 detail_url = COALESCE(EXCLUDED.detail_url, notice_lots.detail_url),
                 extra_fields = notice_lots.extra_fields || EXCLUDED.extra_fields,
                 updated_at = now()
+            RETURNING id
             """
-        await session.execute(
+        result = await session.execute(
             text(query),
             {
                 "lot_reference": lot.lot_reference,
@@ -255,6 +272,7 @@ class NoticeLoader:
                 "currency": lot.currency,
                 "main_cpv": lot.main_cpv,
                 "nuts_code": lot.nuts_code,
+                "place_of_performance": lot.place_of_performance,
                 "award_criterion": lot.award_criterion,
                 "submission_deadline": lot.submission_deadline,
                 "document_url": lot.document_url,
@@ -263,13 +281,33 @@ class NoticeLoader:
                 "extra_fields": json.dumps(lot.extra_fields or {}),
             },
         )
+        return result.scalar_one()
+
+    async def _upsert_lot_supplier(
+        self, session: AsyncSession, lot_id: int, organization_id: int, winning_amount: Optional[str]
+    ) -> None:
+        query = """
+            INSERT INTO lot_suppliers (lot_id, organization_id, winning_amount, created_at, updated_at)
+            VALUES (:lot_id, :organization_id, :winning_amount, now(), now())
+            ON CONFLICT (lot_id, organization_id) DO UPDATE SET
+                winning_amount = COALESCE(EXCLUDED.winning_amount, lot_suppliers.winning_amount),
+                updated_at = now()
+        """
+        await session.execute(
+            text(query),
+            {
+                "lot_id": lot_id,
+                "organization_id": organization_id,
+                "winning_amount": self._parse_decimal(winning_amount),
+            },
+        )
 
     async def _upsert_notice_row(
         self, session: AsyncSession, notice_dto: NoticeDto, procedure_id: Optional[int]
     ) -> None:
         query = """
-            INSERT INTO notices (notice_id, notice_version, notice_type, form_type, legal_basis, title, issue_date, contract_conclusion_date, procedure_id, extra_fields, created_at, updated_at)
-            VALUES (:notice_id, :notice_version, :notice_type, :form_type, :legal_basis, :title, :issue_date, :contract_conclusion_date, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
+            INSERT INTO notices (notice_id, notice_version, notice_type, form_type, legal_basis, title, issue_date, published_at, contract_conclusion_date, procedure_id, extra_fields, created_at, updated_at)
+            VALUES (:notice_id, :notice_version, :notice_type, :form_type, :legal_basis, :title, :issue_date, :published_at, :contract_conclusion_date, :procedure_id, CAST(:extra_fields AS jsonb), now(), now())
             ON CONFLICT (notice_id, notice_version) DO NOTHING
         """
         await session.execute(
@@ -282,8 +320,23 @@ class NoticeLoader:
                 "legal_basis": notice_dto.legal_basis,
                 "title": notice_dto.title,
                 "issue_date": self._parse_datetime(notice_dto.issue_date),
+                "published_at": self._parse_datetime(notice_dto.published_at),
                 "contract_conclusion_date": self._parse_datetime(notice_dto.contract_conclusion_date),
                 "procedure_id": procedure_id,
                 "extra_fields": json.dumps(notice_dto.extra_fields or {}),
             },
         )
+
+    async def _refresh_is_latest(self, session: AsyncSession, notice_id: str) -> None:
+        query = """
+            UPDATE notices
+            SET is_latest = (notice_version = sub.max_version), updated_at = now()
+            FROM (
+                SELECT MAX(notice_version) AS max_version
+                FROM notices
+                WHERE notice_id = :notice_id
+            ) sub
+            WHERE notices.notice_id = :notice_id
+              AND notices.is_latest IS DISTINCT FROM (notices.notice_version = sub.max_version)
+        """
+        await session.execute(text(query), {"notice_id": notice_id})

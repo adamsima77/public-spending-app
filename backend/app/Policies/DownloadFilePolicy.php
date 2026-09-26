@@ -3,14 +3,17 @@
 namespace App\Policies;
 
 use App\Models\User;
+use App\Models\DownloadedFile;
 
 class DownloadFilePolicy
 {
-    /**
-     * Create a new policy instance.
-     */
-    public function __construct()
+    public function viewAny(User $user): bool
     {
-        //
+        return $user->isAdmin();
+    }
+
+    public function view(User $user, DownloadedFile $downloadedFile): bool
+    {
+        return $user->isAdmin();
     }
 }

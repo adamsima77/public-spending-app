@@ -15,6 +15,7 @@ class NoticeDto(BaseModel):
     title: Optional[str] = None
     legal_basis: Optional[str] = None
     issue_date: Optional[str] = None
+    published_at: Optional[str] = None  
     contract_conclusion_date: Optional[str] = None
     extra_fields: Dict[str, Any] = Field(default_factory=dict)
     organizations: List[OrganizationDto] = Field(default_factory=list)

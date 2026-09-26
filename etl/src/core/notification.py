@@ -7,7 +7,7 @@ class Notification:
         self.logger = logger
 
     async def send_discord_alert(self, message: str, context: Optional[Dict[str, Any]] = None) -> bool:
-        if not settings.discord_webhook_url:
+        if not settings.DISCORD_WEBHOOK:
             return False
 
         payload = {

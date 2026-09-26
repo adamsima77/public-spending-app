@@ -7,6 +7,8 @@ use Illuminate\Http\Response;
 use App\Http\Resources\NutCodeResource;
 use App\Models\NutCode;
 use App\Services\NutCodeService;
+use App\Http\Requests\StoreNutCodeRequest;
+use App\Http\Requests\UpdateNutCodeRequest;
 
 class NutCodeController extends Controller
 {
@@ -22,17 +24,12 @@ class NutCodeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, NutCodeService $nutCodeService)
+    public function store(StoreNutCodeRequest $request, NutCodeService $nutCodeService)
     {
         $this->authorize('create', NutCode::class);
-        $validateEntryData = $request->validate([
-            'code' => ['required', 'string', 'between:2,5', 'unique:nut_codes,code'],
-            'name_sk' => ['required', 'string', 'max:255'],
-            'level' => ['required', 'integer', 'between:0,3'],
-            'parent_code' => ['nullable', 'string', 'exists:nut_codes,code'],
-        ]);
+        $validatedData = $request->validated();
 
-        $nutCodeService->createNutCode($validateEntryData);
+        $nutCodeService->createNutCode($validatedData);
         return response()->json(null, Response::HTTP_CREATED);
     }
 
@@ -47,15 +44,10 @@ class NutCodeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, NutCode $nutCode, NutCodeService $nutCodeService)
+    public function update(UpdateNutCodeRequest $request, NutCode $nutCode, NutCodeService $nutCodeService)
     {
         $this->authorize('update', $nutCode);
-        $validateEntry = $request->validate([
-            'code' => ['required', 'string', 'between:2,5', 'unique:nut_codes,code'],
-            'name_sk' => ['required', 'string', 'max:255'],
-            'level' => ['required', 'integer', 'between:0,3'],
-            'parent_code' => ['nullable', 'string', 'exists:nut_codes,code'],
-        ]);
+        $validateEntry = $request->validated();
         $nutCodeService->updateNutCode($nutCode, $validateEntry);
         return response()->json(['message' => 'Nut code bol upravený !'], Response::HTTP_OK);
     }

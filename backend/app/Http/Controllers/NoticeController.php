@@ -16,13 +16,13 @@ class NoticeController extends Controller
     public function index(NoticeService $noticeService)
     {
         $notices = $noticeService->getNotices();
-        return NoticeResource::collection($notices);  
+        return NoticeResource::collection($notices);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Notice $notice, NoticeService $noticeService)
+    public function show(Notice $notice)
     {
         return new NoticeResource($notice);
     }

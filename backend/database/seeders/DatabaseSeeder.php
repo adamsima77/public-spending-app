@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             EtlStatusSeeder::class,
-            NutCodeSeeder::class
+            NutCodeSeeder::class,
+            RoleSeeder::class
         ]);
     }
 }
