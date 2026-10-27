@@ -6,38 +6,39 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('procedures', function (Blueprint $table) {
             $table->id();
-            $table->string('procedure_reference', 128)->nullable(); // BT-22-Procedure
+            $table->string('procedure_reference', 128)->nullable();
             $table->foreignId('buyer_id')->nullable()->constrained('organizations')->nullOnDelete();
-            $table->string('procedure_type', 32)->nullable();   // BT-105-Procedure
-            $table->string('contract_type', 32)->nullable();    // BT-23-Procedure (works, services, supplies)
-            $table->string('main_cpv', 10)->nullable();          // BT-262-Procedure
-            $table->foreign('main_cpv')->references('code')->on('cpv_codes')->nullOnDelete();
-            $table->decimal('total_value', 14, 2)->nullable();   // BT-27-Procedure_value
+            $table->string('procedure_type', 32)->nullable();
+            $table->string('contract_type', 32)->nullable();
+            $table->string('main_cpv', 10)->nullable();
+            $table->decimal('estimated_value', 14, 2)->nullable();
             $table->char('currency', 3)->nullable();
-            $table->string('nuts_code', 10)->nullable();         // BT-5071-Procedure
-            $table->text('title')->nullable();                    // BT-21-Procedure
-            $table->text('description')->nullable();              // BT-24-Procedure
-            $table->text('buyer_profile_url')->nullable();       // BT-508-Procedure-Buyer
-            $table->timestamps();
+            $table->string('nuts_code', 10)->nullable();
+            $table->text('place_of_performance')->nullable();
+            $table->text('title')->nullable();
+            $table->text('description')->nullable();
+            $table->text('buyer_profile_url')->nullable();
+            $table->text('performance_note')->nullable();
             $table->jsonb('extra_fields')->nullable();
+            $table->timestamps();
+
             $table->unique(['procedure_reference', 'buyer_id']);
             $table->index('buyer_id');
-            $table->text('place_of_performance')->nullable()->after('nuts_code');
             $table->index('main_cpv');
             $table->index('nuts_code');
+
+            $table->string('procedure_identifier', 100)->nullable();
+            $table->unique('procedure_identifier', 'procedures_procedure_identifier_unique');
+
+            $table->foreign('main_cpv')->references('code')->on('cpv_codes')->nullOnDelete();
+            $table->foreign('nuts_code')->references('code')->on('nut_codes')->nullOnDelete();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('procedures');

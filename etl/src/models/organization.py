@@ -16,5 +16,6 @@ class OrganizationDto(BaseModel):
     postal_code: Optional[str] = None
     country: Optional[str] = None
     nuts_code: Optional[str] = None
+    company_size: Optional[str] = None
     extra_fields: Dict[str, Any] = Field(default_factory=dict)
     org_ref: Optional[str] = None

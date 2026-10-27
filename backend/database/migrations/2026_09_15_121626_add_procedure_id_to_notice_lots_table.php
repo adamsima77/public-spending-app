@@ -23,9 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('notice_lots', function (Blueprint $table) {
-            $table->dropForeign(['procedure_id']);
-            $table->dropColumn('procedure_id');
-            $table->dropIndex(['procedure_id']); 
+            $table->dropConstrainedForeignId('procedure_id');
         });
     }
 };

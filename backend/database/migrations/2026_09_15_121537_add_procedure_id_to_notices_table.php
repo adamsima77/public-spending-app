@@ -14,6 +14,11 @@ return new class extends Migration
         Schema::table('notices', function (Blueprint $table) {
             $table->foreignId('procedure_id')->nullable()->constrained('procedures')->nullOnDelete();
             $table->index('procedure_id');
+
+             $table->foreignId('winner_organization_id')->nullable()
+                ->constrained('organizations')->nullOnDelete();
+
+            $table->index('winner_organization_id');
         });
     }
 
@@ -26,6 +31,10 @@ return new class extends Migration
             $table->dropForeign(['procedure_id']);
             $table->dropColumn('procedure_id');
             $table->dropIndex(['procedure_id']); 
+
+            $table->dropForeign(['winner_organization_id']);
+            $table->dropColumn('winner_organization_id');
+            $table->dropIndex(['winner_organization_id']);
         });
     }
 };

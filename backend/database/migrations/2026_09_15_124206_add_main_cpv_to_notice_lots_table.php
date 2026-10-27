@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('notice_lots', function (Blueprint $table) {
              $table->foreign('main_cpv')->references('code')->on('cpv_codes')->nullOnDelete();
+             $table->index('main_cpv');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('notice_lots', function (Blueprint $table) {
             $table->dropForeign(['main_cpv']);
+            $table->dropIndex(['main_cpv']);
         });
     }
 };

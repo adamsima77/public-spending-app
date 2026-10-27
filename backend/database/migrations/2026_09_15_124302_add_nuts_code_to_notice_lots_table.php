@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('notice_lots', function (Blueprint $table) {
             $table->foreign('nuts_code')->references('code')->on('nut_codes')->nullOnDelete();
+            $table->index('nuts_code');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('notice_lots', function (Blueprint $table) {
             $table->dropForeign(['nuts_code']);
+            $table->dropIndex(['nuts_code']);
         });
     }
 };

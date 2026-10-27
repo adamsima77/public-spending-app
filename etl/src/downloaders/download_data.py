@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import hashlib
+import os
 import random
 import time
 from pathlib import Path
@@ -13,6 +14,9 @@ from core.database import db, Database
 from core.logger import Logger
 from config import DOWNLOAD_DIR, DOWNLOAD_LINKS_QUERY, settings
 
+PARSEABLE_EXTENSIONS = {".json"}
+
+
 def _extension_from_format(fmt: str) -> str:
     fmt = fmt.lower()
     if "json" in fmt:
@@ -22,6 +26,7 @@ def _extension_from_format(fmt: str) -> str:
     if "xml" in fmt:
         return ".xml"
     return ""
+
 
 class Download:
     def __init__(self, logger: Logger, database: Database = db) -> None:
@@ -50,12 +55,24 @@ class Download:
             await self._logger.log("error", f"Problem with fetching data from SPARQL endpoint. Error: {e}")
             return []
 
-    async def load_downloaded_urls(self) -> Set[str]:
+    async def load_skippable_urls(self) -> Set[str]:
         try:
-            rows = await self._db.fetch_all("SELECT url FROM downloaded_files")
-            return {row["url"] for row in rows}
+            rows = await self._db.fetch_all(
+                """
+                SELECT f.url, f.filename, s.name AS status
+                FROM downloaded_files f
+                LEFT JOIN etl_statuses s ON s.id = f.status_id
+                """
+            )
         except Exception:
             return set()
+
+        skip: Set[str] = set()
+        for row in rows:
+            on_disk = bool(row["filename"]) and (DOWNLOAD_DIR / row["filename"]).exists()
+            if row["status"] == "parsed" or on_disk:
+                skip.add(row["url"])
+        return skip
 
     async def ensure_etl_statuses(self) -> None:
         query = """
@@ -90,6 +107,10 @@ class Download:
         """
         await self._db.execute(query, {"file_id": file_id})
 
+    def _cleanup_partial_files(self) -> None:
+        for part in DOWNLOAD_DIR.glob("*.part"):
+            part.unlink(missing_ok=True)
+
     async def download_one_file(
         self,
         client: httpx.AsyncClient,
@@ -99,6 +120,8 @@ class Download:
         fmt: str,
     ) -> Dict[str, Any]:
         filename: Path = DOWNLOAD_DIR / f"{file_id}{_extension_from_format(fmt)}"
+
+        partial: Path = filename.with_name(filename.name + ".part")
         start = time.perf_counter()
 
         async with semaphore:
@@ -109,11 +132,13 @@ class Download:
                     hasher = hashlib.sha256()
                     async with client.stream("GET", url, timeout=30.0) as response:
                         response.raise_for_status()
-                        async with aiofiles.open(filename, "wb") as f:
+                        async with aiofiles.open(partial, "wb") as f:
                             async for chunk in response.aiter_bytes(chunk_size=settings.CHUNK_SIZE):
                                 if chunk:
                                     await f.write(chunk)
                                     hasher.update(chunk)
+
+                    os.replace(partial, filename)
 
                     async with self._counter_lock:
                         self.number_of_downloaded_links += 1
@@ -133,9 +158,8 @@ class Download:
                         "status": "success",
                     }
 
-                except (httpx.HTTPError, Exception) as e:
-                    if filename.exists():
-                        filename.unlink(missing_ok=True)
+                except Exception as e:
+                    partial.unlink(missing_ok=True)
 
                     await self._logger.log("warning", f"Retry {attempt} failed for {url}: {e}")
                     await asyncio.sleep(random.uniform(1, 1.5))
@@ -149,6 +173,7 @@ class Download:
         start = time.perf_counter()
 
         DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        self._cleanup_partial_files()
         await self.ensure_etl_statuses()
 
         raw_links = await self.get_download_links()
@@ -156,8 +181,9 @@ class Download:
             await self._logger.log("error", "No download links retrieved. Stopping.")
             return
 
-        already_downloaded = await self.load_downloaded_urls()
-        links_to_download = [l for l in raw_links if l["url"] not in already_downloaded]
+        parseable = [l for l in raw_links if _extension_from_format(l["format"]) in PARSEABLE_EXTENSIONS]
+        skippable = await self.load_skippable_urls()
+        links_to_download = [l for l in parseable if l["url"] not in skippable]
 
         self.number_of_all_links = len(links_to_download)
         if self.number_of_all_links == 0:
@@ -194,7 +220,10 @@ class Download:
         await self._logger.log("info", summary)
 
     async def _flush(self, buffer: List[Dict[str, Any]]) -> None:
-        successful = [r for r in buffer if r["status"] == "success"]
+        successful = [
+            {k: r[k] for k in ("file_id", "url", "filename", "format", "file_hash", "downloaded_at")}
+            for r in buffer if r["status"] == "success"
+        ]
         if not successful:
             return
 

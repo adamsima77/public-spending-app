@@ -7,6 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app/src
 
 COPY pyproject.toml .
+
 COPY src/ ./src
 
 RUN pip install --no-cache-dir --upgrade pip && \

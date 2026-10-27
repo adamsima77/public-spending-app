@@ -1,0 +1,515 @@
+{
+ "sdk_version": "eforms-sdk-1.16.0-beta.3",
+ "lists": {
+  "cl_award_outcomes": {
+   "source": "winner-selection-status",
+   "business_terms": [
+    "BT-142-LotResult"
+   ],
+   "rows": [
+    {
+     "code": "clos-nw",
+     "label_sk": "Nebol vybratý žiadny víťaz a súťaž je ukončená."
+    },
+    {
+     "code": "open-nw",
+     "label_sk": "Víťaz zatiaľ nebol vybratý, ale súťaž stále prebieha."
+    },
+    {
+     "code": "selec-w",
+     "label_sk": "Bol vybratý aspoň jeden víťaz."
+    }
+   ]
+  },
+  "cl_non_award_reasons": {
+   "source": "non-award-justification",
+   "business_terms": [
+    "BT-144-LotResult"
+   ],
+   "rows": [
+    {
+     "code": "all-rej",
+     "label_sk": "Všetky ponuky, žiadosti o účasť alebo projekty boli stiahnuté alebo vyhlásené za neprípustné"
+    },
+    {
+     "code": "chan-need",
+     "label_sk": "Rozhodnutie kupujúceho z dôvodu zmeny potrieb"
+    },
+    {
+     "code": "ins-fund",
+     "label_sk": "Rozhodnutie kupujúceho z dôvodu nedostatku finančných prostriedkov"
+    },
+    {
+     "code": "no-rece",
+     "label_sk": "Neboli prijaté žiadne ponuky, žiadosti o účasť ani projekty"
+    },
+    {
+     "code": "no-signed",
+     "label_sk": "Uchádzač(-i) sa najvyšším počtom bodov odmietol(-tli) podpísať zmluvu"
+    },
+    {
+     "code": "one-admis",
+     "label_sk": "Prijatá bola len jedna prípustná ponuka, žiadosť o účasť alebo projekt"
+    },
+    {
+     "code": "other",
+     "label_sk": "Iný"
+    },
+    {
+     "code": "rev-body",
+     "label_sk": "Rozhodnutie orgánu pre preskúmanie alebo iného justičného orgánu"
+    },
+    {
+     "code": "rev-buyer",
+     "label_sk": "Rozhodnutie kupujúceho, ktoré je založené na žiadosti uchádzača o preskúmanie zadania zákazky"
+    },
+    {
+     "code": "tch-pr-error",
+     "label_sk": "Rozhodnutie kupujúceho, ktoré nie je založené na žiadosti uchádzača o preskúmanie zadania zákazky, z dôvodu technických alebo procesných chýb"
+    }
+   ]
+  },
+  "cl_company_sizes": {
+   "source": "economic-operator-size",
+   "business_terms": [
+    "BT-165-Organization-Company"
+   ],
+   "rows": [
+    {
+     "code": "large",
+     "label_sk": "Veľký podnik"
+    },
+    {
+     "code": "medium",
+     "label_sk": "Stredný podnik"
+    },
+    {
+     "code": "micro",
+     "label_sk": "Mikropodnik"
+    },
+    {
+     "code": "small",
+     "label_sk": "Malý podnik"
+    },
+    {
+     "code": "sme",
+     "label_sk": "Mikropodnik, malý alebo stredný podnik"
+    }
+   ]
+  },
+  "cl_submission_types": {
+   "source": "received-submission-type",
+   "business_terms": [
+    "BT-760-LotResult"
+   ],
+   "rows": [
+    {
+     "code": "part-req",
+     "label_sk": "Žiadosti o účasť"
+    },
+    {
+     "code": "t-esubm",
+     "label_sk": "Ponuky podané elektronicky"
+    },
+    {
+     "code": "t-large",
+     "label_sk": "Ponuky od veľkých podnikov"
+    },
+    {
+     "code": "t-med",
+     "label_sk": "Ponuky od stredných podnikov"
+    },
+    {
+     "code": "t-micro",
+     "label_sk": "Ponuky od mikropodnikov"
+    },
+    {
+     "code": "t-no-eea",
+     "label_sk": "Ponuky od organizácií z krajín mimo EHP"
+    },
+    {
+     "code": "t-no-verif",
+     "label_sk": "Ponuky, v prípade ktorých nebolo overené, či sú alebo nie sú prípustné"
+    },
+    {
+     "code": "t-oth-eea",
+     "label_sk": "Ponuky od organizácií registrovaných v inej krajine EHP než v krajine kupujúceho"
+    },
+    {
+     "code": "t-small",
+     "label_sk": "Ponuky od malých podnikov"
+    },
+    {
+     "code": "t-sme",
+     "label_sk": "Ponuky od malých a stredných podnikov"
+    },
+    {
+     "code": "t-verif-inad",
+     "label_sk": "Ponuky overené a neprípustné"
+    },
+    {
+     "code": "t-verif-inad-low",
+     "label_sk": "Ponuky overené a neprípustné z dôvodu neobvykle nízkej ceny alebo nízkych nákladov"
+    },
+    {
+     "code": "tenders",
+     "label_sk": "Ponuky"
+    }
+   ]
+  },
+  "cl_permissions": {
+   "source": "permission",
+   "business_terms": [
+    "BT-63-Lot",
+    "BT-743-Lot"
+   ],
+   "rows": [
+    {
+     "code": "allowed",
+     "label_sk": "Povolená"
+    },
+    {
+     "code": "not-allowed",
+     "label_sk": "Nie je povolená"
+    },
+    {
+     "code": "required",
+     "label_sk": "Povinná"
+    }
+   ]
+  },
+  "cl_reserved_procurement": {
+   "source": "reserved-procurement",
+   "business_terms": [
+    "BT-71-Lot"
+   ],
+   "rows": [
+    {
+     "code": "none",
+     "label_sk": "Účasť nie je vyhradená."
+    },
+    {
+     "code": "res-pub-ser",
+     "label_sk": "Účasť je vyhradená pre organizácie vykonávajúce verejnú službu a spĺňajú ďalšie príslušné podmienky v právnych predpisoch."
+    },
+    {
+     "code": "res-ws",
+     "label_sk": "Účasť je vyhradená pre chránené pracoviská a hospodárske subjekty, ktoré sa zameriavajú na sociálne a profesionálne začlenenie osôb so zdravotným postihnutím alebo znevýhodnených osôb."
+    }
+   ]
+  },
+  "cl_applicabilities": {
+   "source": "applicability",
+   "business_terms": [
+    "BT-736-Lot",
+    "BT-773-Tender"
+   ],
+   "rows": [
+    {
+     "code": "no",
+     "label_sk": "Nie"
+    },
+    {
+     "code": "not-known",
+     "label_sk": "Použitie zatiaľ nie je známe"
+    },
+    {
+     "code": "yes",
+     "label_sk": "Áno"
+    }
+   ]
+  },
+  "cl_contract_natures": {
+   "source": "contract-nature",
+   "business_terms": [
+    "BT-23-Procedure"
+   ],
+   "rows": [
+    {
+     "code": "services",
+     "label_sk": "Služby"
+    },
+    {
+     "code": "supplies",
+     "label_sk": "Tovary"
+    },
+    {
+     "code": "works",
+     "label_sk": "Práce"
+    }
+   ]
+  },
+  "cl_procedure_types": {
+   "source": "procurement-procedure-type",
+   "business_terms": [
+    "BT-105-Procedure"
+   ],
+   "rows": [
+    {
+     "code": "comp-dial",
+     "label_sk": "Súťažný dialóg"
+    },
+    {
+     "code": "comp-tend",
+     "label_sk": "Verejná súťaž (článok 5 ods. 3 nariadenia č. 1370/2007)"
+    },
+    {
+     "code": "exp-int-rail",
+     "label_sk": "Žiadosť o vyjadrenie záujmu – len v prípade železničnej dopravy (článok 5 ods. 3b nariadenia 1370/2007)"
+    },
+    {
+     "code": "innovation",
+     "label_sk": "Inovatívne partnerstvo"
+    },
+    {
+     "code": "neg-w-call",
+     "label_sk": "Rokovacie konanie so zverejnením výzvy na súťaž/súťažné obstarávanie s rokovacím konaním"
+    },
+    {
+     "code": "neg-wo-call",
+     "label_sk": "Rokovacie konanie bez zverejnenia výzvy na súťaž"
+    },
+    {
+     "code": "open",
+     "label_sk": "Verejná súťaž"
+    },
+    {
+     "code": "oth-mult",
+     "label_sk": "Iný viacfázový postup"
+    },
+    {
+     "code": "oth-single",
+     "label_sk": "Iný jednofázový postup"
+    },
+    {
+     "code": "restricted",
+     "label_sk": "Užšia súťaž"
+    }
+   ]
+  },
+  "cl_notice_types": {
+   "source": "notice-type",
+   "business_terms": [
+    "BT-02-notice"
+   ],
+   "rows": [
+    {
+     "code": "brin-ecs",
+     "label_sk": "Európska spoločnosť/európske družstvo – oznámenie"
+    },
+    {
+     "code": "brin-eeig",
+     "label_sk": "Európske zoskupenie hospodárskych záujmov – oznámenie"
+    },
+    {
+     "code": "can-desg",
+     "label_sk": "Oznámenie o výsledku súťaže návrhov"
+    },
+    {
+     "code": "can-modif",
+     "label_sk": "Oznámenie o úprave zmluvy"
+    },
+    {
+     "code": "can-social",
+     "label_sk": "Oznámenie o výsledku verejného obstarávania alebo oznámenie o udelení koncesie – zjednodušený režim"
+    },
+    {
+     "code": "can-standard",
+     "label_sk": "Oznámenie o výsledku verejného obstarávania alebo oznámenie o udelení koncesie – štandardný režim"
+    },
+    {
+     "code": "can-tran",
+     "label_sk": "Oznámenie o zadaní zmlúv o službách vo verejnom záujme v osobnej doprave"
+    },
+    {
+     "code": "cn-desg",
+     "label_sk": "Oznámenie o vyhlásení súťaže návrhov"
+    },
+    {
+     "code": "cn-social",
+     "label_sk": "Oznámenie o vyhlásení verejného obstarávania – zjednodušený režim"
+    },
+    {
+     "code": "cn-standard",
+     "label_sk": "Oznámenie o vyhlásení verejného obstarávania alebo oznámenie o koncesii – štandardný režim"
+    },
+    {
+     "code": "compl",
+     "label_sk": "Oznámenie o dokončení verejného obstarávania"
+    },
+    {
+     "code": "pin-buyer",
+     "label_sk": "Oznámenie o uverejnení predbežného oznámenia a pravidelného informatívneho oznámenia v profile kupujúceho"
+    },
+    {
+     "code": "pin-cfc-social",
+     "label_sk": "Predbežné oznámenie alebo pravidelné informatívne oznámenie použité ako výzva na súťaž – zjednodušený režim"
+    },
+    {
+     "code": "pin-cfc-standard",
+     "label_sk": "Predbežné oznámenie a pravidelné informatívne oznámenie použité ako výzva na súťaž – štandardný režim"
+    },
+    {
+     "code": "pin-only",
+     "label_sk": "Predbežné oznámenie a pravidelné informatívne oznámenie použité len na informačné účely"
+    },
+    {
+     "code": "pin-rtl",
+     "label_sk": "Predbežné oznámenie a pravidelné informatívne oznámenie použité na skrátenie lehôt na prijímanie ponúk"
+    },
+    {
+     "code": "pin-tran",
+     "label_sk": "Predbežné oznámenie o službách vo verejnom záujme v osobnej doprave"
+    },
+    {
+     "code": "pmc",
+     "label_sk": "Oznámenie o predbežnej trhovej konzultácii"
+    },
+    {
+     "code": "qu-sy",
+     "label_sk": "Oznámenie o existencii kvalifikačného systému"
+    },
+    {
+     "code": "subco",
+     "label_sk": "Oznámenie o zadaní subdodávok"
+    },
+    {
+     "code": "veat",
+     "label_sk": "Oznámenie pre dobrovoľnú transparentnosť ex-ante"
+    }
+   ]
+  },
+  "cl_form_types": {
+   "source": "form-type",
+   "business_terms": [
+    "BT-03-notice"
+   ],
+   "rows": [
+    {
+     "code": "bri",
+     "label_sk": "Informácie o registrácii podniku"
+    },
+    {
+     "code": "competition",
+     "label_sk": "Súťaž"
+    },
+    {
+     "code": "completion",
+     "label_sk": "Dokončenie"
+    },
+    {
+     "code": "consultation",
+     "label_sk": "Konzultácia"
+    },
+    {
+     "code": "cont-modif",
+     "label_sk": "Úprava zmluvy"
+    },
+    {
+     "code": "dir-awa-pre",
+     "label_sk": "Predbežné oznámenie o zámere uzavrieť zmluvu"
+    },
+    {
+     "code": "planning",
+     "label_sk": "Plánovanie obstarávania"
+    },
+    {
+     "code": "result",
+     "label_sk": "Výsledok"
+    }
+   ]
+  },
+  "cl_legal_bases": {
+   "source": "legal-basis",
+   "business_terms": [
+    "BT-01-notice"
+   ],
+   "rows": [
+    {
+     "code": "31985R2137",
+     "label_sk": "Nariadenie (EHS) č. 2137/85"
+    },
+    {
+     "code": "32001R2157",
+     "label_sk": "Nariadenie (ES) č. 2157/2001"
+    },
+    {
+     "code": "32003R1435",
+     "label_sk": "Nariadenie (ES) č. 1435/2003"
+    },
+    {
+     "code": "32007R1370",
+     "label_sk": "Nariadenie (ES) č. 1370/2007"
+    },
+    {
+     "code": "32009L0081",
+     "label_sk": "Smernica 2009/81/ES"
+    },
+    {
+     "code": "32014L0023",
+     "label_sk": "Smernica 2014/23/EÚ"
+    },
+    {
+     "code": "32014L0024",
+     "label_sk": "Smernica 2014/24/EÚ"
+    },
+    {
+     "code": "32014L0025",
+     "label_sk": "Smernica 2014/25/EÚ"
+    },
+    {
+     "code": "32024R2509",
+     "label_sk": "Nariadenie (EÚ, Euratom) 2024/2509"
+    },
+    {
+     "code": "other",
+     "label_sk": "Iný"
+    }
+   ]
+  },
+  "cl_duration_units": {
+   "source": "timeperiod_duration-unit",
+   "business_terms": [
+    "BT-36-Lot"
+   ],
+   "rows": [
+    {
+     "code": "DAY",
+     "label_sk": "Deň"
+    },
+    {
+     "code": "MONTH",
+     "label_sk": "Mesiac"
+    },
+    {
+     "code": "WEEK",
+     "label_sk": "Týždeň"
+    },
+    {
+     "code": "YEAR",
+     "label_sk": "Rok"
+    }
+   ]
+  },
+  "cl_award_criterion_types": {
+   "source": "award-criterion-type",
+   "business_terms": [
+    "BT-539-Lot"
+   ],
+   "rows": [
+    {
+     "code": "cost",
+     "label_sk": "Náklady"
+    },
+    {
+     "code": "price",
+     "label_sk": "Cena"
+    },
+    {
+     "code": "quality",
+     "label_sk": "Kvalita"
+    }
+   ]
+  }
+ }
+}

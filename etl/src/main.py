@@ -10,6 +10,7 @@ from parsers.json_parser import JsonParser
 from loaders.notice_loader import NoticeLoader
 import config
 
+
 async def main():
     async with redis.from_url(config.settings.REDIS_URL) as redis_client:
         logger = Logger(db, redis_client=redis_client)
@@ -21,8 +22,18 @@ async def main():
             organization_fields=config.ORGANIZATION_FIELDS,
             procedure_fields=config.PROCEDURE_FIELDS,
             lot_fields=config.LOT_FIELDS,
+            lot_result_fields=config.LOT_RESULT_FIELDS,
+            submission_stat_fields=config.SUBMISSION_STAT_FIELDS,
+            lot_tender_fields=config.LOT_TENDER_FIELDS,
+            settled_contract_fields=config.SETTLED_CONTRACT_FIELDS,
             anchor_organization=config.ANCHOR_ORGANIZATION,
             anchor_lot=config.ANCHOR_LOT,
+            anchor_lot_result=config.ANCHOR_LOT_RESULT,
+            anchor_submission_stat=config.ANCHOR_SUBMISSION_STAT,
+            anchor_lot_tender=config.ANCHOR_LOT_TENDER,
+            anchor_tendering_party=config.ANCHOR_TENDERING_PARTY,
+            anchor_settled_contract=config.ANCHOR_SETTLED_CONTRACT,
+            tenderer_org_ref_key=config.TENDERER_ORG_REF_KEY,
             logger=logger,
         )
         notice_loader = NoticeLoader(db, logger=logger)
@@ -35,6 +46,7 @@ async def main():
             await downloader.download_data()
             files = get_files_to_process(config.DOWNLOAD_DIR)
             await logger.log("info", f"Nájdených {len(files)} súborov na spracovanie.")
+            print(f"Nájdených {len(files)} súborov na spracovanie.")
 
             json_files = [f for f in files if f.suffix == ".json"]
             file_id_map = await _load_file_id_map(db, [f.stem for f in json_files])
@@ -100,7 +112,7 @@ def get_files_to_process(download_dir: Path) -> List[Path]:
     if not download_dir.exists():
         return []
 
-    return [file_path for file_path in download_dir.glob("*") if file_path.is_file()]
+    return sorted(file_path for file_path in download_dir.glob("*") if file_path.is_file())
 
 
 async def _mark_file_parsed(database, db_file_id: int) -> None:

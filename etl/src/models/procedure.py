@@ -7,15 +7,18 @@ class ProcedureDto(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
     reference: Optional[str] = None
+    identifier: Optional[str] = None  
+    source_order_id: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
     procedure_type: Optional[str] = None
     contract_type: Optional[str] = None
     main_cpv: Optional[str] = None
-    total_value: Optional[str] = None
+    estimated_value: Optional[str] = None
     currency: Optional[str] = None
     nuts_code: Optional[str] = None
     buyer_profile_url: Optional[str] = None
+    performance_note: Optional[str] = None
     buyer_ref: Optional[str] = None
     provider_ref: Optional[str] = None
     buyer: Optional[OrganizationDto] = None
