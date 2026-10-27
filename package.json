@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky",
-    "api:export": "docker compose exec backend php artisan scramble:export --path=openapi.json",
+    "api:export": "docker compose exec -T backend php artisan scramble:export --path=openapi.json",
     "api:gen": "cd frontend && npx ng-openapi-gen",
     "api": "npm run api:export && npm run api:gen"
   },
