@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -27,8 +29,8 @@ class UpdateUserRequest extends FormRequest
         return [
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['sometimes', 'required', 'string', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
-            'name' => ['sometimes', 'required', 'string', 'max:255'], 
-            'surname' => ['sometimes', 'required', 'string', 'max:255']
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'surname' => ['sometimes', 'required', 'string', 'max:255'],
         ];
     }
 
@@ -54,5 +56,5 @@ class UpdateUserRequest extends FormRequest
             'surname.string' => 'Priezvisko musí byť reťazec.',
             'surname.max' => 'Priezvisko môže mať maximálne 255 znakov.',
         ];
-}
+    }
 }

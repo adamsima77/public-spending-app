@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
@@ -9,20 +11,22 @@ use XMLReader;
 class ImportCpvCodes extends Command
 {
     protected $signature = 'import:cpv-codes';
+
     protected $description = 'Naimportuje CPV číselník zo statického resources/data/cpv.gc súboru';
 
     public function handle(): int
     {
         $path = resource_path('data/cpv.gc');
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->error("Súbor nenájdený: {$path}. Stiahni ho z https://raw.githubusercontent.com/OP-TED/eForms-SDK/main/codelists/cpv.gc");
+
             return self::FAILURE;
         }
 
         $this->info('Parsujem cpv.gc');
 
-        $reader = new XMLReader();
+        $reader = new XMLReader;
         $reader->open($path);
 
         $rows = [];
@@ -53,13 +57,14 @@ class ImportCpvCodes extends Command
 
         $reader->close();
         $this->info("Hotovo. Naimportovaných {$count} CPV kódov.");
+
         return self::SUCCESS;
     }
 
     private function parseRow(string $rowXml): ?array
     {
         $xml = simplexml_load_string(
-            '<Row xmlns="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">' . substr($rowXml, 5)
+            '<Row xmlns="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">'.substr($rowXml, 5),
         );
 
         if ($xml === false) {
@@ -67,12 +72,14 @@ class ImportCpvCodes extends Command
         }
 
         $values = [];
+
         foreach ($xml->Value as $value) {
             $columnRef = (string) $value['ColumnRef'];
             $values[$columnRef] = (string) $value->SimpleValue;
         }
 
         $rawCode = $values['code'] ?? null;
+
         if (! $rawCode) {
             return null;
         }
@@ -100,6 +107,7 @@ class ImportCpvCodes extends Command
     {
         $clean = rtrim($code, '0');
         $length = strlen($clean);
+
         return $length <= 2 ? 1 : $length - 1;
     }
 }

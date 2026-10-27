@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,11 +17,11 @@ class CpvCode extends Model
         'code',
         'name_sk',
         'level',
-        'parent_code'
+        'parent_code',
     ];
 
     protected $casts = [
-        'level' => 'integer'
+        'level' => 'integer',
     ];
 
     public function parent(): BelongsTo

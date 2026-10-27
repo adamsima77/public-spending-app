@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Http\Resources\OrganizationResource;
-use App\Services\OrganizationService; 
 use App\Models\Organization;
+use App\Services\OrganizationService;
 
 class OrganizationController extends Controller
 {
@@ -16,9 +16,9 @@ class OrganizationController extends Controller
     public function index(OrganizationService $organizationService)
     {
         $organizations = $organizationService->getAllOrganizations();
+
         return OrganizationResource::collection($organizations);
     }
-
 
     /**
      * Display the specified resource.

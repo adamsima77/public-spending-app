@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserResource;
+use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use App\Services\UserService;
-use App\Models\User;
-use App\Http\Resources\UserResource;
-use App\Http\Requests\UpdateUserRequest;
 
 class UserController extends Controller
 {
@@ -18,15 +20,12 @@ class UserController extends Controller
     {
         $this->authorize('viewAny', User::class);
         $users = $userService->getAllUsers();
+
         return UserResource::collection($users);
     }
 
-
-    //Invite instead of creating like this
-    public function invite(Request $request, UserService $userService)
-    {
-
-    }
+    // Invite instead of creating like this
+    public function invite(Request $request, UserService $userService): void {}
 
     /**
      * Display the specified resource.
@@ -34,6 +33,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         $this->authorize('view', $user);
+
         return new UserResource($user);
     }
 
@@ -45,6 +45,7 @@ class UserController extends Controller
         $this->authorize('update', $user);
         $validateEntryData = $request->validated();
         $userService->updateUser($user, $validateEntryData);
+
         return response()->json(['message' => 'Užívateľ bol úspešne upravený !'], Response::HTTP_OK);
     }
 
@@ -55,6 +56,7 @@ class UserController extends Controller
     {
         $this->authorize('anonymize', $user);
         $userService->anonymizeUser($user);
+
         return response()->json(['message' => 'Užívateľ bol úspešne anonymizovaný !'], Response::HTTP_OK);
     }
 }

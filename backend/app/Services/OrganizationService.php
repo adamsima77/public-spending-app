@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
-use Illuminate\Pagination\LengthAwarePaginator;
+
 use App\Models\Organization;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-class OrganizationService {
-
+class OrganizationService
+{
     public function getAllOrganizations(): LengthAwarePaginator
     {
         return Organization::paginate(15);

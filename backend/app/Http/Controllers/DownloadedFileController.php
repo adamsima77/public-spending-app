@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use App\Services\DownloadedFileService;
-use App\Models\DownloadedFile;
+
 use App\Http\Resources\DownloadedFileResource;
+use App\Models\DownloadedFile;
+use App\Services\DownloadedFileService;
 
 class DownloadedFileController extends Controller
 {
@@ -16,9 +17,9 @@ class DownloadedFileController extends Controller
     {
         $this->authorize('viewAny', DownloadedFile::class);
         $files = $downloadedFileService->getAllDownloadedFiles();
+
         return DownloadedFileResource::collection($files);
     }
-
 
     /**
      * Display the specified resource.
@@ -26,6 +27,7 @@ class DownloadedFileController extends Controller
     public function show(DownloadedFile $downloadedFile)
     {
         $this->authorize('view', $downloadedFile);
+
         return new DownloadedFileResource($downloadedFile);
     }
 }

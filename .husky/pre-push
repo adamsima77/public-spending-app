@@ -1,0 +1,8 @@
+#!/bin/sh
+
+npm run api:export
+
+if [ -n "$(git status --porcelain -- backend/openapi.json)" ]; then
+  echo "API kontrakt (openapi.json) je neaktuálny oproti backendu. Spusti 'npm run api:export' a skontroluj zmeny."
+  exit 1
+fi

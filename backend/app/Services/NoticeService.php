@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
-use Illuminate\Pagination\LengthAwarePaginator;
+
 use App\Models\Notice;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-class NoticeService {
-
+class NoticeService
+{
     public function getNotices(): LengthAwarePaginator
     {
         return Notice::with(['procedure'])->paginate(15);

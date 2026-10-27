@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -13,10 +15,10 @@ class EformsCodelistSeeder extends Seeder
             file_get_contents(database_path('data/eforms_codelists.json')),
             true,
             512,
-            JSON_THROW_ON_ERROR
+            JSON_THROW_ON_ERROR,
         );
 
-        DB::transaction(function () use ($data) {
+        DB::transaction(function () use ($data): void {
             foreach ($data['lists'] as $table => $list) {
                 if (empty($list['rows'])) {
                     continue;

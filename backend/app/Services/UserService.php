@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
+
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
-class UserService {
-
+class UserService
+{
     public function getAllUsers(): LengthAwarePaginator
     {
         return User::with(['role'])->paginate(15);
-    }    
+    }
 
     public function updateUser(User $user, array $validateEntryData): void
     {
@@ -27,9 +30,9 @@ class UserService {
         $user->forceFill([
             'name' => 'Anonymized',
             'surname' => 'User',
-            'email' => 'anonymized' . $user->id . '@anonymized.anon',
+            'email' => 'anonymized'.$user->id.'@anonymized.anon',
             'email_verified_at' => null,
-            'password' => bcrypt(Str::random(40)), 
+            'password' => bcrypt(Str::random(40)),
         ])->save();
     }
 }

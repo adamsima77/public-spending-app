@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,7 +36,6 @@ class Procedure extends Model
         'total_value' => 'decimal:2',
         'extra_fields' => 'array',
     ];
-
 
     public function buyer(): BelongsTo
     {

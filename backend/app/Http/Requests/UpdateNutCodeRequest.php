@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -15,7 +17,7 @@ class UpdateNutCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'between:2,5', Rule::unique('nut_codes', 'code')->ignore($this->route('nut_code')),],
+            'code' => ['required', 'string', 'between:2,5', Rule::unique('nut_codes', 'code')->ignore($this->route('nut_code'))],
             'name_sk' => ['required', 'string', 'max:255'],
             'level' => ['required', 'integer', 'between:0,3'],
             'parent_code' => ['nullable', 'string', 'exists:nut_codes,code'],

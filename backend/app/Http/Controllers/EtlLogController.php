@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use App\Services\EtlLogService;
-use App\Models\EtlLog;
 use App\Http\Resources\EtlLogResource;
+use App\Models\EtlLog;
+use App\Services\EtlLogService;
 
 class EtlLogController extends Controller
 {
@@ -17,9 +17,9 @@ class EtlLogController extends Controller
     {
         $this->authorize('viewAny', EtlLog::class);
         $logs = $etlLogService->getAllLogs();
+
         return EtlLogResource::collection($logs);
     }
-
 
     /**
      * Display the specified resource.
@@ -27,6 +27,7 @@ class EtlLogController extends Controller
     public function show(EtlLog $etlLog)
     {
         $this->authorize('view', $etlLog);
+
         return new EtlLogResource($etlLog);
     }
 }

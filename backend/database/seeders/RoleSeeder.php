@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Role;
+use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
@@ -15,12 +16,11 @@ class RoleSeeder extends Seeder
     {
         $roles = ['Admin' => 'admin', 'Užívateľ' => 'user'];
 
-        foreach($roles as $role => $slug)
-        {
+        foreach ($roles as $role => $slug) {
             Role::create([
                 'name' => $role,
-                'slug' => $slug
-            ]);    
-        }    
+                'slug' => $slug,
+            ]);
+        }
     }
 }

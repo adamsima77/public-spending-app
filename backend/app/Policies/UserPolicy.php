@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
 use App\Models\User;
@@ -23,6 +25,6 @@ class UserPolicy
 
     public function anonymize(User $requestToDeleteUser, User $targetUser): bool
     {
-        return $requestToDeleteUser->isAdmin() || $requestToDeleteUser->id == $targetUser->id;
+        return $requestToDeleteUser->isAdmin() || $requestToDeleteUser->id === $targetUser->id;
     }
 }

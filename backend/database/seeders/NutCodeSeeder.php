@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\NutCode;
+use Illuminate\Database\Seeder;
 
 class NutCodeSeeder extends Seeder
 {
@@ -30,11 +31,11 @@ class NutCodeSeeder extends Seeder
             ['code' => 'SK042', 'name_sk' => 'Košický kraj',           'level' => 3, 'parent_code' => 'SK04'],
             ['code' => 'SKZ',   'name_sk' => 'Extra-Regio', 'level' => 1, 'parent_code' => 'SK'],
             ['code' => 'SKZZ',  'name_sk' => 'Extra-Regio', 'level' => 2, 'parent_code' => 'SKZ'],
-            ['code' => 'SKZZZ', 'name_sk' => 'Extra-Regio', 'level' => 3, 'parent_code' => 'SKZZ']
+            ['code' => 'SKZZZ', 'name_sk' => 'Extra-Regio', 'level' => 3, 'parent_code' => 'SKZZ'],
         ];
 
-       foreach ($codes as $code) {
-           NutCode::create($code);
-       }
+        foreach ($codes as $code) {
+            NutCode::create($code);
+        }
     }
 }

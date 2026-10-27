@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use App\Services\ProcedureService;
 use App\Http\Resources\ProcedureResource;
 use App\Models\Procedure;
+use App\Services\ProcedureService;
 
 class ProcedureController extends Controller
 {
@@ -16,9 +16,9 @@ class ProcedureController extends Controller
     public function index(ProcedureService $procedureService)
     {
         $procedures = $procedureService->getAllProcedures();
+
         return ProcedureResource::collection($procedures);
     }
-
 
     /**
      * Display the specified resource.

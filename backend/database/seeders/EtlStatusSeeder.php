@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\EtlStatus;
+use Illuminate\Database\Seeder;
 
 class EtlStatusSeeder extends Seeder
 {
@@ -14,7 +15,7 @@ class EtlStatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = ['pending', 'downloading', 'downloaded', 'failed', 'parsed'];
-        
+
         foreach ($statuses as $name) {
             EtlStatus::updateOrInsert(['name' => $name]);
         }

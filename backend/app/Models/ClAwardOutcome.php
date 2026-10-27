@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,13 +12,15 @@ class ClAwardOutcome extends Model
 {
     use HasFactory;
 
+    public $incrementing = false;
+
+    public $timestamps = false;
+
     protected $table = 'cl_award_outcomes';
 
     protected $primaryKey = 'code';
-    public $incrementing = false;
-    protected $keyType = 'string';
 
-    public $timestamps = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'code',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,10 +18,9 @@ class DownloadedFile extends Model
         'status_id',
         'downloaded_at',
         'parsed_at',
-        'format'
+        'format',
     ];
 
-    
     protected $casts = [
         'downloaded_at' => 'datetime',
         'parsed_at' => 'datetime',

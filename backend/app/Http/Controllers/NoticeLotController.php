@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use App\Http\Resources\NoticeLotResource;
 use App\Models\NoticeLot;
 use App\Services\NoticeLotService;
@@ -16,6 +16,7 @@ class NoticeLotController extends Controller
     public function index(NoticeLotService $noticeLotService)
     {
         $lots = $noticeLotService->getLots();
+
         return NoticeLotResource::collection($lots);
     }
 

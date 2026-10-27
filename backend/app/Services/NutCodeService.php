@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
-use Illuminate\Pagination\LengthAwarePaginator;
+
 use App\Models\NutCode;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-class NutCodeService {
-
+class NutCodeService
+{
     public function getNutCodes(): LengthAwarePaginator
     {
         return NutCode::paginate(15);
@@ -17,7 +20,7 @@ class NutCodeService {
             'code' => $validateEntryData['code'],
             'name_sk', $validateEntryData['name_sk'],
             'level' => $validateEntryData['level'],
-            'parent_code' => $validateEntryData['parent_code']
+            'parent_code' => $validateEntryData['parent_code'],
         ]);
     }
 
@@ -27,7 +30,7 @@ class NutCodeService {
             'code' => $validateEntryData['code'],
             'name_sk', $validateEntryData['name_sk'],
             'level' => $validateEntryData['level'],
-            'parent_code' => $validateEntryData['parent_code']
+            'parent_code' => $validateEntryData['parent_code'],
         ]);
     }
 
