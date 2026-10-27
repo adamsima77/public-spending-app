@@ -1,8 +1,16 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncIterator, Dict, List, Optional, AsyncGenerator
+from typing import Any
+
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+
 from config import settings
+
 
 class Database:
     def __init__(self, db_url: str | None = None) -> None:
@@ -30,7 +38,7 @@ class Database:
                 await session.rollback()
                 raise
 
-    async def execute(self, query: str, params: Optional[dict] = None) -> None:
+    async def execute(self, query: str, params: dict | None = None) -> None:
         async with self._session_factory() as session:
             try:
                 await session.execute(text(query), params or {})
@@ -39,7 +47,7 @@ class Database:
                 await session.rollback()
                 raise
 
-    async def execute_many(self, query: str, params_list: List[dict]) -> None:
+    async def execute_many(self, query: str, params_list: list[dict]) -> None:
         if not params_list:
             return
         async with self._session_factory() as session:
@@ -50,12 +58,16 @@ class Database:
                 await session.rollback()
                 raise
 
-    async def fetch_all(self, query: str, params: Optional[dict] = None) -> List[Dict[str, Any]]:
+    async def fetch_all(
+        self, query: str, params: dict | None = None
+    ) -> list[dict[str, Any]]:
         async with self._session_factory() as session:
             result = await session.execute(text(query), params or {})
             return [dict(row._mapping) for row in result]
 
-    async def fetch_one(self, query: str, params: Optional[dict] = None) -> Optional[Dict[str, Any]]:
+    async def fetch_one(
+        self, query: str, params: dict | None = None
+    ) -> dict[str, Any] | None:
         async with self._session_factory() as session:
             result = await session.execute(text(query), params or {})
             row = result.first()

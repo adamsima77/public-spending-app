@@ -44,6 +44,19 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use th
 ng test
 ```
 
+## Code quality and editor diagnostics
+
+The workspace ESLint extension reports TypeScript and Angular template lint
+errors as you type. TypeScript and Angular compiler diagnostics are also enabled
+in strict mode. To run the same lint rules from the command line:
+
+```bash
+npm run lint
+```
+
+Install the recommended VS Code extensions from the repository's
+`.vscode/extensions.json` if diagnostics are not appearing in the editor.
+
 ## Running end-to-end tests
 
 For end-to-end (e2e) testing, run:

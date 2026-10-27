@@ -1,12 +1,20 @@
 import datetime
 import hashlib
 import json
-from typing import Any, Dict, Optional
+from typing import Any
+
 import redis.asyncio as redis
+
 from core.database import Database
 
+
 class Logger:
-    def __init__(self, db: Database, redis_client: Optional[redis.Redis] = None, dedup_window_seconds: int = 180) -> None:
+    def __init__(
+        self,
+        db: Database,
+        redis_client: redis.Redis | None = None,
+        dedup_window_seconds: int = 180,
+    ) -> None:
         self._db = db
         self._redis = redis_client
         self._dedup_window = dedup_window_seconds
@@ -15,17 +23,27 @@ class Logger:
         if not self._redis or level not in ("warning", "error"):
             return True
 
-        message_hash = hashlib.sha256(f"{level}:{message}".encode()).hexdigest()
+        message_hash = hashlib.sha256(
+            f"{level}:{message}".encode()
+        ).hexdigest()
         key = f"etl:log_dedup:{message_hash}"
 
         try:
-            was_set = await self._redis.set(key, "1", nx=True, ex=self._dedup_window)
+            was_set = await self._redis.set(
+                key, "1", nx=True, ex=self._dedup_window
+            )
             return was_set is True
         except Exception as e:
             print(f"Redis dedup check failed: {e}")
             return True
 
-    async def log(self, level: str, message: str, context: Optional[Dict[str, Any]] = None, file_id: Optional[int] = None) -> None:
+    async def log(
+        self,
+        level: str,
+        message: str,
+        context: dict[str, Any] | None = None,
+        file_id: int | None = None,
+    ) -> None:
         if not await self._should_log(level, message):
             return
 

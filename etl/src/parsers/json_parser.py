@@ -1,16 +1,19 @@
 import json
 import re
+from collections.abc import Iterable
+from typing import Any
+
 import aiofiles
 import ijson
-from typing import Any, Iterable, List, Optional, Dict
+
+import config
 from core.logger import Logger
-from models.notice import NoticeDto
 from models.lot import LotDto
 from models.lot_result import LotResultDto, SubmissionStatDto
 from models.lot_tender import LotTenderDto, TenderingPartyDto
-from models.settled_contract import SettledContractDto
+from models.notice import NoticeDto
 from models.organization import OrganizationDto
-import config
+from models.settled_contract import SettledContractDto
 
 ORG_REF_PATTERN = re.compile(r"ORG-\d+")
 TPA_REF_PATTERN = re.compile(r"TPA-\d+")
@@ -22,14 +25,14 @@ ORDER_ID_PATTERN = re.compile(r"\(ID:\s*(\d+)\)\s*$")
 class JsonParser:
     def __init__(
         self,
-        notice_fields: Dict[str, str],
-        organization_fields: Dict[str, str],
-        procedure_fields: Dict[str, str],
-        lot_fields: Dict[str, str],
-        lot_result_fields: Dict[str, str],
-        submission_stat_fields: Dict[str, str],
-        lot_tender_fields: Dict[str, str],
-        settled_contract_fields: Dict[str, str],
+        notice_fields: dict[str, str],
+        organization_fields: dict[str, str],
+        procedure_fields: dict[str, str],
+        lot_fields: dict[str, str],
+        lot_result_fields: dict[str, str],
+        submission_stat_fields: dict[str, str],
+        lot_tender_fields: dict[str, str],
+        settled_contract_fields: dict[str, str],
         anchor_organization: str,
         anchor_lot: str,
         anchor_lot_result: str,
@@ -38,8 +41,8 @@ class JsonParser:
         anchor_tendering_party: str,
         anchor_settled_contract: str,
         tenderer_org_ref_key: str,
-        logger: Optional[Logger] = None,
-        list_fields: Optional[Iterable[str]] = None,
+        logger: Logger | None = None,
+        list_fields: Iterable[str] | None = None,
     ):
         self.notice_fields = notice_fields
         self.organization_fields = organization_fields
@@ -58,11 +61,17 @@ class JsonParser:
         self.anchor_tendering_party = anchor_tendering_party
         self.anchor_settled_contract = anchor_settled_contract
         self.tenderer_org_ref_key = tenderer_org_ref_key
-        self.list_fields = set(list_fields) if list_fields is not None else set(getattr(config, "LIST_FIELDS", ()))
+        self.list_fields = (
+            set(list_fields)
+            if list_fields is not None
+            else set(getattr(config, "LIST_FIELDS", ()))
+        )
 
         self._logger = logger
 
-    def _extract_ref(self, node: Dict[str, Any], pattern: re.Pattern) -> Optional[str]:
+    def _extract_ref(
+        self, node: dict[str, Any], pattern: re.Pattern
+    ) -> str | None:
         sk_lang = node.get("lang", {}).get("sk", {})
         if isinstance(sk_lang, dict):
             for value in sk_lang.values():
@@ -72,7 +81,9 @@ class JsonParser:
                         return match.group(0)
         return None
 
-    async def _resolve_org_refs(self, notice_dto: NoticeDto, file_id: Optional[str] = None) -> None:
+    async def _resolve_org_refs(
+        self, notice_dto: NoticeDto, file_id: str | None = None
+    ) -> None:
         orgs = notice_dto.organizations
         org_by_index = {org.org_ref: org for org in orgs if org.org_ref}
         procedure = notice_dto.procedure
@@ -83,7 +94,10 @@ class JsonParser:
                 await self._logger.log(
                     "warning",
                     f"Nepodarilo sa rozlúštiť buyer_ref '{procedure.buyer_ref}'",
-                    context={"notice_id": notice_dto.notice_id, "organizations_count": len(orgs)},
+                    context={
+                        "notice_id": notice_dto.notice_id,
+                        "organizations_count": len(orgs),
+                    },
                     file_id=file_id,
                 )
 
@@ -93,7 +107,10 @@ class JsonParser:
                 await self._logger.log(
                     "warning",
                     f"Nepodarilo sa zistiť provider_ref '{procedure.provider_ref}'",
-                    context={"notice_id": notice_dto.notice_id, "organizations_count": len(orgs)},
+                    context={
+                        "notice_id": notice_dto.notice_id,
+                        "organizations_count": len(orgs),
+                    },
                     file_id=file_id,
                 )
 
@@ -118,7 +135,9 @@ class JsonParser:
                 parts = [p for p in [org.street_name, org.street_number] if p]
                 org.address = " ".join(parts)
 
-        if notice_dto.lots and not any(lot.lot_reference for lot in notice_dto.lots):
+        if notice_dto.lots and not any(
+            lot.lot_reference for lot in notice_dto.lots
+        ):
             for position, lot in enumerate(notice_dto.lots, start=1):
                 lot.lot_reference = f"LOT-{position:04d}"
                 lot.extra_fields["lot_reference_inferred"] = True
@@ -131,7 +150,11 @@ class JsonParser:
                 if "T" in date_str:
                     lot.submission_deadline = date_str
                 elif time_val:
-                    time_str = str(time_val).split("T")[-1] if "T" in str(time_val) else str(time_val)
+                    time_str = (
+                        str(time_val).split("T")[-1]
+                        if "T" in str(time_val)
+                        else str(time_val)
+                    )
                     lot.submission_deadline = f"{date_str}T{time_str}"
                 else:
                     lot.submission_deadline = date_str
@@ -144,15 +167,23 @@ class JsonParser:
         if not notice_dto.published_at:
             notice_dto.published_at = notice_dto.issue_date
 
-    async def parse_file(self, file_path: str, db_file_id: Optional[int] = None):
+    async def parse_file(self, file_path: str, db_file_id: int | None = None):
         notices_parsed = 0
         notices_skipped = 0
 
         async with aiofiles.open(file_path, mode="rb") as f:
             async for item in ijson.items_async(f, "bulletinItemList.item"):
-                submission_id = item.get("submissionId") if isinstance(item, dict) else None
+                submission_id = (
+                    item.get("submissionId")
+                    if isinstance(item, dict)
+                    else None
+                )
                 try:
-                    item_data = item.get("itemData") if isinstance(item, dict) else None
+                    item_data = (
+                        item.get("itemData")
+                        if isinstance(item, dict)
+                        else None
+                    )
                     if not item_data:
                         continue
                     inner = json.loads(item_data)
@@ -169,8 +200,8 @@ class JsonParser:
 
                 notice_dto = NoticeDto()
 
-                orphan_lot_fields: Dict[str, Any] = {}
-                ctx: Dict[str, Any] = {
+                orphan_lot_fields: dict[str, Any] = {}
+                ctx: dict[str, Any] = {
                     "org": None,
                     "lot": None,
                     "lot_result": None,
@@ -180,7 +211,9 @@ class JsonParser:
                     "settled_contract": None,
                 }
                 for component in inner.get("components", []):
-                    self._process_node(component, notice_dto, ctx, orphan_lot_fields)
+                    self._process_node(
+                        component, notice_dto, ctx, orphan_lot_fields
+                    )
 
                 if not notice_dto.notice_id or not notice_dto.notice_version:
                     notices_skipped += 1
@@ -190,7 +223,9 @@ class JsonParser:
                             "Notice bez rozpoznateľnej BT štruktúry, preskakujem",
                             context={
                                 "submission_id": submission_id,
-                                "unrecognized_keys": list(notice_dto.extra_fields.keys())[:10],
+                                "unrecognized_keys": list(
+                                    notice_dto.extra_fields.keys()
+                                )[:10],
                             },
                             file_id=db_file_id,
                         )
@@ -204,12 +239,17 @@ class JsonParser:
                             "notice_id": notice_dto.notice_id,
                             "submission_id": submission_id,
                             "form_type": notice_dto.form_type,
-                            "orphan_lot_keys": list(orphan_lot_fields.keys())[:10],
+                            "orphan_lot_keys": list(orphan_lot_fields.keys())[
+                                :10
+                            ],
                         },
                         file_id=db_file_id,
                     )
 
-                if notice_dto.form_type == "competition" and not notice_dto.lots:
+                if (
+                    notice_dto.form_type == "competition"
+                    and not notice_dto.lots
+                ):
                     if self._logger:
                         await self._logger.log(
                             "warning",
@@ -218,7 +258,9 @@ class JsonParser:
                                 "notice_id": notice_dto.notice_id,
                                 "submission_id": submission_id,
                                 "procedure_reference": notice_dto.procedure.reference,
-                                "had_orphan_lot_fields": bool(orphan_lot_fields),
+                                "had_orphan_lot_fields": bool(
+                                    orphan_lot_fields
+                                ),
                             },
                             file_id=db_file_id,
                         )
@@ -239,8 +281,8 @@ class JsonParser:
         self,
         node: Any,
         notice_dto: NoticeDto,
-        ctx: Dict[str, Any],
-        orphan_lot_fields: Optional[Dict[str, Any]] = None,
+        ctx: dict[str, Any],
+        orphan_lot_fields: dict[str, Any] | None = None,
     ) -> None:
         if isinstance(node, list):
             for child in node:
@@ -270,7 +312,11 @@ class JsonParser:
         elif key == self.anchor_lot_result:
             lot_result = LotResultDto()
             notice_dto.lot_results.append(lot_result)
-            child_ctx = {**ctx, "lot_result": lot_result, "submission_stat": None}
+            child_ctx = {
+                **ctx,
+                "lot_result": lot_result,
+                "submission_stat": None,
+            }
 
         elif key == self.anchor_submission_stat:
             stat = SubmissionStatDto()
@@ -297,18 +343,24 @@ class JsonParser:
             child_ctx = {**ctx, "settled_contract": contract}
 
         if value is not None and not components:
-            self._apply_leaf(key, value, notice_dto, child_ctx, orphan_lot_fields)
+            self._apply_leaf(
+                key, value, notice_dto, child_ctx, orphan_lot_fields
+            )
 
         if components:
-            self._process_node(components, notice_dto, child_ctx, orphan_lot_fields)
+            self._process_node(
+                components, notice_dto, child_ctx, orphan_lot_fields
+            )
 
-    def _as_str_list(self, value: Any) -> List[str]:
+    def _as_str_list(self, value: Any) -> list[str]:
         items = value if isinstance(value, list) else [value]
-        return [str(v).strip() for v in items if v is not None and str(v).strip()]
+        return [
+            str(v).strip() for v in items if v is not None and str(v).strip()
+        ]
 
     def _set_field(self, dto: Any, attr: str, value: Any) -> None:
         if attr in self.list_fields:
-            current: List[str] = getattr(dto, attr)
+            current: list[str] = getattr(dto, attr)
             merged = list(current)
             for item in self._as_str_list(value):
                 if item not in merged:
@@ -339,8 +391,8 @@ class JsonParser:
         key: str,
         value: Any,
         notice_dto: NoticeDto,
-        ctx: Dict[str, Any],
-        orphan_lot_fields: Optional[Dict[str, Any]] = None,
+        ctx: dict[str, Any],
+        orphan_lot_fields: dict[str, Any] | None = None,
     ) -> None:
         value = self._clean_value(value)
         if value is None:
@@ -361,31 +413,52 @@ class JsonParser:
             notice_dto.procedure.provider_ref = value
             return
 
-        if key == self.tenderer_org_ref_key and current_tendering_party is not None:
+        if (
+            key == self.tenderer_org_ref_key
+            and current_tendering_party is not None
+        ):
             ref = self._first_if_list(value)
             if ref:
                 current_tendering_party.tenderer_org_refs.append(str(ref))
             return
 
-        if current_submission_stat is not None and key in self.submission_stat_fields:
-            setattr(current_submission_stat, self.submission_stat_fields[key], value)
+        if (
+            current_submission_stat is not None
+            and key in self.submission_stat_fields
+        ):
+            setattr(
+                current_submission_stat,
+                self.submission_stat_fields[key],
+                value,
+            )
             return
         if current_lot_result is not None and key in self.lot_result_fields:
-            self._set_field(current_lot_result, self.lot_result_fields[key], value)
+            self._set_field(
+                current_lot_result, self.lot_result_fields[key], value
+            )
             return
         if current_lot_result is not None and key.endswith("-LotResult"):
             current_lot_result.extra_fields[key] = value
             return
 
         if current_lot_tender is not None and key in self.lot_tender_fields:
-            self._set_field(current_lot_tender, self.lot_tender_fields[key], value)
+            self._set_field(
+                current_lot_tender, self.lot_tender_fields[key], value
+            )
             return
         if current_lot_tender is not None and key.endswith("-Tender"):
             current_lot_tender.extra_fields[key] = value
             return
 
-        if current_settled_contract is not None and key in self.settled_contract_fields:
-            self._set_field(current_settled_contract, self.settled_contract_fields[key], value)
+        if (
+            current_settled_contract is not None
+            and key in self.settled_contract_fields
+        ):
+            self._set_field(
+                current_settled_contract,
+                self.settled_contract_fields[key],
+                value,
+            )
             return
         if current_settled_contract is not None and key.endswith("-Contract"):
             current_settled_contract.extra_fields[key] = value

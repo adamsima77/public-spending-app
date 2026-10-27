@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -76,7 +77,7 @@ PROCEDURE_FIELDS = {
     "BT-21-Procedure": "title",
     "BT-24-Procedure": "description",
     "BT-262-Procedure": "main_cpv",
-    "BT-27-Procedure_value": "estimated_value",      
+    "BT-27-Procedure_value": "estimated_value",
     "BT-27-Procedure_currency": "currency",
     "BT-5071-Procedure": "nuts_code",
     "BT-5131-Procedure": "place_of_performance",
@@ -90,7 +91,7 @@ LOT_FIELDS = {
     "DL-Title-Lot": "title",
     "BT-21-Lot": "title",
     "BT-24-Lot": "description",
-    "BT-27-Lot_value": "estimated_value",          
+    "BT-27-Lot_value": "estimated_value",
     "BT-27-Lot_currency": "estimated_currency",
     "BT-262-Lot": "main_cpv",
     "BT-5071-Lot": "nuts_code",
@@ -100,15 +101,15 @@ LOT_FIELDS = {
     "BT-18-Lot": "detail_url",
     "BT-36-Lot_value": "duration_value",
     "BT-36-Lot_measure": "duration_unit",
-    "BT-271-Lot_value": "framework_max_value",      
+    "BT-271-Lot_value": "framework_max_value",
     "BT-271-Lot_currency": "framework_max_currency",
     "BT-60-Lot": "eu_funded",
-    "BT-92-Lot": "eordering_allowed",               
-    "BT-93-Lot": "epayment_allowed",               
-    "BT-743-Lot": "einvoicing",                     
-    "BT-63-Lot": "variants_allowed",               
-    "BT-736-Lot": "reserved_execution",             
-    "BT-71-Lot": "reserved_participation",     
+    "BT-92-Lot": "eordering_allowed",
+    "BT-93-Lot": "epayment_allowed",
+    "BT-743-Lot": "einvoicing",
+    "BT-63-Lot": "variants_allowed",
+    "BT-736-Lot": "reserved_execution",
+    "BT-71-Lot": "reserved_participation",
 }
 
 LOT_RESULT_FIELDS = {
@@ -130,8 +131,8 @@ SUBMISSION_STAT_FIELDS = {
 
 LOT_TENDER_FIELDS = {
     "BT-13714-Tender": "lot_reference",
-    "OPT-321-Tender": "tender_ref",                
-    "BT-720-Tender_value": "tender_value",          
+    "OPT-321-Tender": "tender_ref",
+    "BT-720-Tender_value": "tender_value",
     "BT-720-Tender_currency": "tender_currency",
     "OPT-310-Tender": "tendering_party_ref",
     "BT-171-Tender": "rank",
@@ -141,10 +142,10 @@ LOT_TENDER_FIELDS = {
 SETTLED_CONTRACT_FIELDS = {
     "BT-150-Contract": "contract_number",
     "BT-145-Contract": "conclusion_date",
-    "OPT-316-Contract": "contract_ref",            
-    "BT-721-Contract": "title",                     
+    "OPT-316-Contract": "contract_ref",
+    "BT-721-Contract": "title",
     "BT-151-Contract": "contract_url",
-    "BT-3202-Contract": "tender_refs",              
+    "BT-3202-Contract": "tender_refs",
 }
 
 LIST_FIELDS = {"tender_refs", "contract_refs"}

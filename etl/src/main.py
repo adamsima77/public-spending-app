@@ -1,14 +1,15 @@
 import asyncio
 from pathlib import Path
-from typing import Dict, List
+
 import redis.asyncio as redis
+
+import config
 from core.database import db
 from core.logger import Logger
 from core.notification import Notification
 from downloaders.download_data import Download
-from parsers.json_parser import JsonParser
 from loaders.notice_loader import NoticeLoader
-import config
+from parsers.json_parser import JsonParser
 
 
 async def main():
@@ -40,22 +41,30 @@ async def main():
 
         parsed_ok = 0
         parsed_failed = 0
-        failed_files: List[str] = []
+        failed_files: list[str] = []
 
         try:
             await downloader.download_data()
             files = get_files_to_process(config.DOWNLOAD_DIR)
-            await logger.log("info", f"Nájdených {len(files)} súborov na spracovanie.")
+            await logger.log(
+                "info", f"Nájdených {len(files)} súborov na spracovanie."
+            )
             print(f"Nájdených {len(files)} súborov na spracovanie.")
 
             json_files = [f for f in files if f.suffix == ".json"]
-            file_id_map = await _load_file_id_map(db, [f.stem for f in json_files])
+            file_id_map = await _load_file_id_map(
+                db, [f.stem for f in json_files]
+            )
 
             for file_path in json_files:
                 db_file_id = file_id_map.get(file_path.stem)
                 try:
-                    async for notice_dto in json_parser.parse_file(str(file_path), db_file_id=db_file_id):
-                        await notice_loader.upsert_notice(notice_dto, db_file_id=db_file_id)
+                    async for notice_dto in json_parser.parse_file(
+                        str(file_path), db_file_id=db_file_id
+                    ):
+                        await notice_loader.upsert_notice(
+                            notice_dto, db_file_id=db_file_id
+                        )
                     if db_file_id is not None:
                         await _mark_file_parsed(db, db_file_id)
                     file_path.unlink()
@@ -85,7 +94,10 @@ async def main():
             await notifier.send_discord_alert(
                 "ETL beh dokončený s chybami",
                 context={
-                    "stiahnuté": f"{downloader.number_of_downloaded_links}/{downloader.number_of_all_links}",
+                    "stiahnuté": (
+                        f"{downloader.number_of_downloaded_links}/"
+                        f"{downloader.number_of_all_links}"
+                    ),
                     "spracované úspešne": parsed_ok,
                     "zlyhané súbory": parsed_failed,
                     "zoznam zlyhaných": ", ".join(failed_files[:10]) or "-",
@@ -94,11 +106,12 @@ async def main():
         else:
             await logger.log(
                 "info",
-                f"ETL beh dokončený bez chýb: {parsed_ok} súborov spracovaných.",
+                f"ETL beh dokončený bez chýb: {parsed_ok} súborov "
+                "spracovaných.",
             )
 
 
-async def _load_file_id_map(database, stems: List[str]) -> Dict[str, int]:
+async def _load_file_id_map(database, stems: list[str]) -> dict[str, int]:
     if not stems:
         return {}
     rows = await database.fetch_all(
@@ -108,11 +121,15 @@ async def _load_file_id_map(database, stems: List[str]) -> Dict[str, int]:
     return {row["file_id"]: row["id"] for row in rows}
 
 
-def get_files_to_process(download_dir: Path) -> List[Path]:
+def get_files_to_process(download_dir: Path) -> list[Path]:
     if not download_dir.exists():
         return []
 
-    return sorted(file_path for file_path in download_dir.glob("*") if file_path.is_file())
+    return sorted(
+        file_path
+        for file_path in download_dir.glob("*")
+        if file_path.is_file()
+    )
 
 
 async def _mark_file_parsed(database, db_file_id: int) -> None:
