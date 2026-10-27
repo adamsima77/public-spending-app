@@ -3,6 +3,6 @@
 npm run api:export
 
 if [ -n "$(git status --porcelain -- backend/openapi.json)" ]; then
-  echo "❌ API kontrakt (openapi.json) je neaktuálny. Commitni zmeny a pushni znova."
+  echo "API kontrakt (openapi.json) je neaktuálny. Spusť 'npm run api:export' a commitni zmeny."
   exit 1
 fi
