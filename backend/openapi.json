@@ -2798,10 +2798,7 @@
                 "type": "object",
                 "properties": {
                     "code": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
+                        "type": "string",
                         "minLength": 2,
                         "maxLength": 5
                     },
@@ -2822,6 +2819,7 @@
                     }
                 },
                 "required": [
+                    "code",
                     "name_sk",
                     "level"
                 ],
