@@ -5,7 +5,7 @@
   "editor.rulers": [100],
 
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "always"
   },
 
   // Frontend: Prettier
@@ -47,5 +47,9 @@
   "laravel-pint.enable": true,
   "laravel-pint.configPath": "backend/pint.json",
   "laravel-pint.pintPath": "backend/vendor/bin/pint",
-  "intelephense.diagnostics.enable": true
+  "intelephense.diagnostics.enable": true,
+
+  // Backend: Larastan / PHPStan diagnostics in the editor
+  "phpstan.path": "backend/vendor/bin/phpstan",
+  "phpstan.configPath": "backend/phpstan.neon"
 }

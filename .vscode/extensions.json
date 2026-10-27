@@ -3,6 +3,7 @@
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "open-southeners.laravel-pint",
+    "swordev.phpstan",
     "angular.ng-template",
     "ms-python.python",
     "ms-python.vscode-pylance",

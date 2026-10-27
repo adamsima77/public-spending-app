@@ -69,9 +69,7 @@ class JsonParser:
 
         self._logger = logger
 
-    def _extract_ref(
-        self, node: dict[str, Any], pattern: re.Pattern
-    ) -> str | None:
+    def _extract_ref(self, node: dict[str, Any], pattern: re.Pattern) -> str | None:
         sk_lang = node.get("lang", {}).get("sk", {})
         if isinstance(sk_lang, dict):
             for value in sk_lang.values():
@@ -135,9 +133,7 @@ class JsonParser:
                 parts = [p for p in [org.street_name, org.street_number] if p]
                 org.address = " ".join(parts)
 
-        if notice_dto.lots and not any(
-            lot.lot_reference for lot in notice_dto.lots
-        ):
+        if notice_dto.lots and not any(lot.lot_reference for lot in notice_dto.lots):
             for position, lot in enumerate(notice_dto.lots, start=1):
                 lot.lot_reference = f"LOT-{position:04d}"
                 lot.extra_fields["lot_reference_inferred"] = True
@@ -174,16 +170,10 @@ class JsonParser:
         async with aiofiles.open(file_path, mode="rb") as f:
             async for item in ijson.items_async(f, "bulletinItemList.item"):
                 submission_id = (
-                    item.get("submissionId")
-                    if isinstance(item, dict)
-                    else None
+                    item.get("submissionId") if isinstance(item, dict) else None
                 )
                 try:
-                    item_data = (
-                        item.get("itemData")
-                        if isinstance(item, dict)
-                        else None
-                    )
+                    item_data = item.get("itemData") if isinstance(item, dict) else None
                     if not item_data:
                         continue
                     inner = json.loads(item_data)
@@ -211,9 +201,7 @@ class JsonParser:
                     "settled_contract": None,
                 }
                 for component in inner.get("components", []):
-                    self._process_node(
-                        component, notice_dto, ctx, orphan_lot_fields
-                    )
+                    self._process_node(component, notice_dto, ctx, orphan_lot_fields)
 
                 if not notice_dto.notice_id or not notice_dto.notice_version:
                     notices_skipped += 1
@@ -239,17 +227,12 @@ class JsonParser:
                             "notice_id": notice_dto.notice_id,
                             "submission_id": submission_id,
                             "form_type": notice_dto.form_type,
-                            "orphan_lot_keys": list(orphan_lot_fields.keys())[
-                                :10
-                            ],
+                            "orphan_lot_keys": list(orphan_lot_fields.keys())[:10],
                         },
                         file_id=db_file_id,
                     )
 
-                if (
-                    notice_dto.form_type == "competition"
-                    and not notice_dto.lots
-                ):
+                if notice_dto.form_type == "competition" and not notice_dto.lots:
                     if self._logger:
                         await self._logger.log(
                             "warning",
@@ -258,9 +241,7 @@ class JsonParser:
                                 "notice_id": notice_dto.notice_id,
                                 "submission_id": submission_id,
                                 "procedure_reference": notice_dto.procedure.reference,
-                                "had_orphan_lot_fields": bool(
-                                    orphan_lot_fields
-                                ),
+                                "had_orphan_lot_fields": bool(orphan_lot_fields),
                             },
                             file_id=db_file_id,
                         )
@@ -343,20 +324,14 @@ class JsonParser:
             child_ctx = {**ctx, "settled_contract": contract}
 
         if value is not None and not components:
-            self._apply_leaf(
-                key, value, notice_dto, child_ctx, orphan_lot_fields
-            )
+            self._apply_leaf(key, value, notice_dto, child_ctx, orphan_lot_fields)
 
         if components:
-            self._process_node(
-                components, notice_dto, child_ctx, orphan_lot_fields
-            )
+            self._process_node(components, notice_dto, child_ctx, orphan_lot_fields)
 
     def _as_str_list(self, value: Any) -> list[str]:
         items = value if isinstance(value, list) else [value]
-        return [
-            str(v).strip() for v in items if v is not None and str(v).strip()
-        ]
+        return [str(v).strip() for v in items if v is not None and str(v).strip()]
 
     def _set_field(self, dto: Any, attr: str, value: Any) -> None:
         if attr in self.list_fields:
@@ -413,19 +388,13 @@ class JsonParser:
             notice_dto.procedure.provider_ref = value
             return
 
-        if (
-            key == self.tenderer_org_ref_key
-            and current_tendering_party is not None
-        ):
+        if key == self.tenderer_org_ref_key and current_tendering_party is not None:
             ref = self._first_if_list(value)
             if ref:
                 current_tendering_party.tenderer_org_refs.append(str(ref))
             return
 
-        if (
-            current_submission_stat is not None
-            and key in self.submission_stat_fields
-        ):
+        if current_submission_stat is not None and key in self.submission_stat_fields:
             setattr(
                 current_submission_stat,
                 self.submission_stat_fields[key],
@@ -433,27 +402,20 @@ class JsonParser:
             )
             return
         if current_lot_result is not None and key in self.lot_result_fields:
-            self._set_field(
-                current_lot_result, self.lot_result_fields[key], value
-            )
+            self._set_field(current_lot_result, self.lot_result_fields[key], value)
             return
         if current_lot_result is not None and key.endswith("-LotResult"):
             current_lot_result.extra_fields[key] = value
             return
 
         if current_lot_tender is not None and key in self.lot_tender_fields:
-            self._set_field(
-                current_lot_tender, self.lot_tender_fields[key], value
-            )
+            self._set_field(current_lot_tender, self.lot_tender_fields[key], value)
             return
         if current_lot_tender is not None and key.endswith("-Tender"):
             current_lot_tender.extra_fields[key] = value
             return
 
-        if (
-            current_settled_contract is not None
-            and key in self.settled_contract_fields
-        ):
+        if current_settled_contract is not None and key in self.settled_contract_fields:
             self._set_field(
                 current_settled_contract,
                 self.settled_contract_fields[key],

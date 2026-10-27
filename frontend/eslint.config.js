@@ -13,6 +13,17 @@ export default tseslint.config(
       ...tseslint.configs.recommended,
       ...angular.configs.tsRecommended,
     ],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'error',
+      '@typescript-eslint/typedef': [
+        'error',
+        {
+          parameter: true,
+          variableDeclaration: true,
+          propertyDeclaration: true,
+        },
+      ],
+    },
     languageOptions: {
       parserOptions: {
         projectService: true,
