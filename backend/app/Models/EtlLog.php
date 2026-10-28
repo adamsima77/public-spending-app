@@ -25,6 +25,7 @@ class EtlLog extends Model
     /**
      * Vzťah k stiahnutému súboru (DownloadedFile)
      */
+    /** @return BelongsTo<DownloadedFile, $this> */
     public function file(): BelongsTo
     {
         return $this->belongsTo(DownloadedFile::class, 'file_id');

@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LotTender extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'notice_id',
         'lot_reference',
@@ -33,6 +30,7 @@ class LotTender extends Model
         'extra_fields' => 'array',
     ];
 
+    /** @return BelongsTo<NoticeLot, $this> */
     public function lot(): BelongsTo
     {
         return $this->belongsTo(NoticeLot::class, 'lot_id');

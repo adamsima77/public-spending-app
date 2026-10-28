@@ -1,20 +1,29 @@
+from __future__ import annotations
+
 import asyncio
 import datetime
 import hashlib
-import os
+import logging
 import random
 import time
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any
+
 import aiofiles
 import httpx
+from config import DOWNLOAD_DIR, DOWNLOAD_LINKS_QUERY, settings
+from core.database import Database, db
 from SPARQLWrapper import JSON, SPARQLWrapper
 
-from core.database import db, Database
-from core.logger import Logger
-from config import DOWNLOAD_DIR, DOWNLOAD_LINKS_QUERY, settings
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from core.logger import Logger
+
+logger = logging.getLogger(__name__)
 
 PARSEABLE_EXTENSIONS = {".json"}
+DOWNLOAD_BATCH_SIZE = 20
+RANDOM = random.SystemRandom()
 
 
 def _extension_from_format(fmt: str) -> str:
@@ -37,25 +46,29 @@ class Download:
         self.number_of_retries: int = 3
         self._counter_lock = asyncio.Lock()
 
-    async def get_download_links(self) -> List[Dict[str, str]]:
+    async def get_download_links(self) -> list[dict[str, str]]:
+        def _run_query() -> Any:
+            sparql = SPARQLWrapper(settings.SPARQL_ENDPOINT)
+            sparql.setTimeout(30)
+            sparql.setQuery(DOWNLOAD_LINKS_QUERY)
+            sparql.setReturnFormat(JSON)
+            return sparql.query().convert()
+
         try:
-            def _run_query() -> Dict[str, Any]:
-                sparql = SPARQLWrapper(settings.SPARQL_ENDPOINT)
-                sparql.setTimeout(30)
-                sparql.setQuery(DOWNLOAD_LINKS_QUERY)
-                sparql.setReturnFormat(JSON)
-                return sparql.query().convert()
-
             results = await asyncio.to_thread(_run_query)
-            return [
-                {"url": row["downloadURL"]["value"], "format": row["format"]["value"]}
-                for row in results["results"]["bindings"]
-            ]
         except Exception as e:
-            await self._logger.log("error", f"Problem with fetching data from SPARQL endpoint. Error: {e}")
+            await self._logger.log(
+                "error", f"Problem with fetching data from SPARQL endpoint. Error: {e}"
+            )
             return []
+        if not isinstance(results, dict):
+            raise TypeError("SPARQL endpoint returned an unexpected response")
+        return [
+            {"url": row["downloadURL"]["value"], "format": row["format"]["value"]}
+            for row in results["results"]["bindings"]
+        ]
 
-    async def load_skippable_urls(self) -> Set[str]:
+    async def load_skippable_urls(self) -> set[str]:
         try:
             rows = await self._db.fetch_all(
                 """
@@ -67,7 +80,7 @@ class Download:
         except Exception:
             return set()
 
-        skip: Set[str] = set()
+        skip: set[str] = set()
         for row in rows:
             on_disk = bool(row["filename"]) and (DOWNLOAD_DIR / row["filename"]).exists()
             if row["status"] == "parsed" or on_disk:
@@ -111,6 +124,54 @@ class Download:
         for part in DOWNLOAD_DIR.glob("*.part"):
             part.unlink(missing_ok=True)
 
+    async def _download_attempt(
+        self,
+        client: httpx.AsyncClient,
+        partial: Path,
+        filename: Path,
+        file_id: str,
+        url: str,
+        fmt: str,
+        start: float,
+    ) -> tuple[dict[str, Any] | None, Exception | None]:
+        try:
+            hasher = hashlib.sha256()
+            async with client.stream("GET", url, timeout=30.0) as response:
+                response.raise_for_status()
+                async with aiofiles.open(partial, "wb") as file:
+                    async for chunk in response.aiter_bytes(chunk_size=settings.CHUNK_SIZE):
+                        if chunk:
+                            await file.write(chunk)
+                            hasher.update(chunk)
+
+            await asyncio.to_thread(partial.replace, filename)
+        except Exception as error:
+            await asyncio.to_thread(partial.unlink, missing_ok=True)
+            return None, error
+
+        async with self._counter_lock:
+            self.number_of_downloaded_links += 1
+            await self._logger.log(
+                "info",
+                f"Progress: {self.number_of_downloaded_links} / {self.number_of_all_links}",
+            )
+
+        elapsed = time.perf_counter() - start
+        await self._logger.log("info", f"Downloaded: {url} in {elapsed:.2f}s")
+        await asyncio.sleep(RANDOM.uniform(0.1, 0.3))
+        return (
+            {
+                "file_id": file_id,
+                "url": url,
+                "filename": filename.name,
+                "format": fmt,
+                "file_hash": hasher.hexdigest(),
+                "downloaded_at": datetime.datetime.now(datetime.timezone.utc),
+                "status": "success",
+            },
+            None,
+        )
+
     async def download_one_file(
         self,
         client: httpx.AsyncClient,
@@ -118,7 +179,7 @@ class Download:
         file_id: str,
         url: str,
         fmt: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         filename: Path = DOWNLOAD_DIR / f"{file_id}{_extension_from_format(fmt)}"
 
         partial: Path = filename.with_name(filename.name + ".part")
@@ -128,44 +189,21 @@ class Download:
             await self._mark_downloading(file_id, url, filename.name, fmt)
 
             for attempt in range(1, self.number_of_retries + 1):
-                try:
-                    hasher = hashlib.sha256()
-                    async with client.stream("GET", url, timeout=30.0) as response:
-                        response.raise_for_status()
-                        async with aiofiles.open(partial, "wb") as f:
-                            async for chunk in response.aiter_bytes(chunk_size=settings.CHUNK_SIZE):
-                                if chunk:
-                                    await f.write(chunk)
-                                    hasher.update(chunk)
+                result, error = await self._download_attempt(
+                    client, partial, filename, file_id, url, fmt, start
+                )
+                if error is None:
+                    if result is None:
+                        raise RuntimeError("Download attempt completed without a result")
+                    return result
 
-                    os.replace(partial, filename)
-
-                    async with self._counter_lock:
-                        self.number_of_downloaded_links += 1
-                        print(f"Progress: {self.number_of_downloaded_links} / {self.number_of_all_links}")
-
-                    elapsed = time.perf_counter() - start
-                    await self._logger.log("info", f"Downloaded: {url} in {elapsed:.2f}s")
-                    await asyncio.sleep(random.uniform(0.1, 0.3))
-
-                    return {
-                        "file_id": file_id,
-                        "url": url,
-                        "filename": filename.name,
-                        "format": fmt,
-                        "file_hash": hasher.hexdigest(),
-                        "downloaded_at": datetime.datetime.now(datetime.timezone.utc),
-                        "status": "success",
-                    }
-
-                except Exception as e:
-                    partial.unlink(missing_ok=True)
-
-                    await self._logger.log("warning", f"Retry {attempt} failed for {url}: {e}")
-                    await asyncio.sleep(random.uniform(1, 1.5))
+                await self._logger.log("warning", f"Retry {attempt} failed for {url}: {error}")
+                await asyncio.sleep(RANDOM.uniform(1, 1.5))
 
             await self._mark_failed(file_id)
-            await self._logger.log("error", f"Failed to download {url} after {self.number_of_retries} attempts")
+            await self._logger.log(
+                "error", f"Failed to download {url} after {self.number_of_retries} attempts"
+            )
             return {"file_id": file_id, "url": url, "status": "failed"}
 
     async def download_data(self) -> None:
@@ -181,17 +219,21 @@ class Download:
             await self._logger.log("error", "No download links retrieved. Stopping.")
             return
 
-        parseable = [l for l in raw_links if _extension_from_format(l["format"]) in PARSEABLE_EXTENSIONS]
+        parseable = [
+            link
+            for link in raw_links
+            if _extension_from_format(link["format"]) in PARSEABLE_EXTENSIONS
+        ]
         skippable = await self.load_skippable_urls()
-        links_to_download = [l for l in parseable if l["url"] not in skippable]
+        links_to_download = [link for link in parseable if link["url"] not in skippable]
 
         self.number_of_all_links = len(links_to_download)
         if self.number_of_all_links == 0:
-            print("No new files to download.")
+            await self._logger.log("info", "No new files to download.")
             return
 
         semaphore = asyncio.Semaphore(settings.MAX_WORKERS)
-        buffer: List[Dict[str, Any]] = []
+        buffer: list[dict[str, Any]] = []
 
         async with httpx.AsyncClient(follow_redirects=True) as client:
             tasks = [
@@ -201,10 +243,10 @@ class Download:
                 for link in links_to_download
             ]
 
-            for coro in asyncio.as_completed(tasks):
-                result = await coro
+            for task in asyncio.as_completed(tasks):
+                result = await task
                 buffer.append(result)
-                if len(buffer) >= 20:
+                if len(buffer) >= DOWNLOAD_BATCH_SIZE:
                     await self._flush(buffer)
                     buffer = []
 
@@ -216,13 +258,16 @@ class Download:
             f"Download finished: {self.number_of_downloaded_links} / "
             f"{self.number_of_all_links} files in {elapsed:.2f} seconds"
         )
-        print(summary)
         await self._logger.log("info", summary)
 
-    async def _flush(self, buffer: List[Dict[str, Any]]) -> None:
+    async def _flush(self, buffer: list[dict[str, Any]]) -> None:
         successful = [
-            {k: r[k] for k in ("file_id", "url", "filename", "format", "file_hash", "downloaded_at")}
-            for r in buffer if r["status"] == "success"
+            {
+                k: r[k]
+                for k in ("file_id", "url", "filename", "format", "file_hash", "downloaded_at")
+            }
+            for r in buffer
+            if r["status"] == "success"
         ]
         if not successful:
             return

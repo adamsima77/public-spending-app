@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProcedureService
 {
+    /** @return LengthAwarePaginator<int, Procedure> */
     public function getAllProcedures(): LengthAwarePaginator
     {
         return Procedure::paginate(15);

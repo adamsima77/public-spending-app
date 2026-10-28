@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,8 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class NoticeLot extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'procedure_id',
         'lot_reference',
@@ -51,21 +48,25 @@ class NoticeLot extends Model
         'extra_fields' => 'array',
     ];
 
+    /** @return BelongsTo<Procedure, $this> */
     public function procedure(): BelongsTo
     {
         return $this->belongsTo(Procedure::class);
     }
 
+    /** @return BelongsTo<CpvCode, $this> */
     public function cpvCode(): BelongsTo
     {
         return $this->belongsTo(CpvCode::class, 'main_cpv', 'code');
     }
 
+    /** @return BelongsTo<NutCode, $this> */
     public function nutCode(): BelongsTo
     {
         return $this->belongsTo(NutCode::class, 'nuts_code', 'code');
     }
 
+    /** @return BelongsToMany<Organization, $this, LotSupplier, 'pivot'> */
     public function suppliers(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class, 'lot_suppliers', 'lot_id', 'organization_id')
@@ -74,11 +75,13 @@ class NoticeLot extends Model
             ->withTimestamps();
     }
 
+    /** @return HasMany<LotResult, $this> */
     public function lotResults(): HasMany
     {
         return $this->hasMany(LotResult::class, 'lot_id');
     }
 
+    /** @return HasMany<LotTender, $this> */
     public function tenders(): HasMany
     {
         return $this->hasMany(LotTender::class, 'lot_id');

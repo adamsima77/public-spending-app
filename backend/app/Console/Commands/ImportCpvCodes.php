@@ -26,7 +26,7 @@ class ImportCpvCodes extends Command
 
         $this->info('Parsujem cpv.gc');
 
-        $reader = new XMLReader;
+        $reader = new XMLReader();
         $reader->open($path);
 
         $rows = [];
@@ -61,10 +61,13 @@ class ImportCpvCodes extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * @return array{code: string, name_sk: string|null, level: int, parent_code: string|null, created_at: \Illuminate\Support\Carbon, updated_at: \Illuminate\Support\Carbon}|null
+     */
     private function parseRow(string $rowXml): ?array
     {
         $xml = simplexml_load_string(
-            '<Row xmlns="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">'.substr($rowXml, 5),
+            '<Row xmlns="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">' . substr($rowXml, 5),
         );
 
         if ($xml === false) {
@@ -98,6 +101,9 @@ class ImportCpvCodes extends Command
         ];
     }
 
+    /**
+     * @param list<array{code: string, name_sk: string|null, level: int, parent_code: string|null, created_at: \Illuminate\Support\Carbon, updated_at: \Illuminate\Support\Carbon}> $rows
+     */
     private function upsertRows(array $rows): void
     {
         DB::table('cpv_codes')->upsert($rows, ['code'], ['name_sk', 'level', 'parent_code', 'updated_at']);

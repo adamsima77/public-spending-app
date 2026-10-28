@@ -31,6 +31,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    /** @return BelongsTo<Role, $this> */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
@@ -38,12 +39,12 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role()->slug === 'admin';
+        return $this->role?->slug === 'admin';
     }
 
     public function isUser(): bool
     {
-        return $this->role()->slug === 'user';
+        return $this->role?->slug === 'user';
     }
 
     /**

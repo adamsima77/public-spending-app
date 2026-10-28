@@ -29,6 +29,7 @@ class SystemLog extends Model
         'new_values' => 'array',
     ];
 
+    /** @return MorphTo<Model, $this> */
     public function auditable(): MorphTo
     {
         return $this->morphTo();

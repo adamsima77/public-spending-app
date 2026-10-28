@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class LotSupplier extends Model
+class LotSupplier extends Pivot
 {
-    use HasFactory;
-
     protected $fillable = [
         'lot_id',
         'organization_id',
@@ -24,11 +21,13 @@ class LotSupplier extends Model
         'winning_amount' => 'decimal:2',
     ];
 
+    /** @return BelongsTo<NoticeLot, $this> */
     public function lot(): BelongsTo
     {
         return $this->belongsTo(NoticeLot::class, 'lot_id');
     }
 
+    /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo
     {
         return $this->belongsTo(Organization::class, 'organization_id');

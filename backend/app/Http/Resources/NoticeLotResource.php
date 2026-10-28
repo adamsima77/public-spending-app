@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\NoticeLot;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use UnexpectedValueException;
 
 class NoticeLotResource extends JsonResource
 {
@@ -16,6 +18,10 @@ class NoticeLotResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        if (! $this->resource instanceof NoticeLot) {
+            throw new UnexpectedValueException('NoticeLotResource requires a NoticeLot.');
+        }
+
+        return $this->resource->toArray();
     }
 }

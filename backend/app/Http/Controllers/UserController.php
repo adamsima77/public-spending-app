@@ -8,7 +8,9 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 class UserController extends Controller
@@ -16,7 +18,7 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(UserService $userService)
+    public function index(UserService $userService): AnonymousResourceCollection
     {
         $this->authorize('viewAny', User::class);
         $users = $userService->getAllUsers();
@@ -30,7 +32,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(User $user): UserResource
     {
         $this->authorize('view', $user);
 
@@ -40,7 +42,7 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, User $user, UserService $userService)
+    public function update(UpdateUserRequest $request, User $user, UserService $userService): JsonResponse
     {
         $this->authorize('update', $user);
         $validateEntryData = $request->validated();
@@ -52,7 +54,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function anonymize(User $user, UserService $userService)
+    public function anonymize(User $user, UserService $userService): JsonResponse
     {
         $this->authorize('anonymize', $user);
         $userService->anonymizeUser($user);

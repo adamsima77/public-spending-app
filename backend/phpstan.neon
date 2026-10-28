@@ -2,7 +2,13 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
-    level: 6
+    level: 8
     paths:
         - app
         - routes
+        - database/factories
+        - database/seeders
+    tmpDir: storage/framework/phpstan
+    treatPhpDocTypesAsCertain: false
+    noEnvCallsOutsideOfConfig: true
+    reportUnmatchedIgnoredErrors: true

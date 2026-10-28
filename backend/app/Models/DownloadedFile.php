@@ -26,11 +26,13 @@ class DownloadedFile extends Model
         'parsed_at' => 'datetime',
     ];
 
+    /** @return HasMany<EtlLog, $this> */
     public function logs(): HasMany
     {
         return $this->hasMany(EtlLog::class, 'file_id');
     }
 
+    /** @return BelongsTo<EtlStatus, $this> */
     public function status(): BelongsTo
     {
         return $this->belongsTo(EtlStatus::class);

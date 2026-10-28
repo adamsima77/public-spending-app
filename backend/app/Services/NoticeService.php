@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class NoticeService
 {
+    /** @return LengthAwarePaginator<int, Notice> */
     public function getNotices(): LengthAwarePaginator
     {
         return Notice::with(['procedure'])->paginate(15);

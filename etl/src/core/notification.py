@@ -1,17 +1,15 @@
 from typing import Any
 
 import httpx
-
 from config import settings
+from core.logger import Logger
 
 
 class Notification:
-    def __init__(self, logger: Any | None = None) -> None:
+    def __init__(self, logger: Logger | None = None) -> None:
         self.logger = logger
 
-    async def send_discord_alert(
-        self, message: str, context: dict[str, Any] | None = None
-    ) -> bool:
+    async def send_discord_alert(self, message: str, context: dict[str, Any] | None = None) -> bool:
         if not settings.DISCORD_WEBHOOK:
             return False
 
@@ -31,9 +29,7 @@ class Notification:
 
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(
-                    str(settings.discord_webhook_url), json=payload
-                )
+                response = await client.post(settings.DISCORD_WEBHOOK, json=payload)
                 response.raise_for_status()
                 return True
         except Exception as e:

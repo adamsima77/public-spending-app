@@ -13,6 +13,7 @@ class EtlStatus extends Model
         'name',
     ];
 
+    /** @return HasMany<DownloadedFile, $this> */
     public function downloadedFiles(): HasMany
     {
         return $this->hasMany(DownloadedFile::class);

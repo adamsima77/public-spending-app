@@ -1,31 +1,38 @@
 import json
 import re
+from collections.abc import Awaitable, Callable
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
-from sqlalchemy import text
-from sqlalchemy.exc import DBAPIError
-from sqlalchemy.ext.asyncio import AsyncSession
+from functools import partial
+from operator import gt, lt
+from typing import Any, TypeVar
+
 from core.database import Database
 from core.logger import Logger
-from models.notice import NoticeDto
-from models.organization import OrganizationDto
 from models.lot import LotDto
 from models.lot_result import LotResultDto
 from models.lot_tender import LotTenderDto
+from models.notice import NoticeDto
+from models.organization import OrganizationDto
 from models.settled_contract import SettledContractDto
-from models.procedure import ProcedureDto
+from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+ResultT = TypeVar("ResultT")
+MIN_DATETIME_LENGTH = 10
 
 
 class NoticeLoader:
-    def __init__(self, db: Database, logger: Optional[Logger] = None):
+    def __init__(self, db: Database, logger: Logger | None = None) -> None:
         self.db = db
         self._logger = logger
 
-        self._known_nuts_codes: Set[str] = set()
-        self._known_cpv_codes: Set[str] = set()
+        self._known_nuts_codes: set[str] = set()
+        self._known_cpv_codes: set[str] = set()
 
-    async def upsert_notice(self, notice_dto: NoticeDto, db_file_id: Optional[int] = None) -> None:
-        if not notice_dto.notice_id or not notice_dto.notice_version:
+    async def upsert_notice(self, notice_dto: NoticeDto, db_file_id: int | None = None) -> None:
+        notice_id = notice_dto.notice_id
+        if not notice_id or not notice_dto.notice_version:
             if self._logger:
                 await self._logger.log(
                     "warning",
@@ -36,108 +43,30 @@ class NoticeLoader:
             return
 
         async with self.db.transaction() as session:
-            org_ids: Dict[int, int] = {}
-            for index, org in enumerate(notice_dto.organizations):
-                await self._ensure_nuts_code(session, org.nuts_code)
-                new_id = await self._guarded(
-                    session, "organization",
-                    {"notice_id": notice_dto.notice_id, "org_ref": org.org_ref, "cin": org.cin, "tin": org.tin},
-                    lambda org=org: self._upsert_organization(session, org),
-                )
-                if new_id is not None:
-                    org_ids[index] = new_id
-
-            org_id_by_ref: Dict[str, int] = {
-                org.org_ref: org_ids[i]
-                for i, org in enumerate(notice_dto.organizations)
-                if org.org_ref and i in org_ids
-            }
-
+            org_ids, org_id_by_ref = await self._upsert_notice_organizations(
+                session, notice_dto, notice_id
+            )
             buyer_id = self._resolve_org_db_id(notice_dto, notice_dto.procedure.buyer, org_ids)
-
             await self._ensure_cpv_code(session, notice_dto.procedure.main_cpv)
             procedure_id = await self._upsert_procedure(session, notice_dto, buyer_id)
 
-            lot_id_by_ref: Dict[str, int] = {}
-            for lot in notice_dto.lots:
-                await self._ensure_cpv_code(session, lot.main_cpv)
-                lot_id = await self._upsert_lot(session, lot, procedure_id)
-                if lot_id is not None and lot.lot_reference:
-                    lot_id_by_ref[lot.lot_reference] = lot_id
-
+            lot_id_by_ref = await self._upsert_notice_lots(session, notice_dto, procedure_id)
             lot_results = self._merge_lot_results(notice_dto.lot_results)
-
-            missing_refs = {
-                lr.lot_reference for lr in lot_results if lr.lot_reference
-            } | {
-                lt.lot_reference for lt in notice_dto.lot_tenders if lt.lot_reference
-            }
-            missing_refs -= set(lot_id_by_ref.keys())
-            if missing_refs and procedure_id is not None:
-                lot_id_by_ref.update(
-                    await self._lookup_existing_lot_ids(session, procedure_id, missing_refs)
-                )
-
-            party_org_ids: Dict[str, List[int]] = {}
-            for party in notice_dto.tendering_parties:
-                if not party.party_ref:
-                    continue
-                ids = [org_id_by_ref[ref] for ref in party.tenderer_org_refs if ref in org_id_by_ref]
-                if ids:
-                    party_org_ids[party.party_ref] = ids
-                elif party.tenderer_org_refs and self._logger:
-                    await self._logger.log(
-                        "warning",
-                        f"Tendering party '{party.party_ref}' — žiadny z tenderer_org_refs "
-                        f"{party.tenderer_org_refs} sa nepodarilo priradiť na organizáciu",
-                        context={"notice_id": notice_dto.notice_id},
-                        file_id=db_file_id,
-                    )
-
-            for lot_result in lot_results:
-                await self._guarded(
-                    session, "lot_result",
-                    {"notice_id": notice_dto.notice_id, "lot_reference": lot_result.lot_reference},
-                    lambda lr=lot_result: self._upsert_lot_result(
-                        session, notice_dto.notice_id, lr,
-                        lot_id_by_ref.get(lr.lot_reference) if lr.lot_reference else None,
-                    ),
-                )
-
-            if notice_dto.lot_tenders:
-                await session.execute(
-                    text("DELETE FROM lot_tenders WHERE notice_id = :n AND tender_ref LIKE 'legacy:%'"),
-                    {"n": notice_dto.notice_id},
-                )
-            for tender in notice_dto.lot_tenders:
-                lot_id = lot_id_by_ref.get(tender.lot_reference) if tender.lot_reference else None
-                tenderer_org_ids = party_org_ids.get(tender.tendering_party_ref or "", [])
-                await self._guarded(
-                    session, "lot_tender",
-                    {"notice_id": notice_dto.notice_id, "lot_reference": tender.lot_reference},
-                    lambda t=tender, l=lot_id, w=tenderer_org_ids:
-                        self._upsert_lot_tender(session, notice_dto.notice_id, t, l, w),
-                )
-
             if procedure_id is not None:
-                await self._guarded(
-                    session, "link_results",
-                    {"notice_id": notice_dto.notice_id, "procedure_id": procedure_id},
-                    lambda: self._link_results(session, procedure_id),
+                await self._include_existing_lot_ids_from_db(
+                    session, procedure_id, lot_id_by_ref, lot_results, notice_dto
                 )
-
-            if notice_dto.settled_contracts:
-                await self._purge_legacy_contracts(session, notice_dto.notice_id)
-            for idx, contract in enumerate(notice_dto.settled_contracts):
-                await self._guarded(
-                    session, "settled_contract",
-                    {"notice_id": notice_dto.notice_id, "contract_ref": contract.contract_ref,
-                     "tender_refs": contract.tender_refs},
-                    lambda c=contract, i=idx: self._upsert_settled_contract(session, notice_dto.notice_id, c, i),
-                )
-
+            party_org_ids = await self._resolve_tendering_party_org_ids(
+                notice_dto, org_id_by_ref, db_file_id
+            )
+            await self._upsert_notice_lot_results(session, notice_id, lot_results, lot_id_by_ref)
+            await self._upsert_notice_lot_tenders(
+                session, notice_dto, notice_id, party_org_ids, lot_id_by_ref
+            )
+            await self._link_notice_results(session, notice_id, procedure_id)
+            await self._upsert_notice_contracts(session, notice_dto, notice_id)
             await self._upsert_notice_row(session, notice_dto, procedure_id)
-            await self._refresh_is_latest(session, notice_dto.notice_id)
+            await self._refresh_is_latest(session, notice_id)
 
         if self._logger:
             await self._logger.log(
@@ -152,9 +81,180 @@ class NoticeLoader:
                 file_id=db_file_id,
             )
 
-    def _merge_lot_results(self, lot_results: List[LotResultDto]) -> List[LotResultDto]:
-        merged: Dict[str, LotResultDto] = {}
-        result: List[LotResultDto] = []
+    async def _upsert_notice_organizations(
+        self, session: AsyncSession, notice_dto: NoticeDto, notice_id: str
+    ) -> tuple[dict[int, int], dict[str, int]]:
+        org_ids: dict[int, int] = {}
+        for index, org in enumerate(notice_dto.organizations):
+            await self._ensure_nuts_code(session, org.nuts_code)
+            new_id = await self._guarded(
+                session,
+                "organization",
+                {
+                    "notice_id": notice_id,
+                    "org_ref": org.org_ref,
+                    "cin": org.cin,
+                    "tin": org.tin,
+                },
+                partial(self._upsert_organization, session, org),
+            )
+            if new_id is not None:
+                org_ids[index] = new_id
+
+        org_id_by_ref = {
+            org.org_ref: org_ids[index]
+            for index, org in enumerate(notice_dto.organizations)
+            if org.org_ref and index in org_ids
+        }
+        return org_ids, org_id_by_ref
+
+    async def _upsert_notice_lots(
+        self, session: AsyncSession, notice_dto: NoticeDto, procedure_id: int | None
+    ) -> dict[str, int]:
+        lot_ids: dict[str, int] = {}
+        for lot in notice_dto.lots:
+            await self._ensure_cpv_code(session, lot.main_cpv)
+            lot_id = await self._upsert_lot(session, lot, procedure_id)
+            if lot_id is not None and lot.lot_reference:
+                lot_ids[lot.lot_reference] = lot_id
+        return lot_ids
+
+    @staticmethod
+    def _include_existing_lot_ids(
+        lot_ids: dict[str, int],
+        lot_results: list[LotResultDto],
+        notice_dto: NoticeDto,
+    ) -> set[str]:
+        missing_refs = {result.lot_reference for result in lot_results if result.lot_reference}
+        missing_refs.update(
+            tender.lot_reference for tender in notice_dto.lot_tenders if tender.lot_reference
+        )
+        missing_refs.difference_update(lot_ids)
+        return missing_refs
+
+    async def _include_existing_lot_ids_from_db(
+        self,
+        session: AsyncSession,
+        procedure_id: int,
+        lot_ids: dict[str, int],
+        lot_results: list[LotResultDto],
+        notice_dto: NoticeDto,
+    ) -> None:
+        missing_refs = self._include_existing_lot_ids(lot_ids, lot_results, notice_dto)
+        if missing_refs:
+            lot_ids.update(await self._lookup_existing_lot_ids(session, procedure_id, missing_refs))
+
+    async def _resolve_tendering_party_org_ids(
+        self,
+        notice_dto: NoticeDto,
+        org_id_by_ref: dict[str, int],
+        db_file_id: int | None,
+    ) -> dict[str, list[int]]:
+        party_org_ids: dict[str, list[int]] = {}
+        for party in notice_dto.tendering_parties:
+            if not party.party_ref:
+                continue
+            organization_ids = [
+                org_id_by_ref[ref] for ref in party.tenderer_org_refs if ref in org_id_by_ref
+            ]
+            if organization_ids:
+                party_org_ids[party.party_ref] = organization_ids
+            elif party.tenderer_org_refs and self._logger:
+                await self._logger.log(
+                    "warning",
+                    f"Tendering party '{party.party_ref}' — žiadny z tenderer_org_refs "
+                    f"{party.tenderer_org_refs} sa nepodarilo priradiť na organizáciu",
+                    context={"notice_id": notice_dto.notice_id},
+                    file_id=db_file_id,
+                )
+        return party_org_ids
+
+    async def _upsert_notice_lot_results(
+        self,
+        session: AsyncSession,
+        notice_id: str,
+        lot_results: list[LotResultDto],
+        lot_id_by_ref: dict[str, int],
+    ) -> None:
+        for lot_result in lot_results:
+            await self._guarded(
+                session,
+                "lot_result",
+                {"notice_id": notice_id, "lot_reference": lot_result.lot_reference},
+                partial(
+                    self._upsert_lot_result,
+                    session,
+                    notice_id,
+                    lot_result,
+                    lot_id_by_ref.get(lot_result.lot_reference)
+                    if lot_result.lot_reference
+                    else None,
+                ),
+            )
+
+    async def _upsert_notice_lot_tenders(
+        self,
+        session: AsyncSession,
+        notice_dto: NoticeDto,
+        notice_id: str,
+        party_org_ids: dict[str, list[int]],
+        lot_id_by_ref: dict[str, int],
+    ) -> None:
+        if not notice_dto.lot_tenders:
+            return
+        await session.execute(
+            text("DELETE FROM lot_tenders WHERE notice_id = :n AND tender_ref LIKE 'legacy:%'"),
+            {"n": notice_id},
+        )
+        for tender in notice_dto.lot_tenders:
+            lot_id = lot_id_by_ref.get(tender.lot_reference) if tender.lot_reference else None
+            tenderer_org_ids = party_org_ids.get(tender.tendering_party_ref or "", [])
+            await self._guarded(
+                session,
+                "lot_tender",
+                {"notice_id": notice_id, "lot_reference": tender.lot_reference},
+                partial(
+                    self._upsert_lot_tender,
+                    session,
+                    notice_id,
+                    tender,
+                    lot_id,
+                    tenderer_org_ids,
+                ),
+            )
+
+    async def _link_notice_results(
+        self, session: AsyncSession, notice_id: str, procedure_id: int | None
+    ) -> None:
+        if procedure_id is not None:
+            await self._guarded(
+                session,
+                "link_results",
+                {"notice_id": notice_id, "procedure_id": procedure_id},
+                partial(self._link_results, session, procedure_id),
+            )
+
+    async def _upsert_notice_contracts(
+        self, session: AsyncSession, notice_dto: NoticeDto, notice_id: str
+    ) -> None:
+        if not notice_dto.settled_contracts:
+            return
+        await self._purge_legacy_contracts(session, notice_id)
+        for index, contract in enumerate(notice_dto.settled_contracts):
+            await self._guarded(
+                session,
+                "settled_contract",
+                {
+                    "notice_id": notice_id,
+                    "contract_ref": contract.contract_ref,
+                    "tender_refs": contract.tender_refs,
+                },
+                partial(self._upsert_settled_contract, session, notice_id, contract, index),
+            )
+
+    def _merge_lot_results(self, lot_results: list[LotResultDto]) -> list[LotResultDto]:
+        merged: dict[str, LotResultDto] = {}
+        result: list[LotResultDto] = []
         for lot_result in lot_results:
             ref = lot_result.lot_reference
             if not ref:
@@ -180,8 +280,8 @@ class NoticeLoader:
                 base.non_award_reason = lot_result.non_award_reason
 
             for value_attr, currency_attr, is_better in (
-                ("lowest_offer_value", "lowest_offer_currency", lambda new, old: new < old),
-                ("highest_offer_value", "highest_offer_currency", lambda new, old: new > old),
+                ("lowest_offer_value", "lowest_offer_currency", lt),
+                ("highest_offer_value", "highest_offer_currency", gt),
             ):
                 old_value = self._parse_decimal(getattr(base, value_attr))
                 new_value = self._parse_decimal(getattr(lot_result, value_attr))
@@ -197,23 +297,31 @@ class NoticeLoader:
 
             for key, value in lot_result.extra_fields.items():
                 base.extra_fields.setdefault(key, value)
-            base.extra_fields["merged_result_count"] = base.extra_fields.get("merged_result_count", 1) + 1
+            base.extra_fields["merged_result_count"] = (
+                base.extra_fields.get("merged_result_count", 1) + 1
+            )
 
         return result
 
-    def _safe_currency(self, value: Any) -> Optional[str]:
+    def _safe_currency(self, value: Any) -> str | None:
         if value is None:
             return None
         v = str(value).strip().upper()
         return v if re.fullmatch(r"[A-Z]{3}", v) else None
 
-    def _safe_int(self, value: Any, max_value: int = 2_000_000_000) -> Optional[int]:
+    def _safe_int(self, value: Any, max_value: int = 2_000_000_000) -> int | None:
         n = self._parse_int(value)
         if n is None or n < 0 or n > max_value:
             return None
         return n
 
-    async def _guarded(self, session: AsyncSession, description: str, context: Dict[str, Any], fn):
+    async def _guarded(
+        self,
+        session: AsyncSession,
+        description: str,
+        context: dict[str, Any],
+        fn: Callable[[], Awaitable[ResultT]],
+    ) -> ResultT | None:
         try:
             async with session.begin_nested():
                 return await fn()
@@ -229,9 +337,9 @@ class NoticeLoader:
     def _resolve_org_db_id(
         self,
         notice_dto: NoticeDto,
-        org: Optional[OrganizationDto],
-        org_ids: Dict[int, int],
-    ) -> Optional[int]:
+        org: OrganizationDto | None,
+        org_ids: dict[int, int],
+    ) -> int | None:
         if org is None:
             return None
         for index, candidate in enumerate(notice_dto.organizations):
@@ -240,8 +348,8 @@ class NoticeLoader:
         return None
 
     async def _lookup_existing_lot_ids(
-        self, session: AsyncSession, procedure_id: int, lot_refs: Set[str]
-    ) -> Dict[str, int]:
+        self, session: AsyncSession, procedure_id: int, lot_refs: set[str]
+    ) -> dict[str, int]:
         if not lot_refs:
             return {}
         query = """
@@ -253,7 +361,7 @@ class NoticeLoader:
         )
         return {row.lot_reference: row.id for row in result}
 
-    async def _ensure_nuts_code(self, session: AsyncSession, nuts_code: Optional[str]) -> None:
+    async def _ensure_nuts_code(self, session: AsyncSession, nuts_code: str | None) -> None:
         if not nuts_code:
             return
 
@@ -272,7 +380,7 @@ class NoticeLoader:
         )
         self._known_nuts_codes.add(code)
 
-    async def _ensure_cpv_code(self, session: AsyncSession, cpv_code: Optional[str]) -> None:
+    async def _ensure_cpv_code(self, session: AsyncSession, cpv_code: str | None) -> None:
         if not cpv_code:
             return
 
@@ -291,9 +399,11 @@ class NoticeLoader:
         )
         self._known_cpv_codes.add(code)
 
-    _PLACEHOLDER_IDENTIFIERS = {"-", "--", "---", "\u2013", "\u2014", "n/a", "na", "none", "null"}
+    _PLACEHOLDER_IDENTIFIERS = frozenset(
+        {"-", "--", "---", "\u2013", "\u2014", "n/a", "na", "none", "null"}
+    )
 
-    def _norm_identifier(self, value: Optional[str]) -> Optional[str]:
+    def _norm_identifier(self, value: str | None) -> str | None:
         if value is None:
             return None
         v = str(value).strip()
@@ -301,49 +411,85 @@ class NoticeLoader:
             return None
         return v
 
-    async def _find_organization_id(self, session: AsyncSession, org: OrganizationDto) -> Optional[int]:
-        for column, value in (("cin", org.cin), ("tin", org.tin)):
-            if not value:
-                continue
-            row = (await session.execute(
-                text(f"""
+    async def _find_organization_id(
+        self, session: AsyncSession, org: OrganizationDto
+    ) -> int | None:
+        identifier_queries = (
+            (
+                org.cin,
+                """
                     SELECT id FROM organizations
-                    WHERE {column} = :value
+                    WHERE cin = :value
                       AND (country IS NULL OR CAST(:country AS varchar) IS NULL
                            OR country = CAST(:country AS varchar))
                     ORDER BY (country IS NOT DISTINCT FROM CAST(:country AS varchar)) DESC, id
                     LIMIT 1
-                """),
-                {"value": value, "country": org.country},
-            )).first()
+                """,
+            ),
+            (
+                org.tin,
+                """
+                    SELECT id FROM organizations
+                    WHERE tin = :value
+                      AND (country IS NULL OR CAST(:country AS varchar) IS NULL
+                           OR country = CAST(:country AS varchar))
+                    ORDER BY (country IS NOT DISTINCT FROM CAST(:country AS varchar)) DESC, id
+                    LIMIT 1
+                """,
+            ),
+        )
+        for value, query in identifier_queries:
+            if not value:
+                continue
+            row = (
+                await session.execute(
+                    text(query),
+                    {"value": value, "country": org.country},
+                )
+            ).first()
             if row:
-                return row.id
+                return self._require_int(row.id, "organization.id")
 
         if not org.cin and not org.tin and org.name:
-            row = (await session.execute(
-                text("""
+            row = (
+                await session.execute(
+                    text("""
                     SELECT id FROM organizations
                     WHERE cin IS NULL AND tin IS NULL AND name = :name
                       AND COALESCE(country, '') = COALESCE(CAST(:country AS varchar), '')
                       AND COALESCE(town, '') = COALESCE(CAST(:town AS varchar), '')
                     ORDER BY id LIMIT 1
                 """),
-                {"name": org.name, "country": org.country, "town": org.town},
-            )).first()
+                    {"name": org.name, "country": org.country, "town": org.town},
+                )
+            ).first()
             if row:
-                return row.id
+                return self._require_int(row.id, "organization.id")
         return None
+
+    @staticmethod
+    def _require_int(value: Any, field: str) -> int:
+        if not isinstance(value, int):
+            raise TypeError(f"Expected {field} to be an integer, got {type(value).__name__}")
+        return value
 
     async def _upsert_organization(self, session: AsyncSession, org: OrganizationDto) -> int:
         org.cin = self._norm_identifier(org.cin)
         org.tin = self._norm_identifier(org.tin)
         existing_id = await self._find_organization_id(session, org)
 
-        params = {
-            "cin": org.cin, "tin": org.tin, "name": org.name, "address": org.address,
-            "street_name": org.street_name, "street_number": org.street_number,
-            "phone": org.phone, "town": org.town, "postal_code": org.postal_code,
-            "country": org.country, "nuts_code": org.nuts_code,
+        params: dict[str, Any] = {
+            "cin": org.cin,
+            "tin": org.tin,
+            "name": org.name,
+            "address": org.address,
+            "street_name": org.street_name,
+            "street_number": org.street_number,
+            "phone": org.phone,
+            "town": org.town,
+            "postal_code": org.postal_code,
+            "country": org.country,
+            "nuts_code": org.nuts_code,
             "company_size": org.company_size,
             "extra_fields": json.dumps(org.extra_fields or {}),
         }
@@ -391,9 +537,9 @@ class NoticeLoader:
             """
 
         result = await session.execute(text(query), params)
-        return result.scalar_one()
+        return self._require_int(result.scalar_one(), "organization.id")
 
-    def _parse_decimal(self, value: Optional[str]) -> Optional[float]:
+    def _parse_decimal(self, value: str | None) -> float | None:
         if value is None:
             return None
         cleaned = str(value).replace(" ", "").replace("\xa0", "").replace(",", ".")
@@ -402,7 +548,7 @@ class NoticeLoader:
         except (ValueError, TypeError):
             return None
 
-    def _parse_int(self, value: Any) -> Optional[int]:
+    def _parse_int(self, value: Any) -> int | None:
         if value is None:
             return None
         try:
@@ -410,7 +556,7 @@ class NoticeLoader:
         except (ValueError, TypeError):
             return None
 
-    def _eu_funded_flag(self, value: Optional[str]) -> Optional[bool]:
+    def _eu_funded_flag(self, value: str | None) -> bool | None:
         if value is None:
             return None
         val = str(value).strip().lower()
@@ -428,7 +574,7 @@ class NoticeLoader:
         match = re.search(r"\d+", str(value))
         return int(match.group(0)) if match else 1
 
-    def _parse_datetime(self, value: Any) -> Optional[str]:
+    def _parse_datetime(self, value: Any) -> str | None:
         if not value:
             return None
         val_str = str(value).strip()
@@ -438,11 +584,11 @@ class NoticeLoader:
         try:
             return datetime.fromisoformat(val_str).isoformat()
         except ValueError:
-            return val_str if len(val_str) >= 10 else None
+            return val_str if len(val_str) >= MIN_DATETIME_LENGTH else None
 
     async def _upsert_procedure(
-        self, session: AsyncSession, notice_dto: NoticeDto, buyer_id: Optional[int]
-    ) -> Optional[int]:
+        self, session: AsyncSession, notice_dto: NoticeDto, buyer_id: int | None
+    ) -> int | None:
         procedure = notice_dto.procedure
         identifier = procedure.identifier
         order_id = procedure.source_order_id
@@ -461,38 +607,48 @@ class NoticeLoader:
         if procedure.provider_ref:
             extra_fields["provider_ref"] = procedure.provider_ref
 
-        columns = "id, procedure_reference, buyer_id, procedure_identifier, source_order_id"
         existing = None
         if identifier:
-            existing = (await session.execute(
-                text(f"SELECT {columns} FROM procedures WHERE procedure_identifier = :identifier"),
-                {"identifier": identifier},
-            )).first()
+            existing = (
+                await session.execute(
+                    text("""
+                        SELECT id, procedure_reference, buyer_id, procedure_identifier, source_order_id
+                        FROM procedures WHERE procedure_identifier = :identifier
+                    """),
+                    {"identifier": identifier},
+                )
+            ).first()
         if existing is None and order_id:
-            existing = (await session.execute(
-                text(f"""
-                    SELECT {columns} FROM procedures
-                    WHERE source_order_id = :order_id
-                      AND (CAST(:identifier AS varchar) IS NULL
-                           OR procedure_identifier IS NULL
-                           OR procedure_identifier LIKE 'notice:%'
-                           OR procedure_identifier = CAST(:identifier AS varchar))
-                    ORDER BY id LIMIT 1
-                """),
-                {"order_id": order_id, "identifier": identifier},
-            )).first()
+            existing = (
+                await session.execute(
+                    text("""
+                        SELECT id, procedure_reference, buyer_id, procedure_identifier, source_order_id
+                        FROM procedures
+                        WHERE source_order_id = :order_id
+                          AND (CAST(:identifier AS varchar) IS NULL
+                               OR procedure_identifier IS NULL
+                               OR procedure_identifier LIKE 'notice:%'
+                               OR procedure_identifier = CAST(:identifier AS varchar))
+                        ORDER BY id LIMIT 1
+                    """),
+                    {"order_id": order_id, "identifier": identifier},
+                )
+            ).first()
         if existing is None and natural_key and not identifier and not order_id:
-            existing = (await session.execute(
-                text(f"""
-                    SELECT {columns} FROM procedures
-                    WHERE procedure_reference = :reference AND buyer_id = :buyer_id
-                      AND source_order_id IS NULL
-                    ORDER BY id LIMIT 1
-                """),
-                {"reference": reference, "buyer_id": buyer_id},
-            )).first()
+            existing = (
+                await session.execute(
+                    text("""
+                        SELECT id, procedure_reference, buyer_id, procedure_identifier, source_order_id
+                        FROM procedures
+                        WHERE procedure_reference = :reference AND buyer_id = :buyer_id
+                          AND source_order_id IS NULL
+                        ORDER BY id LIMIT 1
+                    """),
+                    {"reference": reference, "buyer_id": buyer_id},
+                )
+            ).first()
 
-        params = {
+        params: dict[str, Any] = {
             "procedure_type": procedure.procedure_type,
             "contract_type": procedure.contract_type,
             "main_cpv": procedure.main_cpv,
@@ -514,9 +670,14 @@ class NoticeLoader:
             else:
                 new_ident = current_ident
             if new_ident != current_ident:
-                clash = (await session.execute(
-                    text("SELECT 1 FROM procedures WHERE procedure_identifier = :v AND id <> :id"),
-                    {"v": new_ident, "id": existing.id})).first()
+                clash = (
+                    await session.execute(
+                        text(
+                            "SELECT 1 FROM procedures WHERE procedure_identifier = :v AND id <> :id"
+                        ),
+                        {"v": new_ident, "id": existing.id},
+                    )
+                ).first()
                 if clash:
                     new_ident = current_ident
             new_order = existing.source_order_id or order_id
@@ -545,10 +706,15 @@ class NoticeLoader:
                 WHERE id = :id
                 RETURNING id
             """
-            params.update({
-                "id": existing.id, "new_ident": new_ident, "new_order": new_order,
-                "new_ref": new_ref, "new_buyer": new_buyer,
-            })
+            params.update(
+                {
+                    "id": existing.id,
+                    "new_ident": new_ident,
+                    "new_order": new_order,
+                    "new_ref": new_ref,
+                    "new_buyer": new_buyer,
+                }
+            )
         else:
             query = """
                 INSERT INTO procedures (procedure_identifier, source_order_id, procedure_reference, buyer_id,
@@ -560,21 +726,30 @@ class NoticeLoader:
                     :buyer_profile_url, :performance_note, CAST(:extra_fields AS jsonb), now(), now())
                 RETURNING id
             """
-            params.update({
-                "identifier": identifier, "order_id": order_id,
-                "reference": reference, "buyer_id": buyer_id,
-            })
+            params.update(
+                {
+                    "identifier": identifier,
+                    "order_id": order_id,
+                    "reference": reference,
+                    "buyer_id": buyer_id,
+                }
+            )
 
         result = await session.execute(text(query), params)
-        return result.scalar_one()
+        return self._require_int(result.scalar_one(), "procedure.id")
 
-    async def _upsert_lot(self, session: AsyncSession, lot: LotDto, procedure_id: Optional[int]) -> Optional[int]:
+    async def _upsert_lot(
+        self, session: AsyncSession, lot: LotDto, procedure_id: int | None
+    ) -> int | None:
         if not lot.lot_reference:
             if self._logger:
                 await self._logger.log(
                     "warning",
                     "Lot bez lot_reference, preskakujem",
-                    context={"procedure_id": procedure_id, "extra_fields_keys": list(lot.extra_fields.keys())[:10]},
+                    context={
+                        "procedure_id": procedure_id,
+                        "extra_fields_keys": list(lot.extra_fields.keys())[:10],
+                    },
                 )
             return None
 
@@ -663,11 +838,11 @@ class NoticeLoader:
                 "extra_fields": json.dumps(lot.extra_fields or {}),
             },
         )
-        return result.scalar_one()
+        return self._require_int(result.scalar_one(), "lot.id")
 
     async def _upsert_lot_result(
-        self, session: AsyncSession, notice_id: str, lot_result: LotResultDto, lot_id: Optional[int]
-    ) -> Optional[int]:
+        self, session: AsyncSession, notice_id: str, lot_result: LotResultDto, lot_id: int | None
+    ) -> int | None:
         if not lot_result.lot_reference:
             return None
 
@@ -715,7 +890,7 @@ class NoticeLoader:
                 "extra_fields": json.dumps(lot_result.extra_fields or {}),
             },
         )
-        lot_result_id = result.scalar_one()
+        lot_result_id = self._require_int(result.scalar_one(), "lot_result.id")
 
         for stat in lot_result.submission_stats:
             if not stat.category_code:
@@ -739,13 +914,19 @@ class NoticeLoader:
         return lot_result_id
 
     async def _upsert_lot_tender(
-        self, session: AsyncSession, notice_id: str, tender: LotTenderDto, lot_id: Optional[int],
-        tenderer_org_ids: Optional[List[int]] = None,
-    ) -> Optional[int]:
+        self,
+        session: AsyncSession,
+        notice_id: str,
+        tender: LotTenderDto,
+        lot_id: int | None,
+        tenderer_org_ids: list[int] | None = None,
+    ) -> int | None:
         if not tender.lot_reference:
             return None
 
-        tender_key = (tender.tender_ref or f"auto:{tender.lot_reference}|{tender.tendering_party_ref or ''}")[:64]
+        tender_key = (
+            tender.tender_ref or f"auto:{tender.lot_reference}|{tender.tendering_party_ref or ''}"
+        )[:64]
 
         query = """
             INSERT INTO lot_tenders (
@@ -784,7 +965,7 @@ class NoticeLoader:
                 "extra_fields": json.dumps(tender.extra_fields or {}),
             },
         )
-        lot_tender_id = result.scalar_one()
+        lot_tender_id = self._require_int(result.scalar_one(), "lot_tender.id")
 
         org_ids = sorted({int(i) for i in (tenderer_org_ids or [])})
         if org_ids:
@@ -806,19 +987,28 @@ class NoticeLoader:
         return lot_tender_id
 
     async def _link_results(self, session: AsyncSession, procedure_id: int) -> None:
-        for table in ("lot_results", "lot_tenders"):
-            await session.execute(
-                text(f"""
-                    UPDATE {table} t SET lot_id = nl.id, updated_at = now()
+        update_queries = (
+            """
+                    UPDATE lot_results t SET lot_id = nl.id, updated_at = now()
                     FROM notices n
                     JOIN notice_lots nl ON nl.procedure_id = n.procedure_id
                     WHERE n.procedure_id = :pid
                       AND t.notice_id = n.notice_id
                       AND t.lot_id IS NULL
                       AND nl.lot_reference = t.lot_reference
-                """),
-                {"pid": procedure_id},
-            )
+                """,
+            """
+                    UPDATE lot_tenders t SET lot_id = nl.id, updated_at = now()
+                    FROM notices n
+                    JOIN notice_lots nl ON nl.procedure_id = n.procedure_id
+                    WHERE n.procedure_id = :pid
+                      AND t.notice_id = n.notice_id
+                      AND t.lot_id IS NULL
+                      AND nl.lot_reference = t.lot_reference
+                """,
+        )
+        for query in update_queries:
+            await session.execute(text(query), {"pid": procedure_id})
 
         await self._rebuild_lot_suppliers(session, procedure_id)
 
@@ -850,7 +1040,9 @@ class NoticeLoader:
 
     async def _purge_legacy_contracts(self, session: AsyncSession, notice_id: str) -> None:
         await session.execute(
-            text("DELETE FROM settled_contracts WHERE notice_id = :n AND contract_ref LIKE 'legacy:%'"),
+            text(
+                "DELETE FROM settled_contracts WHERE notice_id = :n AND contract_ref LIKE 'legacy:%'"
+            ),
             {"n": notice_id},
         )
 
@@ -901,7 +1093,7 @@ class NoticeLoader:
         )
 
     async def _upsert_notice_row(
-        self, session: AsyncSession, notice_dto: NoticeDto, procedure_id: Optional[int]
+        self, session: AsyncSession, notice_dto: NoticeDto, procedure_id: int | None
     ) -> None:
         query = """
             INSERT INTO notices (notice_id, notice_version, notice_type, form_type, legal_basis, title, issue_date, published_at, procedure_id, extra_fields, created_at, updated_at)

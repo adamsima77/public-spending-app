@@ -26,7 +26,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
-    "pytest-asyncio>=0.23.0",    # Pre testovanie async funkcií
+    "pytest-asyncio>=0.23.0",   # Pre testovanie async funkcií
+    "pytest-cov>=5.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "types-aiofiles",
 ]
 
 [tool.setuptools]
@@ -34,3 +38,82 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+# ───────────── Ruff ─────────────
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = [".venv", "build"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort (poradie importov)
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "B",        # bugbear
+    "A",        # shadowing builtins
+    "C4",       # comprehensions
+    "DTZ",      # timezone-aware datetime
+    "T20",      # zákaz print()
+    "SIM",      # zjednodušenia
+    "PTH",      # pathlib
+    "PL",       # pylint (zložitosť, magické hodnoty, počet argumentov)
+    "RUF",      # ruff-specific
+    "S",        # bandit (bezpečnosť, vrátane SQL injection)
+    "ASYNC",    # blokujúce volania v async
+    "TC",       # type-checking importy
+    "PT",       # pytest štýl
+    "RET",      # return
+    "ARG",      # nepoužité argumenty
+    "PERF",     # výkon
+    "ANN",      # type anotácie
+    "TRY",      # výnimky
+]
+ignore = [
+    "ANN401",   # povolí Any tam, kde je naozaj treba
+    "TRY003",   # dlhé správy vo výnimkách
+    "E501",     # dĺžku riadkov rieši `ruff format`; SQL v reťazcoch nezalomí
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "ANN", "PLR2004", "ARG"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = true
+
+[tool.ruff.lint.pylint]
+max-args = 7
+max-branches = 12
+max-returns = 6
+max-statements = 50
+
+[tool.ruff.format]
+quote-style = "double"
+line-ending = "lf"
+docstring-code-format = true
+
+# ───────────── Mypy ─────────────
+[tool.mypy]
+python_version = "3.10"
+strict = true
+mypy_path = "src"
+explicit_package_bases = true
+namespace_packages = true
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+show_error_codes = true
+pretty = false
+
+[[tool.mypy.overrides]]
+module = ["SPARQLWrapper.*", "ijson.*"]
+ignore_missing_imports = true
+
+# ───────────── Pytest ─────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]

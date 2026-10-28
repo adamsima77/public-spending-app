@@ -1,27 +1,28 @@
-from typing import Any, Dict, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Any
+
 from models.organization import OrganizationDto
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProcedureDto(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
-    reference: Optional[str] = None
-    identifier: Optional[str] = None  
-    source_order_id: Optional[str] = None
-    title: Optional[str] = None
-    description: Optional[str] = None
-    procedure_type: Optional[str] = None
-    contract_type: Optional[str] = None
-    main_cpv: Optional[str] = None
-    estimated_value: Optional[str] = None
-    currency: Optional[str] = None
-    nuts_code: Optional[str] = None
-    buyer_profile_url: Optional[str] = None
-    performance_note: Optional[str] = None
-    buyer_ref: Optional[str] = None
-    provider_ref: Optional[str] = None
-    buyer: Optional[OrganizationDto] = None
-    provider: Optional[OrganizationDto] = None
-    place_of_performance: Optional[str] = None
-    extra_fields: Dict[str, Any] = Field(default_factory=dict)
+    reference: str | None = None
+    identifier: str | None = None
+    source_order_id: str | None = None
+    title: str | None = None
+    description: str | None = None
+    procedure_type: str | None = None
+    contract_type: str | None = None
+    main_cpv: str | None = None
+    estimated_value: str | None = None
+    currency: str | None = None
+    nuts_code: str | None = None
+    buyer_profile_url: str | None = None
+    performance_note: str | None = None
+    buyer_ref: str | None = None
+    provider_ref: str | None = None
+    buyer: OrganizationDto | None = None
+    provider: OrganizationDto | None = None
+    place_of_performance: str | None = None
+    extra_fields: dict[str, Any] = Field(default_factory=dict)

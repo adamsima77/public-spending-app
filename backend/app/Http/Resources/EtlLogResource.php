@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\EtlLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use UnexpectedValueException;
 
 class EtlLogResource extends JsonResource
 {
@@ -16,6 +18,10 @@ class EtlLogResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        if (! $this->resource instanceof EtlLog) {
+            throw new UnexpectedValueException('EtlLogResource requires an EtlLog.');
+        }
+
+        return $this->resource->toArray();
     }
 }

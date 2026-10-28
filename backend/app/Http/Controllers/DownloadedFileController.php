@@ -7,13 +7,14 @@ namespace App\Http\Controllers;
 use App\Http\Resources\DownloadedFileResource;
 use App\Models\DownloadedFile;
 use App\Services\DownloadedFileService;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class DownloadedFileController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(DownloadedFileService $downloadedFileService)
+    public function index(DownloadedFileService $downloadedFileService): AnonymousResourceCollection
     {
         $this->authorize('viewAny', DownloadedFile::class);
         $files = $downloadedFileService->getAllDownloadedFiles();
@@ -24,7 +25,7 @@ class DownloadedFileController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(DownloadedFile $downloadedFile)
+    public function show(DownloadedFile $downloadedFile): DownloadedFileResource
     {
         $this->authorize('view', $downloadedFile);
 

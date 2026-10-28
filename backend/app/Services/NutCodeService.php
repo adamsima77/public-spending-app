@@ -9,29 +9,22 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class NutCodeService
 {
+    /** @return LengthAwarePaginator<int, NutCode> */
     public function getNutCodes(): LengthAwarePaginator
     {
         return NutCode::paginate(15);
     }
 
-    public function createNutCode(array $validateEntryData): void
+    /** @param array<string, mixed> $validatedData */
+    public function createNutCode(array $validatedData): void
     {
-        NutCode::create([
-            'code' => $validateEntryData['code'],
-            'name_sk', $validateEntryData['name_sk'],
-            'level' => $validateEntryData['level'],
-            'parent_code' => $validateEntryData['parent_code'],
-        ]);
+        NutCode::create($validatedData);
     }
 
-    public function updateNutCode(NutCode $nutCode, array $validateEntry): void
+    /** @param array<string, mixed> $validatedData */
+    public function updateNutCode(NutCode $nutCode, array $validatedData): void
     {
-        $nutCode->update([
-            'code' => $validateEntryData['code'],
-            'name_sk', $validateEntryData['name_sk'],
-            'level' => $validateEntryData['level'],
-            'parent_code' => $validateEntryData['parent_code'],
-        ]);
+        $nutCode->update($validatedData);
     }
 
     public function deleteNutCode(NutCode $nutCode): void

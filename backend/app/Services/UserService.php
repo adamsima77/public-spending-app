@@ -10,27 +10,29 @@ use Illuminate\Support\Str;
 
 class UserService
 {
+    /** @return LengthAwarePaginator<int, User> */
     public function getAllUsers(): LengthAwarePaginator
     {
         return User::with(['role'])->paginate(15);
     }
 
-    public function updateUser(User $user, array $validateEntryData): void
+    /** @param array<string, mixed> $validatedData */
+    public function updateUser(User $user, array $validatedData): void
     {
         $user->update([
-            'name' => $validateEntryData['name'],
-            'surname' => $validateEntryData['surname'],
-            'email' => $validateEntryData['email'],
-            'password' => $validateEntryData['password'],
+            'name' => $validatedData['name'],
+            'surname' => $validatedData['surname'],
+            'email' => $validatedData['email'],
+            'password' => $validatedData['password'],
         ]);
     }
 
-    public function anonymizeUser($user): void
+    public function anonymizeUser(User $user): void
     {
         $user->forceFill([
             'name' => 'Anonymized',
             'surname' => 'User',
-            'email' => 'anonymized'.$user->id.'@anonymized.anon',
+            'email' => 'anonymized' . $user->id . '@anonymized.anon',
             'email_verified_at' => null,
             'password' => bcrypt(Str::random(40)),
         ])->save();

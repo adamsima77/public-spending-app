@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class DownloadedFileService
 {
+    /** @return LengthAwarePaginator<int, DownloadedFile> */
     public function getAllDownloadedFiles(): LengthAwarePaginator
     {
         return DownloadedFile::paginate(15);

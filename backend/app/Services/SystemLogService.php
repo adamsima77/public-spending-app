@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class SystemLogService
 {
+    /** @return LengthAwarePaginator<int, SystemLog> */
     public function getAllLogs(): LengthAwarePaginator
     {
         return SystemLog::paginate(15);

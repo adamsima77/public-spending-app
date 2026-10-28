@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\DownloadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use UnexpectedValueException;
 
 class DownloadedFileResource extends JsonResource
 {
@@ -16,6 +18,10 @@ class DownloadedFileResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        if (! $this->resource instanceof DownloadedFile) {
+            throw new UnexpectedValueException('DownloadedFileResource requires a DownloadedFile.');
+        }
+
+        return $this->resource->toArray();
     }
 }

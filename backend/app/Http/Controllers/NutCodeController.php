@@ -9,6 +9,8 @@ use App\Http\Requests\UpdateNutCodeRequest;
 use App\Http\Resources\NutCodeResource;
 use App\Models\NutCode;
 use App\Services\NutCodeService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 
 class NutCodeController extends Controller
@@ -16,7 +18,7 @@ class NutCodeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(NutCodeService $nutCodeService)
+    public function index(NutCodeService $nutCodeService): AnonymousResourceCollection
     {
         $nutCodes = $nutCodeService->getNutCodes();
 
@@ -26,7 +28,7 @@ class NutCodeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreNutCodeRequest $request, NutCodeService $nutCodeService)
+    public function store(StoreNutCodeRequest $request, NutCodeService $nutCodeService): JsonResponse
     {
         $this->authorize('create', NutCode::class);
         $validatedData = $request->validated();
@@ -39,7 +41,7 @@ class NutCodeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(NutCode $nutCode)
+    public function show(NutCode $nutCode): NutCodeResource
     {
         return new NutCodeResource($nutCode);
     }
@@ -47,8 +49,11 @@ class NutCodeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateNutCodeRequest $request, NutCode $nutCode, NutCodeService $nutCodeService)
-    {
+    public function update(
+        UpdateNutCodeRequest $request,
+        NutCode $nutCode,
+        NutCodeService $nutCodeService,
+    ): JsonResponse {
         $this->authorize('update', $nutCode);
         $validateEntry = $request->validated();
         $nutCodeService->updateNutCode($nutCode, $validateEntry);
@@ -59,7 +64,7 @@ class NutCodeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(NutCode $nutCode, NutCodeService $nutCodeService)
+    public function destroy(NutCode $nutCode, NutCodeService $nutCodeService): JsonResponse
     {
         $this->authorize('destroy', $nutCode);
         $nutCodeService->deleteNutCode($nutCode);

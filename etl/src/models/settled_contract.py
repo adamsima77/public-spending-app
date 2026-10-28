@@ -1,14 +1,15 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class SettledContractDto(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
-    contract_ref: Optional[str] = None     
-    contract_number: Optional[str] = None  
-    conclusion_date: Optional[str] = None  
-    title: Optional[str] = None            
-    contract_url: Optional[str] = None     
-    tender_refs: List[str] = Field(default_factory=list) 
-    extra_fields: Dict[str, Any] = Field(default_factory=dict)
+    contract_ref: str | None = None
+    contract_number: str | None = None
+    conclusion_date: str | None = None
+    title: str | None = None
+    contract_url: str | None = None
+    tender_refs: list[str] = Field(default_factory=list)
+    extra_fields: dict[str, Any] = Field(default_factory=dict)

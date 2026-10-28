@@ -2,11 +2,15 @@
   "recommendations": [
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "open-southeners.laravel-pint",
-    "swordev.phpstan",
     "angular.ng-template",
+    "open-southeners.laravel-pint",
+    "sanderronde.phpstan-vscode",
+    "bmewburn.vscode-intelephense-client",
     "ms-python.python",
     "ms-python.vscode-pylance",
-    "bmewburn.vscode-intelephense-client"
-  ]
+    "charliermarsh.ruff",
+    "ms-python.mypy-type-checker",
+    "editorconfig.editorconfig"
+  ],
+  "unwantedRecommendations": ["swordev.phpstan"]
 }

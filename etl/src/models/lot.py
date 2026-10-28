@@ -1,32 +1,33 @@
-from typing import Any, Dict, Optional
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class LotDto(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
-    lot_reference: Optional[str] = None
-    title: Optional[str] = None
-    description: Optional[str] = None
-    estimated_value: Optional[str] = None        
-    estimated_currency: Optional[str] = None
-    framework_max_value: Optional[str] = None    
-    framework_max_currency: Optional[str] = None
-    main_cpv: Optional[str] = None
-    nuts_code: Optional[str] = None
-    award_criterion: Optional[str] = None       
-    submission_deadline: Optional[str] = None
-    document_url: Optional[str] = None
-    detail_url: Optional[str] = None
-    place_of_performance: Optional[str] = None
-    duration_value: Optional[str] = None
-    duration_unit: Optional[str] = None
-    eu_funded: Optional[str] = None              
-    eordering_allowed: Optional[bool] = None     
-    epayment_allowed: Optional[bool] = None    
-    einvoicing: Optional[str] = None            
-    variants_allowed: Optional[str] = None       
-    reserved_execution: Optional[str] = None    
-    reserved_participation: Optional[str] = None 
+    lot_reference: str | None = None
+    title: str | None = None
+    description: str | None = None
+    estimated_value: str | None = None
+    estimated_currency: str | None = None
+    framework_max_value: str | None = None
+    framework_max_currency: str | None = None
+    main_cpv: str | None = None
+    nuts_code: str | None = None
+    award_criterion: str | None = None
+    submission_deadline: str | None = None
+    document_url: str | None = None
+    detail_url: str | None = None
+    place_of_performance: str | None = None
+    duration_value: str | None = None
+    duration_unit: str | None = None
+    eu_funded: str | None = None
+    eordering_allowed: bool | None = None
+    epayment_allowed: bool | None = None
+    einvoicing: str | None = None
+    variants_allowed: str | None = None
+    reserved_execution: str | None = None
+    reserved_participation: str | None = None
 
-    extra_fields: Dict[str, Any] = Field(default_factory=dict)
+    extra_fields: dict[str, Any] = Field(default_factory=dict)

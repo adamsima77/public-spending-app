@@ -1,11 +1,13 @@
 import datetime
 import hashlib
 import json
+import logging
 from typing import Any
 
 import redis.asyncio as redis
-
 from core.database import Database
+
+logger = logging.getLogger(__name__)
 
 
 class Logger:
@@ -23,19 +25,16 @@ class Logger:
         if not self._redis or level not in ("warning", "error"):
             return True
 
-        message_hash = hashlib.sha256(
-            f"{level}:{message}".encode()
-        ).hexdigest()
+        message_hash = hashlib.sha256(f"{level}:{message}".encode()).hexdigest()
         key = f"etl:log_dedup:{message_hash}"
 
         try:
-            was_set = await self._redis.set(
-                key, "1", nx=True, ex=self._dedup_window
-            )
-            return was_set is True
+            was_set = await self._redis.set(key, "1", nx=True, ex=self._dedup_window)
         except Exception as e:
-            print(f"Redis dedup check failed: {e}")
+            logger.warning("Redis dedup check failed: %s", e)
             return True
+        else:
+            return was_set is True
 
     async def log(
         self,
@@ -60,5 +59,5 @@ class Logger:
         }
         try:
             await self._db.execute(query, params)
-        except Exception as e:
-            print(f"Logger failed to write to DB: {e}")
+        except Exception:
+            logger.exception("Logger failed to write to DB")

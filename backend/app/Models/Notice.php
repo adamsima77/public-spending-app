@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notice extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'notice_id',
         'notice_version',
@@ -35,6 +32,7 @@ class Notice extends Model
         'extra_fields' => 'array',
     ];
 
+    /** @return BelongsTo<Procedure, $this> */
     public function procedure(): BelongsTo
     {
         return $this->belongsTo(Procedure::class);

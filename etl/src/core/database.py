@@ -2,14 +2,13 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any
 
+from config import settings
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-
-from config import settings
 
 
 class Database:
@@ -38,7 +37,7 @@ class Database:
                 await session.rollback()
                 raise
 
-    async def execute(self, query: str, params: dict | None = None) -> None:
+    async def execute(self, query: str, params: dict[str, Any] | None = None) -> None:
         async with self._session_factory() as session:
             try:
                 await session.execute(text(query), params or {})
@@ -47,7 +46,7 @@ class Database:
                 await session.rollback()
                 raise
 
-    async def execute_many(self, query: str, params_list: list[dict]) -> None:
+    async def execute_many(self, query: str, params_list: list[dict[str, Any]]) -> None:
         if not params_list:
             return
         async with self._session_factory() as session:
@@ -59,14 +58,14 @@ class Database:
                 raise
 
     async def fetch_all(
-        self, query: str, params: dict | None = None
+        self, query: str, params: dict[str, Any] | None = None
     ) -> list[dict[str, Any]]:
         async with self._session_factory() as session:
             result = await session.execute(text(query), params or {})
             return [dict(row._mapping) for row in result]
 
     async def fetch_one(
-        self, query: str, params: dict | None = None
+        self, query: str, params: dict[str, Any] | None = None
     ) -> dict[str, Any] | None:
         async with self._session_factory() as session:
             result = await session.execute(text(query), params or {})
