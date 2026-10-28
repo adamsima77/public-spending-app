@@ -10,9 +10,10 @@ from typing import TYPE_CHECKING, Any
 
 import aiofiles
 import httpx
+from SPARQLWrapper import JSON, SPARQLWrapper
+
 from config import DOWNLOAD_DIR, DOWNLOAD_LINKS_QUERY, settings
 from core.database import Database, db
-from SPARQLWrapper import JSON, SPARQLWrapper
 
 if TYPE_CHECKING:
     from pathlib import Path

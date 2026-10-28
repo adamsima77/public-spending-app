@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 import redis.asyncio as redis
+
 from core.database import Database
 
 logger = logging.getLogger(__name__)

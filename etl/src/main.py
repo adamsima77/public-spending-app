@@ -1,8 +1,9 @@
 import asyncio
 from pathlib import Path
 
-import config
 import redis.asyncio as redis
+
+import config
 from core.database import Database, db
 from core.logger import Logger
 from core.notification import Notification

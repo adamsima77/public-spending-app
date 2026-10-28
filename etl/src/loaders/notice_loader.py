@@ -6,6 +6,10 @@ from functools import partial
 from operator import gt, lt
 from typing import Any, TypeVar
 
+from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.database import Database
 from core.logger import Logger
 from models.lot import LotDto
@@ -14,9 +18,6 @@ from models.lot_tender import LotTenderDto
 from models.notice import NoticeDto
 from models.organization import OrganizationDto
 from models.settled_contract import SettledContractDto
-from sqlalchemy import text
-from sqlalchemy.exc import DBAPIError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 ResultT = TypeVar("ResultT")
 MIN_DATETIME_LENGTH = 10

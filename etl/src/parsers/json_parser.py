@@ -5,8 +5,9 @@ from dataclasses import dataclass
 from typing import Any
 
 import aiofiles
-import config
 import ijson
+
+import config
 from core.logger import Logger
 from models.lot import LotDto
 from models.lot_result import LotResultDto, SubmissionStatDto

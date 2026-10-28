@@ -1,7 +1,8 @@
 from typing import Any
 
-from models.organization import OrganizationDto
 from pydantic import BaseModel, ConfigDict, Field
+
+from models.organization import OrganizationDto
 
 
 class ProcedureDto(BaseModel):

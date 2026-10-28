@@ -1,12 +1,13 @@
 from typing import Any
 
+from pydantic import BaseModel, ConfigDict, Field
+
 from models.lot import LotDto
 from models.lot_result import LotResultDto
 from models.lot_tender import LotTenderDto, TenderingPartyDto
 from models.organization import OrganizationDto
 from models.procedure import ProcedureDto
 from models.settled_contract import SettledContractDto
-from pydantic import BaseModel, ConfigDict, Field
 
 
 class NoticeDto(BaseModel):

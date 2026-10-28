@@ -84,6 +84,7 @@ ignore = [
 [tool.ruff.lint.isort]
 combine-as-imports = true
 split-on-trailing-comma = true
+known-first-party = ["config", "core", "models", "loaders", "parsers", "downloaders"]
 
 [tool.ruff.lint.pylint]
 max-args = 7
