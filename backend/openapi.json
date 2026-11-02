@@ -2292,7 +2292,7 @@
                     },
                     "epayment_allowed": {
                         "type": [
-                            "string",
+                            "boolean",
                             "null"
                         ]
                     },
@@ -2342,10 +2342,7 @@
                         "format": "date-time"
                     },
                     "procedure_id": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
+                        "type": "integer"
                     }
                 },
                 "required": [
