@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,10 +9,10 @@ class LotTenderDto(BaseModel):
 
     lot_reference: str | None = None
     tender_ref: str | None = None
-    tender_value: str | None = None
+    tender_value: Decimal | None = None
     tender_currency: str | None = None
     tendering_party_ref: str | None = None
-    rank: str | None = None
+    rank: int | None = None
     subcontracting: str | None = None
 
     extra_fields: dict[str, Any] = Field(default_factory=dict)

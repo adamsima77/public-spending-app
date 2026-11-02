@@ -16,8 +16,8 @@ class NoticeLot extends Model
         'lot_reference',
         'title',
         'description',
-        'value',
-        'currency',
+        'estimated_value',
+        'estimated_currency',
         'main_cpv',
         'nuts_code',
         'place_of_performance',
@@ -27,24 +27,26 @@ class NoticeLot extends Model
         'detail_url',
         'duration_value',
         'duration_unit',
-        'estimated_value',
-        'estimated_currency',
         'eu_funded',
-        'einvoicing_allowed',
         'eordering_allowed',
+        'epayment_allowed',
+        'einvoicing',
         'variants_allowed',
+        'reserved_execution',
         'reserved_participation',
+        'framework_max_value',
+        'framework_max_currency',
         'extra_fields',
     ];
 
     protected $casts = [
         'submission_deadline' => 'datetime',
-        'value' => 'decimal:2',
         'estimated_value' => 'decimal:2',
+        'framework_max_value' => 'decimal:2',
         'duration_value' => 'integer',
         'eu_funded' => 'boolean',
-        'einvoicing_allowed' => 'boolean',
         'eordering_allowed' => 'boolean',
+        'epayment_allowed' => 'boolean',
         'extra_fields' => 'array',
     ];
 
@@ -71,7 +73,7 @@ class NoticeLot extends Model
     {
         return $this->belongsToMany(Organization::class, 'lot_suppliers', 'lot_id', 'organization_id')
             ->using(LotSupplier::class)
-            ->withPivot('winning_amount')
+            ->withPivot('winning_amount', 'winning_currency', 'notice_record_id')
             ->withTimestamps();
     }
 

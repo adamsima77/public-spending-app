@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -16,7 +17,7 @@ class ProcedureDto(BaseModel):
     procedure_type: str | None = None
     contract_type: str | None = None
     main_cpv: str | None = None
-    estimated_value: str | None = None
+    estimated_value: Decimal | None = None
     currency: str | None = None
     nuts_code: str | None = None
     buyer_profile_url: str | None = None

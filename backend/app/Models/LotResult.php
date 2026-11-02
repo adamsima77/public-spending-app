@@ -12,6 +12,7 @@ class LotResult extends Model
 {
     protected $fillable = [
         'notice_id',
+        'notice_record_id',
         'lot_reference',
         'lot_id',
         'award_outcome',
@@ -20,15 +21,18 @@ class LotResult extends Model
         'lowest_offer_currency',
         'highest_offer_value',
         'highest_offer_currency',
-        'tender_ref',
-        'contract_ref',
+        'tender_refs',
+        'contract_refs',
         'extra_fields',
     ];
 
     protected $casts = [
         'lot_id' => 'integer',
+        'notice_record_id' => 'integer',
         'lowest_offer_value' => 'decimal:2',
         'highest_offer_value' => 'decimal:2',
+        'tender_refs' => 'array',
+        'contract_refs' => 'array',
         'extra_fields' => 'array',
     ];
 
@@ -36,6 +40,12 @@ class LotResult extends Model
     public function lot(): BelongsTo
     {
         return $this->belongsTo(NoticeLot::class, 'lot_id');
+    }
+
+    /** @return BelongsTo<Notice, $this> */
+    public function notice(): BelongsTo
+    {
+        return $this->belongsTo(Notice::class, 'notice_record_id');
     }
 
     /** @return BelongsTo<ClAwardOutcome, $this> */

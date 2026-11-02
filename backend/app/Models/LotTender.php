@@ -6,27 +6,28 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class LotTender extends Model
 {
     protected $fillable = [
         'notice_id',
+        'notice_record_id',
         'lot_reference',
         'lot_id',
-        'winning_value',
-        'winning_currency',
+        'tender_value',
+        'tender_currency',
         'tendering_party_ref',
         'rank',
         'subcontracting',
-        'winner_organization_ids',
         'extra_fields',
     ];
 
     protected $casts = [
         'lot_id' => 'integer',
+        'notice_record_id' => 'integer',
         'rank' => 'integer',
-        'winning_value' => 'decimal:2',
-        'winner_organization_ids' => 'array',
+        'tender_value' => 'decimal:2',
         'extra_fields' => 'array',
     ];
 
@@ -34,5 +35,28 @@ class LotTender extends Model
     public function lot(): BelongsTo
     {
         return $this->belongsTo(NoticeLot::class, 'lot_id');
+    }
+
+    /** @return BelongsTo<Notice, $this> */
+    public function notice(): BelongsTo
+    {
+        return $this->belongsTo(Notice::class, 'notice_record_id');
+    }
+
+    /** @return BelongsToMany<Organization, $this> */
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'lot_tender_organizations');
+    }
+
+    /** @return BelongsToMany<SettledContract, $this> */
+    public function settledContracts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            SettledContract::class,
+            'settled_contract_tenders',
+            'lot_tender_id',
+            'settled_contract_id',
+        );
     }
 }

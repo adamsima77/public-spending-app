@@ -13,11 +13,12 @@ class Procedure extends Model
     protected $fillable = [
         'procedure_reference',
         'procedure_identifier',
+        'source_order_id',
         'buyer_id',
         'procedure_type',
         'contract_type',
         'main_cpv',
-        'total_value',
+        'estimated_value',
         'currency',
         'nuts_code',
         'place_of_performance',
@@ -30,7 +31,7 @@ class Procedure extends Model
 
     protected $casts = [
         'buyer_id' => 'integer',
-        'total_value' => 'decimal:2',
+        'estimated_value' => 'decimal:2',
         'extra_fields' => 'array',
     ];
 

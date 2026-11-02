@@ -2459,12 +2459,6 @@
                             "integer",
                             "null"
                         ]
-                    },
-                    "winner_organization_id": {
-                        "type": [
-                            "integer",
-                            "null"
-                        ]
                     }
                 },
                 "required": [
@@ -2481,8 +2475,7 @@
                     "extra_fields",
                     "created_at",
                     "updated_at",
-                    "procedure_id",
-                    "winner_organization_id"
+                    "procedure_id"
                 ],
                 "title": "NoticeResource"
             },

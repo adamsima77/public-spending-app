@@ -12,12 +12,15 @@ class LotSupplier extends Pivot
     protected $fillable = [
         'lot_id',
         'organization_id',
+        'notice_record_id',
         'winning_amount',
+        'winning_currency',
     ];
 
     protected $casts = [
         'lot_id' => 'integer',
         'organization_id' => 'integer',
+        'notice_record_id' => 'integer',
         'winning_amount' => 'decimal:2',
     ];
 

@@ -39,7 +39,6 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
-# ───────────── Ruff ─────────────
 [tool.ruff]
 target-version = "py310"
 line-length = 100
@@ -57,7 +56,6 @@ select = [
     "A",        # shadowing builtins
     "C4",       # comprehensions
     "DTZ",      # timezone-aware datetime
-    "T20",      # zákaz print()
     "SIM",      # zjednodušenia
     "PTH",      # pathlib
     "PL",       # pylint (zložitosť, magické hodnoty, počet argumentov)
@@ -97,7 +95,6 @@ quote-style = "double"
 line-ending = "lf"
 docstring-code-format = true
 
-# ───────────── Mypy ─────────────
 [tool.mypy]
 python_version = "3.10"
 strict = true
@@ -113,7 +110,6 @@ pretty = false
 module = ["SPARQLWrapper.*", "ijson.*"]
 ignore_missing_imports = true
 
-# ───────────── Pytest ─────────────
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

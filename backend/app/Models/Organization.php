@@ -54,7 +54,7 @@ class Organization extends Model
     {
         return $this->belongsToMany(NoticeLot::class, 'lot_suppliers', 'organization_id', 'lot_id')
             ->using(LotSupplier::class)
-            ->withPivot('winning_amount')
+            ->withPivot('winning_amount', 'winning_currency', 'notice_record_id')
             ->withTimestamps();
     }
 }

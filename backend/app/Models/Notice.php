@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Notice extends Model
 {
@@ -36,5 +37,23 @@ class Notice extends Model
     public function procedure(): BelongsTo
     {
         return $this->belongsTo(Procedure::class);
+    }
+
+    /** @return HasMany<LotResult, $this> */
+    public function lotResults(): HasMany
+    {
+        return $this->hasMany(LotResult::class, 'notice_record_id');
+    }
+
+    /** @return HasMany<LotTender, $this> */
+    public function lotTenders(): HasMany
+    {
+        return $this->hasMany(LotTender::class, 'notice_record_id');
+    }
+
+    /** @return HasMany<SettledContract, $this> */
+    public function settledContracts(): HasMany
+    {
+        return $this->hasMany(SettledContract::class, 'notice_record_id');
     }
 }

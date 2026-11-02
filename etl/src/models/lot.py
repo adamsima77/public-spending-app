@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -9,9 +10,9 @@ class LotDto(BaseModel):
     lot_reference: str | None = None
     title: str | None = None
     description: str | None = None
-    estimated_value: str | None = None
+    estimated_value: Decimal | None = None
     estimated_currency: str | None = None
-    framework_max_value: str | None = None
+    framework_max_value: Decimal | None = None
     framework_max_currency: str | None = None
     main_cpv: str | None = None
     nuts_code: str | None = None
@@ -20,9 +21,9 @@ class LotDto(BaseModel):
     document_url: str | None = None
     detail_url: str | None = None
     place_of_performance: str | None = None
-    duration_value: str | None = None
+    duration_value: int | None = None
     duration_unit: str | None = None
-    eu_funded: str | None = None
+    eu_funded: bool | None = None
     eordering_allowed: bool | None = None
     epayment_allowed: bool | None = None
     einvoicing: str | None = None

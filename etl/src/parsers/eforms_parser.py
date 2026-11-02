@@ -1,11 +1,9 @@
-import json
 import re
-from collections.abc import AsyncIterator, Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from typing import Any
-
-import aiofiles
-import ijson
 
 import config
 from core.logger import Logger
@@ -21,10 +19,13 @@ TPA_REF_PATTERN = re.compile(r"TPA-\d+")
 TEN_REF_PATTERN = re.compile(r"TEN-\d+")
 CON_REF_PATTERN = re.compile(r"CON-\d+")
 ORDER_ID_PATTERN = re.compile(r"\(ID:\s*(\d+)\)\s*$")
+VERSION_PATTERN = re.compile(r"\d+")
+MIN_DATETIME_LENGTH = 10
+MAX_DIAGNOSTIC_SAMPLES = 10
 
 
 @dataclass(frozen=True)
-class JsonParserConfig:
+class EformsParserConfig:
     notice_fields: Mapping[str, str]
     organization_fields: Mapping[str, str]
     procedure_fields: Mapping[str, str]
@@ -44,10 +45,10 @@ class JsonParserConfig:
     list_fields: frozenset[str] = frozenset()
 
 
-class JsonParser:
+class EformsParser:
     def __init__(
         self,
-        parser_config: JsonParserConfig,
+        parser_config: EformsParserConfig,
         logger: Logger | None = None,
     ) -> None:
         self.notice_fields = parser_config.notice_fields
@@ -74,6 +75,90 @@ class JsonParser:
         )
 
         self._logger = logger
+
+    @staticmethod
+    def has_eforms_sdk(inner: dict[str, Any]) -> bool:
+        nodes = inner.get("components")
+        if isinstance(nodes, list):
+            return any(EformsParser._has_eforms_sdk_node(node) for node in nodes)
+        return False
+
+    @staticmethod
+    def _has_eforms_sdk_node(node: Any) -> bool:
+        if isinstance(node, list):
+            return any(EformsParser._has_eforms_sdk_node(child) for child in node)
+        if not isinstance(node, dict):
+            return False
+        value = node.get("value")
+        return (
+            node.get("key") == "OPT-002-notice"
+            and isinstance(value, str)
+            and value.casefold().startswith("eforms-sdk-")
+        ) or EformsParser._has_eforms_sdk_node(node.get("components"))
+
+    async def parse_notice(
+        self,
+        inner: dict[str, Any],
+        bulletin_publish_date: str | None,
+        db_file_id: int | None = None,
+        submission_id: int | str | None = None,
+    ) -> NoticeDto | None:
+        notice_dto = NoticeDto()
+        orphan_lot_fields: dict[str, Any] = {}
+        ctx: dict[str, Any] = {
+            "org": None,
+            "lot": None,
+            "lot_result": None,
+            "submission_stat": None,
+            "lot_tender": None,
+            "tendering_party": None,
+            "settled_contract": None,
+        }
+        for component in inner["components"]:
+            self._process_node(component, notice_dto, ctx, orphan_lot_fields)
+
+        if not notice_dto.notice_id or notice_dto.notice_version is None:
+            if self._logger:
+                await self._logger.log(
+                    "warning",
+                    "eForms položka bez rozpoznateľného notice ID/verzie, preskakujem",
+                    context={
+                        "submission_id": submission_id,
+                        "unrecognized_keys": list(notice_dto.extra_fields.keys())[:10],
+                    },
+                    file_id=db_file_id,
+                )
+            return None
+
+        if orphan_lot_fields and self._logger:
+            await self._logger.log(
+                "warning",
+                f"Nájdené *-Lot polia bez current_lot (anchor '{self.anchor_lot}' pravdepodobne nesedí)",
+                context={
+                    "notice_id": notice_dto.notice_id,
+                    "submission_id": submission_id,
+                    "form_type": notice_dto.form_type,
+                    "orphan_lot_keys": list(orphan_lot_fields.keys())[:10],
+                },
+                file_id=db_file_id,
+            )
+
+        if notice_dto.form_type == "competition" and not notice_dto.lots and self._logger:
+            await self._logger.log(
+                "warning",
+                "Notice typu 'competition' bez jediného lotu",
+                context={
+                    "notice_id": notice_dto.notice_id,
+                    "submission_id": submission_id,
+                    "procedure_reference": notice_dto.procedure.reference,
+                    "had_orphan_lot_fields": bool(orphan_lot_fields),
+                },
+                file_id=db_file_id,
+            )
+
+        self._post_process_dtos(notice_dto, bulletin_publish_date)
+        await self._resolve_org_refs(notice_dto, file_id=db_file_id)
+        return notice_dto
 
     def _extract_ref(self, node: dict[str, Any], pattern: re.Pattern[str]) -> str | None:
         sk_lang = node.get("lang", {}).get("sk", {})
@@ -130,7 +215,9 @@ class JsonParser:
             file_id=file_id,
         )
 
-    def _post_process_dtos(self, notice_dto: NoticeDto) -> None:
+    def _post_process_dtos(
+        self, notice_dto: NoticeDto, bulletin_publish_date: str | None = None
+    ) -> None:
         if notice_dto.title and not notice_dto.procedure.source_order_id:
             order_match = ORDER_ID_PATTERN.search(notice_dto.title)
             if order_match:
@@ -138,6 +225,7 @@ class JsonParser:
 
         for org in notice_dto.organizations:
             self._fill_organization_address(org)
+
         if notice_dto.lots and not any(lot.lot_reference for lot in notice_dto.lots):
             for position, lot in enumerate(notice_dto.lots, start=1):
                 lot.lot_reference = f"LOT-{position:04d}"
@@ -145,14 +233,14 @@ class JsonParser:
 
         for lot in notice_dto.lots:
             self._fill_submission_deadline(lot)
-
-        if notice_dto.issue_date:
-            issue_val = str(notice_dto.issue_date).strip()
-            if issue_val:
-                notice_dto.issue_date = issue_val
+            lot.submission_deadline = self.parse_datetime(lot.submission_deadline)
 
         if not notice_dto.published_at:
-            notice_dto.published_at = notice_dto.issue_date
+            notice_dto.published_at = (
+                self.parse_datetime(bulletin_publish_date) or notice_dto.issue_date
+            )
+
+        notice_dto.lot_results = self._merge_lot_results(notice_dto.lot_results)
 
     @staticmethod
     def _fill_organization_address(organization: OrganizationDto) -> None:
@@ -177,97 +265,144 @@ class JsonParser:
         else:
             lot.submission_deadline = date_string
 
-    async def parse_file(
-        self, file_path: str, db_file_id: int | None = None
-    ) -> AsyncIterator[NoticeDto]:
-        notices_parsed = 0
-        notices_skipped = 0
+    @staticmethod
+    def _parse_decimal(value: Any) -> Decimal | None:
+        if value is None:
+            return None
+        cleaned = str(value).replace(" ", "").replace("\xa0", "").replace(",", ".")
+        try:
+            parsed = Decimal(cleaned)
+        except (InvalidOperation, TypeError, ValueError):
+            return None
+        return parsed if parsed.is_finite() else None
 
-        async with aiofiles.open(file_path, mode="rb") as f:
-            async for item in ijson.items_async(f, "bulletinItemList.item"):
-                submission_id = item.get("submissionId") if isinstance(item, dict) else None
-                try:
-                    item_data = item.get("itemData") if isinstance(item, dict) else None
-                    if not item_data:
-                        continue
-                    inner = json.loads(item_data)
-                except (json.JSONDecodeError, KeyError, TypeError) as e:
-                    notices_skipped += 1
-                    if self._logger:
-                        await self._logger.log(
-                            "warning",
-                            f"Preskakujem item, chyba pri dekódovaní itemData: {e}",
-                            context={"submission_id": submission_id},
-                            file_id=db_file_id,
-                        )
-                    continue
+    @staticmethod
+    def _safe_int(value: Any, max_value: int = 2_000_000_000) -> int | None:
+        if value is None:
+            return None
+        try:
+            parsed = int(str(value).strip())
+        except (TypeError, ValueError):
+            return None
+        return parsed if 0 <= parsed <= max_value else None
 
-                notice_dto = NoticeDto()
+    @staticmethod
+    def _safe_currency(value: Any) -> str | None:
+        if value is None:
+            return None
+        currency = str(value).strip().upper()
+        return currency if re.fullmatch(r"[A-Z]{3}", currency) else None
 
-                orphan_lot_fields: dict[str, Any] = {}
-                ctx: dict[str, Any] = {
-                    "org": None,
-                    "lot": None,
-                    "lot_result": None,
-                    "submission_stat": None,
-                    "lot_tender": None,
-                    "tendering_party": None,
-                    "settled_contract": None,
-                }
-                for component in inner.get("components", []):
-                    self._process_node(component, notice_dto, ctx, orphan_lot_fields)
+    @staticmethod
+    def _eu_funded_flag(value: Any) -> bool | None:
+        if value is None:
+            return None
+        normalized = str(value).strip().lower()
+        if normalized == "eu-funds":
+            return True
+        if normalized == "no-eu-funds":
+            return False
+        return None
 
-                if not notice_dto.notice_id or not notice_dto.notice_version:
-                    notices_skipped += 1
-                    if self._logger:
-                        await self._logger.log(
-                            "warning",
-                            "Notice bez rozpoznateľnej BT štruktúry, preskakujem",
-                            context={
-                                "submission_id": submission_id,
-                                "unrecognized_keys": list(notice_dto.extra_fields.keys())[:10],
-                            },
-                            file_id=db_file_id,
-                        )
-                    continue
+    @staticmethod
+    def parse_datetime(value: Any) -> str | None:
+        if not value:
+            return None
+        val_str = str(value).strip()
+        date_with_tz = re.fullmatch(r"(\d{4}-\d{2}-\d{2})(?:Z|[+-]\d{2}:\d{2})", val_str)
+        if date_with_tz:
+            return date_with_tz.group(1)
+        try:
+            return datetime.fromisoformat(val_str).isoformat()
+        except ValueError:
+            return val_str if len(val_str) >= MIN_DATETIME_LENGTH else None
 
-                if orphan_lot_fields and self._logger:
-                    await self._logger.log(
-                        "warning",
-                        f"Nájdené *-Lot polia bez current_lot (anchor '{self.anchor_lot}' pravdepodobne nesedí)",
-                        context={
-                            "notice_id": notice_dto.notice_id,
-                            "submission_id": submission_id,
-                            "form_type": notice_dto.form_type,
-                            "orphan_lot_keys": list(orphan_lot_fields.keys())[:10],
-                        },
-                        file_id=db_file_id,
-                    )
+    @classmethod
+    def _normalize_mapped_value(cls, attr: str, value: Any) -> Any:
+        if isinstance(value, list):
+            value = value[0] if value else None
+        if attr == "notice_version":
+            if value is None:
+                return None
+            version = str(value).strip()
+            return int(version) if VERSION_PATTERN.fullmatch(version) else None
+        normalizers: dict[str, Callable[[Any], Any]] = {
+            "estimated_value": cls._parse_decimal,
+            "framework_max_value": cls._parse_decimal,
+            "lowest_offer_value": cls._parse_decimal,
+            "highest_offer_value": cls._parse_decimal,
+            "tender_value": cls._parse_decimal,
+            "duration_value": cls._safe_int,
+            "count": cls._safe_int,
+            "rank": cls._safe_int,
+            "currency": cls._safe_currency,
+            "estimated_currency": cls._safe_currency,
+            "framework_max_currency": cls._safe_currency,
+            "lowest_offer_currency": cls._safe_currency,
+            "highest_offer_currency": cls._safe_currency,
+            "tender_currency": cls._safe_currency,
+            "eu_funded": cls._eu_funded_flag,
+            "issue_date": cls.parse_datetime,
+            "published_at": cls.parse_datetime,
+            "submission_deadline": cls.parse_datetime,
+            "conclusion_date": cls.parse_datetime,
+        }
+        normalizer = normalizers.get(attr)
+        return normalizer(value) if normalizer else value
 
-                if notice_dto.form_type == "competition" and not notice_dto.lots and self._logger:
-                    await self._logger.log(
-                        "warning",
-                        "Notice typu 'competition' bez jediného lotu",
-                        context={
-                            "notice_id": notice_dto.notice_id,
-                            "submission_id": submission_id,
-                            "procedure_reference": notice_dto.procedure.reference,
-                            "had_orphan_lot_fields": bool(orphan_lot_fields),
-                        },
-                        file_id=db_file_id,
-                    )
+    def _merge_lot_results(self, lot_results: list[LotResultDto]) -> list[LotResultDto]:
+        merged: dict[str, LotResultDto] = {}
+        result: list[LotResultDto] = []
+        for lot_result in lot_results:
+            reference = lot_result.lot_reference
+            if not reference:
+                result.append(lot_result)
+                continue
 
-                self._post_process_dtos(notice_dto)
-                await self._resolve_org_refs(notice_dto, file_id=db_file_id)
-                notices_parsed += 1
-                yield notice_dto
+            base = merged.get(reference)
+            if base is None:
+                merged[reference] = lot_result
+                result.append(lot_result)
+                continue
 
-        if self._logger:
-            await self._logger.log(
-                "info",
-                f"Súbor spracovaný: {notices_parsed} notices, {notices_skipped} preskočených",
-                file_id=db_file_id,
+            for attr in ("tender_refs", "contract_refs"):
+                target = getattr(base, attr)
+                for item in getattr(lot_result, attr):
+                    if item not in target:
+                        target.append(item)
+
+            if base.award_outcome is None or (
+                base.award_outcome != "selec-w" and lot_result.award_outcome == "selec-w"
+            ):
+                base.award_outcome = lot_result.award_outcome
+                base.non_award_reason = lot_result.non_award_reason
+
+            for value_attr, currency_attr, choose_lower in (
+                ("lowest_offer_value", "lowest_offer_currency", True),
+                ("highest_offer_value", "highest_offer_currency", False),
+            ):
+                old_value = getattr(base, value_attr)
+                new_value = getattr(lot_result, value_attr)
+                if new_value is not None and (
+                    old_value is None
+                    or (new_value < old_value if choose_lower else new_value > old_value)
+                ):
+                    setattr(base, value_attr, new_value)
+                    setattr(base, currency_attr, getattr(lot_result, currency_attr))
+
+            known_categories = {stat.category_code for stat in base.submission_stats}
+            for stat in lot_result.submission_stats:
+                if stat.category_code and stat.category_code not in known_categories:
+                    base.submission_stats.append(stat)
+                    known_categories.add(stat.category_code)
+
+            for key, value in lot_result.extra_fields.items():
+                base.extra_fields.setdefault(key, value)
+            base.extra_fields["merged_result_count"] = (
+                base.extra_fields.get("merged_result_count", 1) + 1
             )
+
+        return result
 
     def _process_node(
         self,
@@ -394,16 +529,15 @@ class JsonParser:
         key: str,
         value: Any,
         suffix: str | None,
-        merge_list_values: bool = False,
     ) -> bool:
         if entity is None:
             return False
         attr = field_map.get(key)
         if attr is not None:
-            if merge_list_values:
+            if attr in self.list_fields:
                 self._set_field(entity, attr, value)
             else:
-                setattr(entity, attr, value)
+                setattr(entity, attr, self._normalize_mapped_value(attr, value))
             return True
         if suffix is not None and key.endswith(suffix):
             entity.extra_fields[key] = value
@@ -458,14 +592,14 @@ class JsonParser:
         if self._apply_special_reference(key, value, notice_dto, current_tendering_party):
             return
 
-        for entity, field_map, suffix, merge_list_values in (
-            (current_submission_stat, self.submission_stat_fields, None, False),
-            (current_lot_result, self.lot_result_fields, "-LotResult", True),
-            (current_lot_tender, self.lot_tender_fields, "-Tender", True),
-            (current_settled_contract, self.settled_contract_fields, "-Contract", True),
-            (current_lot, self.lot_fields, "-Lot", False),
+        for entity, field_map, suffix in (
+            (current_submission_stat, self.submission_stat_fields, None),
+            (current_lot_result, self.lot_result_fields, "-LotResult"),
+            (current_lot_tender, self.lot_tender_fields, "-Tender"),
+            (current_settled_contract, self.settled_contract_fields, "-Contract"),
+            (current_lot, self.lot_fields, "-Lot"),
         ):
-            if self._apply_entity_field(entity, field_map, key, value, suffix, merge_list_values):
+            if self._apply_entity_field(entity, field_map, key, value, suffix):
                 return
         self._apply_fallback_fields(
             key, value, notice_dto, current_org, current_lot, orphan_lot_fields

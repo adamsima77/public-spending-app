@@ -14,7 +14,7 @@ class NoticeDto(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
     notice_id: str | None = None
-    notice_version: str | None = None
+    notice_version: int | None = None
     notice_type: str | None = None
     form_type: str | None = None
     title: str | None = None
