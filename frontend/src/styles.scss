@@ -1,0 +1,24 @@
+@use '@angular/material' as mat;
+@use './styles/theme-colors' as theme;
+
+@use './styles/colors';
+@use './styles/typography';
+@use './styles/spacing';
+@use './styles/effects';
+@use './styles/base';
+
+html {
+  color-scheme: light;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: theme.$primary-palette,
+        tertiary: theme.$tertiary-palette,
+        theme-type: light,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
