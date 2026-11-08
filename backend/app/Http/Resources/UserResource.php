@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use UnexpectedValueException;
 
 class UserResource extends JsonResource
 {
@@ -18,10 +16,16 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        if (! $this->resource instanceof User) {
-            throw new UnexpectedValueException('UserResource requires a User.');
-        }
-
-        return $this->resource->toArray();
+        return [
+            'id' => $this->resource->id,
+            'name' => $this->resource->name,
+            'surname' => $this->resource->surname,
+            'email' => $this->resource->email,
+            'email_verified_at' => $this->resource->email_verified_at,
+            'role_id' => $this->resource->role_id,
+            'created_at' => $this->resource->created_at,
+            'updated_at' => $this->resource->updated_at,
+            'role' => new RoleResource($this->whenLoaded('role')),
+        ];
     }
 }

@@ -56,6 +56,42 @@ class NoticeLot extends Model
         return $this->belongsTo(Procedure::class);
     }
 
+    /** @return BelongsTo<ClDurationUnit, $this> */
+    public function durationUnit(): BelongsTo
+    {
+        return $this->belongsTo(ClDurationUnit::class, 'duration_unit', 'code');
+    }
+
+    /** @return BelongsTo<ClAwardCriterionType, $this> */
+    public function awardCriterionType(): BelongsTo
+    {
+        return $this->belongsTo(ClAwardCriterionType::class, 'award_criterion', 'code');
+    }
+
+    /** @return BelongsTo<ClReservedProcurement, $this> */
+    public function reservedExecutionType(): BelongsTo
+    {
+        return $this->belongsTo(ClReservedProcurement::class, 'reserved_execution', 'code');
+    }
+
+    /** @return BelongsTo<ClReservedProcurement, $this> */
+    public function reservedParticipationType(): BelongsTo
+    {
+        return $this->belongsTo(ClReservedProcurement::class, 'reserved_participation', 'code');
+    }
+
+    /** @return BelongsTo<ClPermission, $this> */
+    public function einvoicingPermission(): BelongsTo
+    {
+        return $this->belongsTo(ClPermission::class, 'einvoicing', 'code');
+    }
+
+    /** @return BelongsTo<ClApplicability, $this> */
+    public function variantsApplicability(): BelongsTo
+    {
+        return $this->belongsTo(ClApplicability::class, 'variants_allowed', 'code');
+    }
+
     /** @return BelongsTo<CpvCode, $this> */
     public function cpvCode(): BelongsTo
     {

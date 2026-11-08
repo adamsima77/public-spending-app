@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\EtlLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use UnexpectedValueException;
 
 class EtlLogResource extends JsonResource
 {
@@ -18,10 +16,14 @@ class EtlLogResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        if (! $this->resource instanceof EtlLog) {
-            throw new UnexpectedValueException('EtlLogResource requires an EtlLog.');
-        }
-
-        return $this->resource->toArray();
+        return [
+            'id' => $this->resource->id,
+            'file_id' => $this->resource->file_id,
+            'level' => $this->resource->level,
+            'message' => $this->resource->message,
+            'context' => $this->resource->context,
+            'created_at' => $this->resource->created_at,
+            'file' => new DownloadedFileResource($this->whenLoaded('file')),
+        ];
     }
 }

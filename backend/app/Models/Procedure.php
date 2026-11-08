@@ -41,6 +41,18 @@ class Procedure extends Model
         return $this->belongsTo(Organization::class, 'buyer_id');
     }
 
+    /** @return BelongsTo<ClProcedureType, $this> */
+    public function procedureType(): BelongsTo
+    {
+        return $this->belongsTo(ClProcedureType::class, 'procedure_type', 'code');
+    }
+
+    /** @return BelongsTo<ClContractNature, $this> */
+    public function contractNature(): BelongsTo
+    {
+        return $this->belongsTo(ClContractNature::class, 'contract_type', 'code');
+    }
+
     /** @return BelongsTo<CpvCode, $this> */
     public function cpvCode(): BelongsTo
     {

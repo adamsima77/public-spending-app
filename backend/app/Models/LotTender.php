@@ -43,6 +43,12 @@ class LotTender extends Model
         return $this->belongsTo(Notice::class, 'notice_record_id');
     }
 
+    /** @return BelongsTo<ClApplicability, $this> */
+    public function subcontractingApplicability(): BelongsTo
+    {
+        return $this->belongsTo(ClApplicability::class, 'subcontracting', 'code');
+    }
+
     /** @return BelongsToMany<Organization, $this> */
     public function organizations(): BelongsToMany
     {

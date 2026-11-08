@@ -5,6 +5,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideApiConfiguration } from './generated';
 import { environment } from '../environments/environment';
 import { provideClientHydration } from '@angular/platform-browser';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,5 +14,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideApiConfiguration(environment.apiUrl),
     provideClientHydration(),
+    provideCharts(withDefaultRegisterables()),
   ],
 };

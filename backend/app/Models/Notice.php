@@ -39,6 +39,24 @@ class Notice extends Model
         return $this->belongsTo(Procedure::class);
     }
 
+    /** @return BelongsTo<ClFormType, $this> */
+    public function formType(): BelongsTo
+    {
+        return $this->belongsTo(ClFormType::class, 'form_type', 'code');
+    }
+
+    /** @return BelongsTo<ClNoticeType, $this> */
+    public function noticeType(): BelongsTo
+    {
+        return $this->belongsTo(ClNoticeType::class, 'notice_type', 'code');
+    }
+
+    /** @return BelongsTo<ClLegalBasis, $this> */
+    public function legalBasis(): BelongsTo
+    {
+        return $this->belongsTo(ClLegalBasis::class, 'legal_basis', 'code');
+    }
+
     /** @return HasMany<LotResult, $this> */
     public function lotResults(): HasMany
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\OrganizationIndexRequest;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
 use App\Services\OrganizationService;
@@ -14,9 +15,11 @@ class OrganizationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(OrganizationService $organizationService): AnonymousResourceCollection
-    {
-        $organizations = $organizationService->getAllOrganizations();
+    public function index(
+        OrganizationIndexRequest $request,
+        OrganizationService $organizationService,
+    ): AnonymousResourceCollection {
+        $organizations = $organizationService->getAllOrganizations($request->validated());
 
         return OrganizationResource::collection($organizations);
     }

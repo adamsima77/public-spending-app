@@ -54,6 +54,12 @@ class LotResult extends Model
         return $this->belongsTo(ClAwardOutcome::class, 'award_outcome', 'code');
     }
 
+    /** @return BelongsTo<ClNonAwardReason, $this> */
+    public function nonAwardReason(): BelongsTo
+    {
+        return $this->belongsTo(ClNonAwardReason::class, 'non_award_reason', 'code');
+    }
+
     /** @return HasMany<LotResultSubmissionStat, $this> */
     public function submissionStats(): HasMany
     {

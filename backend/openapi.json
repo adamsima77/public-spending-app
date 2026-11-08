@@ -10,12 +10,298 @@
         }
     ],
     "paths": {
+        "/cpv-codes": {
+            "get": {
+                "operationId": "cpv-codes.index",
+                "tags": [
+                    "CpvCode"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "level",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "parent_code",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `CpvCodeResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CpvCodeResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/cpv-codes/{cpvCode}": {
+            "get": {
+                "operationId": "cpv-codes.show",
+                "tags": [
+                    "CpvCode"
+                ],
+                "parameters": [
+                    {
+                        "name": "cpvCode",
+                        "in": "path",
+                        "required": true,
+                        "description": "The cpv code ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`CpvCodeResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/CpvCodeResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
         "/downloaded-files": {
             "get": {
-                "operationId": "downloadedFile.index",
+                "operationId": "downloaded-files.index",
                 "summary": "Display a listing of the resource",
                 "tags": [
                     "DownloadedFile"
+                ],
+                "parameters": [
+                    {
+                        "name": "status_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 16
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -28,7 +314,17 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/DownloadedFileResource"
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/components/schemas/DownloadedFileResource"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "status"
+                                                        ]
+                                                    }
+                                                ]
                                             }
                                         },
                                         "links": {
@@ -69,47 +365,6 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -122,29 +377,26 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "to": {
+                                                "next_cursor": {
                                                     "type": [
-                                                        "integer",
+                                                        "string",
                                                         "null"
                                                     ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "description": "The \"cursor\" that points to the next set of items."
                                                 },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "The \"cursor\" that points to the previous set of items."
                                                 }
                                             },
                                             "required": [
-                                                "current_page",
-                                                "from",
-                                                "last_page",
-                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "to",
-                                                "total"
+                                                "next_cursor",
+                                                "prev_cursor"
                                             ]
                                         }
                                     },
@@ -162,24 +414,28 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
         },
-        "/downloaded-files/{file}": {
+        "/downloaded-files/{downloadedFile}": {
             "get": {
-                "operationId": "downloadedFile.show",
+                "operationId": "downloaded-files.show",
                 "summary": "Display the specified resource",
                 "tags": [
                     "DownloadedFile"
                 ],
                 "parameters": [
                     {
-                        "name": "file",
+                        "name": "downloadedFile",
                         "in": "path",
                         "required": true,
+                        "description": "The downloaded file ID",
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     }
                 ],
@@ -192,7 +448,18 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/DownloadedFileResource"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/DownloadedFileResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "status",
+                                                        "logs"
+                                                    ]
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -205,6 +472,9 @@
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
                     },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
@@ -213,10 +483,83 @@
         },
         "/etl-logs": {
             "get": {
-                "operationId": "etlLog.index",
+                "operationId": "etl-logs.index",
                 "summary": "Display a listing of the resource",
                 "tags": [
                     "EtlLog"
+                ],
+                "parameters": [
+                    {
+                        "name": "file_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "level",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "info",
+                                "warning",
+                                "error",
+                                null
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "created_from",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "created_to",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -229,7 +572,17 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/EtlLogResource"
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/components/schemas/EtlLogResource"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "file"
+                                                        ]
+                                                    }
+                                                ]
                                             }
                                         },
                                         "links": {
@@ -270,47 +623,6 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -323,29 +635,26 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "to": {
+                                                "next_cursor": {
                                                     "type": [
-                                                        "integer",
+                                                        "string",
                                                         "null"
                                                     ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "description": "The \"cursor\" that points to the next set of items."
                                                 },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "The \"cursor\" that points to the previous set of items."
                                                 }
                                             },
                                             "required": [
-                                                "current_page",
-                                                "from",
-                                                "last_page",
-                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "to",
-                                                "total"
+                                                "next_cursor",
+                                                "prev_cursor"
                                             ]
                                         }
                                     },
@@ -363,13 +672,16 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
         },
         "/etl-logs/{etlLog}": {
             "get": {
-                "operationId": "etlLog.show",
+                "operationId": "etl-logs.show",
                 "summary": "Display the specified resource",
                 "tags": [
                     "EtlLog"
@@ -394,7 +706,17 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/EtlLogResource"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/EtlLogResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "file"
+                                                    ]
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -416,12 +738,535 @@
                 }
             }
         },
+        "/codelists/applicabilities": {
+            "get": {
+                "operationId": "codelists.applicabilities",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/award-criterion-types": {
+            "get": {
+                "operationId": "codelists.award-criterion-types",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/award-outcomes": {
+            "get": {
+                "operationId": "codelists.award-outcomes",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/company-sizes": {
+            "get": {
+                "operationId": "codelists.company-sizes",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/contract-natures": {
+            "get": {
+                "operationId": "codelists.contract-natures",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/duration-units": {
+            "get": {
+                "operationId": "codelists.duration-units",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/form-types": {
+            "get": {
+                "operationId": "codelists.form-types",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/legal-bases": {
+            "get": {
+                "operationId": "codelists.legal-bases",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/non-award-reasons": {
+            "get": {
+                "operationId": "codelists.non-award-reasons",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/notice-types": {
+            "get": {
+                "operationId": "codelists.notice-types",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/permissions": {
+            "get": {
+                "operationId": "codelists.permissions",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/procedure-types": {
+            "get": {
+                "operationId": "codelists.procedure-types",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/reserved-procurement": {
+            "get": {
+                "operationId": "codelists.reserved-procurement",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/codelists/submission-types": {
+            "get": {
+                "operationId": "codelists.submission-types",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `CodelistResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CodelistResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notices": {
             "get": {
-                "operationId": "notice.index",
+                "operationId": "notices.index",
                 "summary": "Display a listing of the resource",
                 "tags": [
                     "Notice"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "notice_type",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 32
+                        }
+                    },
+                    {
+                        "name": "form_type",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 32
+                        }
+                    },
+                    {
+                        "name": "procedure_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "is_latest",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "published_from",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "published_to",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -434,7 +1279,20 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/NoticeResource"
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/components/schemas/NoticeResource"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "procedure",
+                                                            "form_type_definition",
+                                                            "notice_type_definition",
+                                                            "legal_basis_definition"
+                                                        ]
+                                                    }
+                                                ]
                                             }
                                         },
                                         "links": {
@@ -475,47 +1333,6 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -528,29 +1345,26 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "to": {
+                                                "next_cursor": {
                                                     "type": [
-                                                        "integer",
+                                                        "string",
                                                         "null"
                                                     ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "description": "The \"cursor\" that points to the next set of items."
                                                 },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "The \"cursor\" that points to the previous set of items."
                                                 }
                                             },
                                             "required": [
-                                                "current_page",
-                                                "from",
-                                                "last_page",
-                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "to",
-                                                "total"
+                                                "next_cursor",
+                                                "prev_cursor"
                                             ]
                                         }
                                     },
@@ -562,13 +1376,16 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
         },
         "/notices/{notice}": {
             "get": {
-                "operationId": "notice.show",
+                "operationId": "notices.show",
                 "summary": "Display the specified resource",
                 "tags": [
                     "Notice"
@@ -593,7 +1410,23 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/NoticeResource"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/NoticeResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "procedure",
+                                                        "form_type_definition",
+                                                        "notice_type_definition",
+                                                        "legal_basis_definition",
+                                                        "lot_results",
+                                                        "lot_tenders",
+                                                        "settled_contracts"
+                                                    ]
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -611,10 +1444,75 @@
         },
         "/notice-lots": {
             "get": {
-                "operationId": "noticeLot.index",
+                "operationId": "notice-lots.index",
                 "summary": "Display a listing of the resource",
                 "tags": [
                     "NoticeLot"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "procedure_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "main_cpv",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "nuts_code",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "eu_funded",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -627,7 +1525,25 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/NoticeLotResource"
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/components/schemas/NoticeLotResource"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "procedure",
+                                                            "cpv_code",
+                                                            "nut_code",
+                                                            "duration_unit_definition",
+                                                            "award_criterion_type",
+                                                            "reserved_execution_definition",
+                                                            "reserved_participation_definition",
+                                                            "einvoicing_permission",
+                                                            "variants_applicability"
+                                                        ]
+                                                    }
+                                                ]
                                             }
                                         },
                                         "links": {
@@ -668,47 +1584,6 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -721,29 +1596,26 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "to": {
+                                                "next_cursor": {
                                                     "type": [
-                                                        "integer",
+                                                        "string",
                                                         "null"
                                                     ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "description": "The \"cursor\" that points to the next set of items."
                                                 },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "The \"cursor\" that points to the previous set of items."
                                                 }
                                             },
                                             "required": [
-                                                "current_page",
-                                                "from",
-                                                "last_page",
-                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "to",
-                                                "total"
+                                                "next_cursor",
+                                                "prev_cursor"
                                             ]
                                         }
                                     },
@@ -755,13 +1627,16 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
         },
         "/notice-lots/{noticeLot}": {
             "get": {
-                "operationId": "noticeLot.show",
+                "operationId": "notice-lots.show",
                 "summary": "Display the specified resource",
                 "tags": [
                     "NoticeLot"
@@ -786,7 +1661,28 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/NoticeLotResource"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/NoticeLotResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "procedure",
+                                                        "cpv_code",
+                                                        "nut_code",
+                                                        "duration_unit_definition",
+                                                        "award_criterion_type",
+                                                        "reserved_execution_definition",
+                                                        "reserved_participation_definition",
+                                                        "einvoicing_permission",
+                                                        "variants_applicability",
+                                                        "suppliers",
+                                                        "lot_results",
+                                                        "tenders"
+                                                    ]
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -803,37 +1699,6 @@
             }
         },
         "/nut-codes": {
-            "post": {
-                "operationId": "nut-codes.store",
-                "summary": "Store a newly created resource in storage",
-                "tags": [
-                    "NutCode"
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/StoreNutCodeRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": ""
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                }
-            },
             "get": {
                 "operationId": "nut-codes.index",
                 "summary": "Display a listing of the resource",
@@ -984,115 +1849,6 @@
             }
         },
         "/nut-codes/{nutCode}": {
-            "put": {
-                "operationId": "nut-codes.update",
-                "summary": "Update the specified resource in storage",
-                "tags": [
-                    "NutCode"
-                ],
-                "parameters": [
-                    {
-                        "name": "nutCode",
-                        "in": "path",
-                        "required": true,
-                        "description": "The nut code ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateNutCodeRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Nut code bol upraven\u00fd !"
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                }
-            },
-            "delete": {
-                "operationId": "nut-codes.destroy",
-                "summary": "Remove the specified resource from storage",
-                "tags": [
-                    "NutCode"
-                ],
-                "parameters": [
-                    {
-                        "name": "nutCode",
-                        "in": "path",
-                        "required": true,
-                        "description": "The nut code ID",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Nut code bol \u00faspe\u0161ne vymazan\u00fd !"
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            },
             "get": {
                 "operationId": "nut-codes.show",
                 "summary": "Display the specified resource",
@@ -1137,10 +1893,67 @@
         },
         "/organizations": {
             "get": {
-                "operationId": "organization.index",
+                "operationId": "organizations.index",
                 "summary": "Display a listing of the resource",
                 "tags": [
                     "Organization"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "country",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "minLength": 2,
+                            "maxLength": 2
+                        }
+                    },
+                    {
+                        "name": "nuts_code",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "company_size",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -1153,7 +1966,18 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/OrganizationResource"
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/components/schemas/OrganizationResource"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "nut_code",
+                                                            "company_size_definition"
+                                                        ]
+                                                    }
+                                                ]
                                             }
                                         },
                                         "links": {
@@ -1194,47 +2018,6 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -1247,29 +2030,26 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "to": {
+                                                "next_cursor": {
                                                     "type": [
-                                                        "integer",
+                                                        "string",
                                                         "null"
                                                     ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "description": "The \"cursor\" that points to the next set of items."
                                                 },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "The \"cursor\" that points to the previous set of items."
                                                 }
                                             },
                                             "required": [
-                                                "current_page",
-                                                "from",
-                                                "last_page",
-                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "to",
-                                                "total"
+                                                "next_cursor",
+                                                "prev_cursor"
                                             ]
                                         }
                                     },
@@ -1281,13 +2061,16 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
         },
         "/organizations/{organization}": {
             "get": {
-                "operationId": "organization.show",
+                "operationId": "organizations.show",
                 "summary": "Display the specified resource",
                 "tags": [
                     "Organization"
@@ -1330,10 +2113,76 @@
         },
         "/procedures": {
             "get": {
-                "operationId": "procedure.index",
+                "operationId": "procedures.index",
                 "summary": "Display a listing of the resource",
                 "tags": [
                     "Procedure"
+                ],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "procedure_type",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 32
+                        }
+                    },
+                    {
+                        "name": "buyer_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "main_cpv",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "nuts_code",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -1346,7 +2195,21 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/ProcedureResource"
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/components/schemas/ProcedureResource"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "buyer",
+                                                            "procedure_type_definition",
+                                                            "contract_nature",
+                                                            "cpv_code",
+                                                            "nut_code"
+                                                        ]
+                                                    }
+                                                ]
                                             }
                                         },
                                         "links": {
@@ -1387,47 +2250,6 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -1440,29 +2262,26 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "to": {
+                                                "next_cursor": {
                                                     "type": [
-                                                        "integer",
+                                                        "string",
                                                         "null"
                                                     ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "description": "The \"cursor\" that points to the next set of items."
                                                 },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "The \"cursor\" that points to the previous set of items."
                                                 }
                                             },
                                             "required": [
-                                                "current_page",
-                                                "from",
-                                                "last_page",
-                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "to",
-                                                "total"
+                                                "next_cursor",
+                                                "prev_cursor"
                                             ]
                                         }
                                     },
@@ -1474,13 +2293,16 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
         },
         "/procedures/{procedure}": {
             "get": {
-                "operationId": "procedure.show",
+                "operationId": "procedures.show",
                 "summary": "Display the specified resource",
                 "tags": [
                     "Procedure"
@@ -1505,7 +2327,23 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/ProcedureResource"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/ProcedureResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "buyer",
+                                                        "procedure_type_definition",
+                                                        "contract_nature",
+                                                        "cpv_code",
+                                                        "nut_code",
+                                                        "notices",
+                                                        "notice_lots"
+                                                    ]
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -1523,10 +2361,89 @@
         },
         "/system-logs": {
             "get": {
-                "operationId": "systemLog.index",
+                "operationId": "system-logs.index",
                 "summary": "Display a listing of the resource",
                 "tags": [
                     "SystemLog"
+                ],
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 32
+                        }
+                    },
+                    {
+                        "name": "event",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 64
+                        }
+                    },
+                    {
+                        "name": "method",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 16
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "created_from",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "created_to",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -1539,7 +2456,17 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/SystemLogResource"
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/components/schemas/SystemLogResource"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "required": [
+                                                            "user"
+                                                        ]
+                                                    }
+                                                ]
                                             }
                                         },
                                         "links": {
@@ -1580,47 +2507,6 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -1633,29 +2519,26 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "to": {
+                                                "next_cursor": {
                                                     "type": [
-                                                        "integer",
+                                                        "string",
                                                         "null"
                                                     ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "description": "The \"cursor\" that points to the next set of items."
                                                 },
-                                                "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "The \"cursor\" that points to the previous set of items."
                                                 }
                                             },
                                             "required": [
-                                                "current_page",
-                                                "from",
-                                                "last_page",
-                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "to",
-                                                "total"
+                                                "next_cursor",
+                                                "prev_cursor"
                                             ]
                                         }
                                     },
@@ -1673,13 +2556,16 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
         },
         "/system-logs/{systemLog}": {
             "get": {
-                "operationId": "systemLog.show",
+                "operationId": "system-logs.show",
                 "summary": "Display the specified resource",
                 "tags": [
                     "SystemLog"
@@ -1704,7 +2590,17 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/components/schemas/SystemLogResource"
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/SystemLogResource"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "required": [
+                                                        "user"
+                                                    ]
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2063,6 +2959,73 @@
     },
     "components": {
         "schemas": {
+            "CodelistResource": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "label_sk": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "label_sk",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "CodelistResource"
+            },
+            "CpvCodeResource": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "name_sk": {
+                        "type": "string"
+                    },
+                    "level": {
+                        "type": "integer"
+                    },
+                    "parent_code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "code",
+                    "name_sk",
+                    "level",
+                    "parent_code",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "CpvCodeResource"
+            },
             "DownloadedFileResource": {
                 "type": "object",
                 "properties": {
@@ -2081,6 +3044,15 @@
                             "null"
                         ]
                     },
+                    "file_hash": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "status_id": {
+                        "type": "integer"
+                    },
                     "downloaded_at": {
                         "type": [
                             "string",
@@ -2094,12 +3066,6 @@
                             "null"
                         ],
                         "format": "date-time"
-                    },
-                    "file_hash": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
                     },
                     "format": {
                         "type": [
@@ -2121,8 +3087,14 @@
                         ],
                         "format": "date-time"
                     },
-                    "status_id": {
-                        "type": "integer"
+                    "status": {
+                        "$ref": "#/components/schemas/EtlStatusResource"
+                    },
+                    "logs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/EtlLogResource"
+                        }
                     }
                 },
                 "required": [
@@ -2130,13 +3102,13 @@
                     "file_id",
                     "url",
                     "filename",
+                    "file_hash",
+                    "status_id",
                     "downloaded_at",
                     "parsed_at",
-                    "file_hash",
                     "format",
                     "created_at",
-                    "updated_at",
-                    "status_id"
+                    "updated_at"
                 ],
                 "title": "DownloadedFileResource"
             },
@@ -2145,6 +3117,12 @@
                 "properties": {
                     "id": {
                         "type": "integer"
+                    },
+                    "file_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "level": {
                         "type": "string"
@@ -2161,27 +3139,381 @@
                     "created_at": {
                         "type": "string"
                     },
-                    "file_id": {
-                        "type": [
-                            "integer",
-                            "null"
+                    "file": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/DownloadedFileResource"
+                            },
+                            {
+                                "type": "null"
+                            }
                         ]
                     }
                 },
                 "required": [
                     "id",
+                    "file_id",
                     "level",
                     "message",
                     "context",
-                    "created_at",
-                    "file_id"
+                    "created_at"
                 ],
                 "title": "EtlLogResource"
+            },
+            "EtlStatusResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "EtlStatusResource"
+            },
+            "LotResultResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "notice_id": {
+                        "type": "string"
+                    },
+                    "notice_record_id": {
+                        "type": "integer"
+                    },
+                    "lot_reference": {
+                        "type": "string"
+                    },
+                    "lot_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "award_outcome": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "non_award_reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lowest_offer_value": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lowest_offer_currency": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "highest_offer_value": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "highest_offer_currency": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "tender_refs": {
+                        "type": "array",
+                        "items": {}
+                    },
+                    "contract_refs": {
+                        "type": "array",
+                        "items": {}
+                    },
+                    "extra_fields": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "lot": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/NoticeLotResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "award_outcome_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "non_award_reason_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "submission_stats": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LotResultSubmissionStatResource"
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "notice_id",
+                    "notice_record_id",
+                    "lot_reference",
+                    "lot_id",
+                    "award_outcome",
+                    "non_award_reason",
+                    "lowest_offer_value",
+                    "lowest_offer_currency",
+                    "highest_offer_value",
+                    "highest_offer_currency",
+                    "tender_refs",
+                    "contract_refs",
+                    "extra_fields",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "LotResultResource"
+            },
+            "LotResultSubmissionStatResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "lot_result_id": {
+                        "type": "integer"
+                    },
+                    "category_code": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "lot_result_id",
+                    "category_code",
+                    "count",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "LotResultSubmissionStatResource"
+            },
+            "LotTenderResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "notice_id": {
+                        "type": "string"
+                    },
+                    "notice_record_id": {
+                        "type": "integer"
+                    },
+                    "lot_reference": {
+                        "type": "string"
+                    },
+                    "lot_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "tender_ref": {
+                        "type": "string"
+                    },
+                    "tender_value": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "tender_currency": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "tendering_party_ref": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "rank": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "subcontracting": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "extra_fields": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "lot": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/NoticeLotResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "notice": {
+                        "$ref": "#/components/schemas/NoticeResource"
+                    },
+                    "subcontracting_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "organizations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrganizationResource"
+                        }
+                    },
+                    "settled_contracts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SettledContractResource"
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "notice_id",
+                    "notice_record_id",
+                    "lot_reference",
+                    "lot_id",
+                    "tender_ref",
+                    "tender_value",
+                    "tender_currency",
+                    "tendering_party_ref",
+                    "rank",
+                    "subcontracting",
+                    "extra_fields",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "LotTenderResource"
             },
             "NoticeLotResource": {
                 "type": "object",
                 "properties": {
                     "id": {
+                        "type": "integer"
+                    },
+                    "procedure_id": {
                         "type": "integer"
                     },
                     "lot_reference": {
@@ -2266,18 +3598,6 @@
                             "null"
                         ]
                     },
-                    "framework_max_value": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "framework_max_currency": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
                     "eu_funded": {
                         "type": [
                             "boolean",
@@ -2320,6 +3640,18 @@
                             "null"
                         ]
                     },
+                    "framework_max_value": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "framework_max_currency": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "extra_fields": {
                         "type": [
                             "array",
@@ -2341,12 +3673,111 @@
                         ],
                         "format": "date-time"
                     },
-                    "procedure_id": {
-                        "type": "integer"
+                    "procedure": {
+                        "$ref": "#/components/schemas/ProcedureResource"
+                    },
+                    "cpv_code": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CpvCodeResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "nut_code": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/NutCodeResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "duration_unit_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "award_criterion_type": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "reserved_execution_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "reserved_participation_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "einvoicing_permission": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "variants_applicability": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "suppliers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrganizationResource"
+                        }
+                    },
+                    "lot_results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LotResultResource"
+                        }
+                    },
+                    "tenders": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LotTenderResource"
+                        }
                     }
                 },
                 "required": [
                     "id",
+                    "procedure_id",
                     "lot_reference",
                     "title",
                     "description",
@@ -2361,8 +3792,6 @@
                     "detail_url",
                     "duration_value",
                     "duration_unit",
-                    "framework_max_value",
-                    "framework_max_currency",
                     "eu_funded",
                     "eordering_allowed",
                     "epayment_allowed",
@@ -2370,10 +3799,11 @@
                     "variants_allowed",
                     "reserved_execution",
                     "reserved_participation",
+                    "framework_max_value",
+                    "framework_max_currency",
                     "extra_fields",
                     "created_at",
-                    "updated_at",
-                    "procedure_id"
+                    "updated_at"
                 ],
                 "title": "NoticeLotResource"
             },
@@ -2437,6 +3867,12 @@
                         ],
                         "items": {}
                     },
+                    "procedure_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -2451,11 +3887,70 @@
                         ],
                         "format": "date-time"
                     },
-                    "procedure_id": {
-                        "type": [
-                            "integer",
-                            "null"
+                    "procedure": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ProcedureResource"
+                            },
+                            {
+                                "type": "object",
+                                "required": [
+                                    "buyer",
+                                    "procedure_type_definition",
+                                    "contract_nature",
+                                    "cpv_code",
+                                    "nut_code"
+                                ]
+                            }
                         ]
+                    },
+                    "form_type_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "notice_type_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "legal_basis_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "lot_results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LotResultResource"
+                        }
+                    },
+                    "lot_tenders": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LotTenderResource"
+                        }
+                    },
+                    "settled_contracts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SettledContractResource"
+                        }
                     }
                 },
                 "required": [
@@ -2470,9 +3965,9 @@
                     "published_at",
                     "is_latest",
                     "extra_fields",
+                    "procedure_id",
                     "created_at",
-                    "updated_at",
-                    "procedure_id"
+                    "updated_at"
                 ],
                 "title": "NoticeResource"
             },
@@ -2510,6 +4005,16 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "parent": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/NutCodeResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 },
                 "required": [
@@ -2621,6 +4126,26 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "nut_code": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "company_size_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
                     }
                 },
                 "required": [
@@ -2650,6 +4175,18 @@
                         "type": "integer"
                     },
                     "procedure_reference": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "procedure_identifier": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "source_order_id": {
                         "type": [
                             "string",
                             "null"
@@ -2748,22 +4285,74 @@
                         ],
                         "format": "date-time"
                     },
-                    "procedure_identifier": {
-                        "type": [
-                            "string",
-                            "null"
+                    "buyer": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/OrganizationResource"
+                            },
+                            {
+                                "type": "null"
+                            }
                         ]
                     },
-                    "source_order_id": {
-                        "type": [
-                            "string",
-                            "null"
+                    "procedure_type_definition": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
                         ]
+                    },
+                    "contract_nature": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CodelistResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "cpv_code": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/CpvCodeResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "nut_code": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/NutCodeResource"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "notices": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/NoticeResource"
+                        }
+                    },
+                    "notice_lots": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/NoticeLotResource"
+                        }
                     }
                 },
                 "required": [
                     "id",
                     "procedure_reference",
+                    "procedure_identifier",
+                    "source_order_id",
                     "buyer_id",
                     "procedure_type",
                     "contract_type",
@@ -2778,42 +4367,120 @@
                     "performance_note",
                     "extra_fields",
                     "created_at",
-                    "updated_at",
-                    "procedure_identifier",
-                    "source_order_id"
+                    "updated_at"
                 ],
                 "title": "ProcedureResource"
             },
-            "StoreNutCodeRequest": {
+            "RoleResource": {
                 "type": "object",
                 "properties": {
-                    "code": {
-                        "type": "string",
-                        "minLength": 2,
-                        "maxLength": 5
+                    "id": {
+                        "type": "integer"
                     },
-                    "name_sk": {
-                        "type": "string",
-                        "maxLength": 255
+                    "name": {
+                        "type": "string"
                     },
-                    "level": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 3
+                    "slug": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "slug"
+                ],
+                "title": "RoleResource"
+            },
+            "SettledContractResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
                     },
-                    "parent_code": {
+                    "notice_id": {
+                        "type": "string"
+                    },
+                    "notice_record_id": {
+                        "type": "integer"
+                    },
+                    "contract_ref": {
+                        "type": "string"
+                    },
+                    "contract_number": {
                         "type": [
                             "string",
                             "null"
                         ]
+                    },
+                    "conclusion_date": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "title": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "contract_url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "tender_refs": {
+                        "type": "array",
+                        "items": {}
+                    },
+                    "extra_fields": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "notice": {
+                        "$ref": "#/components/schemas/NoticeResource"
+                    },
+                    "tenders": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LotTenderResource"
+                        }
                     }
                 },
                 "required": [
-                    "code",
-                    "name_sk",
-                    "level"
+                    "id",
+                    "notice_id",
+                    "notice_record_id",
+                    "contract_ref",
+                    "contract_number",
+                    "conclusion_date",
+                    "title",
+                    "contract_url",
+                    "tender_refs",
+                    "extra_fields",
+                    "created_at",
+                    "updated_at"
                 ],
-                "title": "StoreNutCodeRequest"
+                "title": "SettledContractResource"
             },
             "SystemLogResource": {
                 "type": "object",
@@ -2902,6 +4569,19 @@
                             "null"
                         ],
                         "format": "date-time"
+                    },
+                    "user": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/UserResource"
+                            },
+                            {
+                                "type": "object",
+                                "required": [
+                                    "role"
+                                ]
+                            }
+                        ]
                     }
                 },
                 "required": [
@@ -2922,37 +4602,6 @@
                     "updated_at"
                 ],
                 "title": "SystemLogResource"
-            },
-            "UpdateNutCodeRequest": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string",
-                        "minLength": 2,
-                        "maxLength": 5
-                    },
-                    "name_sk": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
-                    "level": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 3
-                    },
-                    "parent_code": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                },
-                "required": [
-                    "code",
-                    "name_sk",
-                    "level"
-                ],
-                "title": "UpdateNutCodeRequest"
             },
             "UpdateUserRequest": {
                 "type": "object",
@@ -2998,6 +4647,9 @@
                         ],
                         "format": "date-time"
                     },
+                    "role_id": {
+                        "type": "integer"
+                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -3012,8 +4664,8 @@
                         ],
                         "format": "date-time"
                     },
-                    "role_id": {
-                        "type": "integer"
+                    "role": {
+                        "$ref": "#/components/schemas/RoleResource"
                     }
                 },
                 "required": [
@@ -3022,14 +4674,63 @@
                     "surname",
                     "email",
                     "email_verified_at",
+                    "role_id",
                     "created_at",
-                    "updated_at",
-                    "role_id"
+                    "updated_at"
                 ],
                 "title": "UserResource"
             }
         },
         "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ModelNotFoundException": {
+                "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
             "AuthorizationException": {
                 "description": "Authorization error",
                 "content": {
@@ -3063,55 +4764,6 @@
                             },
                             "required": [
                                 "message"
-                            ]
-                        }
-                    }
-                }
-            },
-            "ModelNotFoundException": {
-                "description": "Not found",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "message": {
-                                    "type": "string",
-                                    "description": "Error overview."
-                                }
-                            },
-                            "required": [
-                                "message"
-                            ]
-                        }
-                    }
-                }
-            },
-            "ValidationException": {
-                "description": "Validation error",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "message": {
-                                    "type": "string",
-                                    "description": "Errors overview."
-                                },
-                                "errors": {
-                                    "type": "object",
-                                    "description": "A detailed description of each field that failed validation.",
-                                    "additionalProperties": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "required": [
-                                "message",
-                                "errors"
                             ]
                         }
                     }

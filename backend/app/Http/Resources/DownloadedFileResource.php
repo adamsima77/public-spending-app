@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\DownloadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use UnexpectedValueException;
 
 class DownloadedFileResource extends JsonResource
 {
@@ -18,10 +16,20 @@ class DownloadedFileResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        if (! $this->resource instanceof DownloadedFile) {
-            throw new UnexpectedValueException('DownloadedFileResource requires a DownloadedFile.');
-        }
-
-        return $this->resource->toArray();
+        return [
+            'id' => $this->resource->id,
+            'file_id' => $this->resource->file_id,
+            'url' => $this->resource->url,
+            'filename' => $this->resource->filename,
+            'file_hash' => $this->resource->file_hash,
+            'status_id' => $this->resource->status_id,
+            'downloaded_at' => $this->resource->downloaded_at,
+            'parsed_at' => $this->resource->parsed_at,
+            'format' => $this->resource->format,
+            'created_at' => $this->resource->created_at,
+            'updated_at' => $this->resource->updated_at,
+            'status' => new EtlStatusResource($this->whenLoaded('status')),
+            'logs' => EtlLogResource::collection($this->whenLoaded('logs')),
+        ];
     }
 }
