@@ -1,0 +1,13 @@
+@let navConf = navigationConfig();
+@let isSidebarActive = sidebarService.isSidebarActive();
+<app-navbar [navigationConfig]="navConf"></app-navbar>
+<app-sidebar [navigationConfig]="navConf"></app-sidebar>
+<router-outlet></router-outlet>
+<div
+  class="overlay"
+  [class.overlay-active]="isSidebarActive"
+  (click)="changeSidebarState()"
+  tabindex="0"
+  role="button"
+></div>
+<app-footer></app-footer>

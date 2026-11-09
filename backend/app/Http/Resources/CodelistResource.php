@@ -7,6 +7,14 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin \App\Models\ClApplicability
+ *
+ * @property-read string $code
+ * @property-read string|null $label_sk
+ * @property-read \Illuminate\Support\Carbon|null $created_at
+ * @property-read \Illuminate\Support\Carbon|null $updated_at
+ */
 class CodelistResource extends JsonResource
 {
     /** @return array<string, mixed> */

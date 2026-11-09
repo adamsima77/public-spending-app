@@ -1,0 +1,44 @@
+@let isSidebarOpen = sidebarService.isSidebarActive();
+
+<nav>
+  <span class="icon">Placeholder</span>
+
+  <div #navigation class="navigation">
+    <ul class="links">
+      @for (item of navigationConfig(); track item.path) {
+        <li>
+          <a
+            #navLink
+            [routerLink]="item.path"
+            (click)="updateIndicatorPosition()"
+            [class.active]="sidebarService.isActive(item.path)"
+          >
+            {{ item.label }}
+          </a>
+        </li>
+      }
+    </ul>
+
+    <div
+      class="indicator"
+      [style.left]="indicatorStyle().left"
+      [style.width]="indicatorStyle().width"
+    ></div>
+  </div>
+
+  <div class="icons">
+    <svg lucideCircleUser [size]="24" class="user-icon"></svg>
+
+    <button
+      mat-icon-button
+      type="button"
+      class="menu-button"
+      (click)="changeSidebarState()"
+      [attr.aria-expanded]="isSidebarOpen"
+      aria-label="Otvoriť navigáciu"
+      aria-controls="sidebar"
+    >
+      <svg lucideMenu [size]="24" aria-hidden="true"></svg>
+    </button>
+  </div>
+</nav>

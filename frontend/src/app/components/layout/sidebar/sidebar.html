@@ -1,0 +1,24 @@
+@let isSidebarOpen = sidebarService.isSidebarActive();
+
+<aside
+  [class.open-sidebar]="isSidebarOpen"
+  [class.close-sidebar]="!isSidebarOpen"
+  [attr.inert]="!isSidebarOpen ? '' : null"
+>
+  <span>Placeholder</span>
+  <hr />
+
+  <ul>
+    @for (item of navigationConfig(); track item.path) {
+      <li>
+        <a
+          [routerLink]="item.path"
+          (click)="closeSidebar()"
+          [class.active]="sidebarService.isActive(item.path)"
+        >
+          {{ item.label }}
+        </a>
+      </li>
+    }
+  </ul>
+</aside>

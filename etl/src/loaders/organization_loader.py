@@ -108,12 +108,20 @@ class OrganizationLoader(LoaderSupport):
                 org.cin,
                 """
                     SELECT id FROM organizations
-                    WHERE CASE
-                            WHEN CAST(:country AS varchar) IN ('SK', 'CZ')
-                                 AND regexp_replace(cin, '[^0-9]', '', 'g') ~ '^[0-9]{1,8}$'
-                            THEN lpad(regexp_replace(cin, '[^0-9]', '', 'g'), 8, '0')
-                            ELSE regexp_replace(cin, '[^0-9]', '', 'g')
-                          END = :value
+                    WHERE (
+                            (
+                                CAST(:country AS varchar) IN ('SK', 'CZ')
+                                AND regexp_replace(cin, '[^0-9]', '', 'g') ~ '^[0-9]{1,8}$'
+                                AND lpad(regexp_replace(cin, '[^0-9]', '', 'g'), 8, '0') = :value
+                            )
+                            OR (
+                                (
+                                    CAST(:country AS varchar) IS NULL
+                                    OR CAST(:country AS varchar) NOT IN ('SK', 'CZ')
+                                )
+                                AND cin = :value
+                            )
+                          )
                       AND (country IS NULL OR CAST(:country AS varchar) IS NULL
                            OR country = CAST(:country AS varchar))
                     ORDER BY (country IS NOT DISTINCT FROM CAST(:country AS varchar)) DESC,
