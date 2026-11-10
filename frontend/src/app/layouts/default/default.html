@@ -1,8 +1,15 @@
 @let navConf = navigationConfig();
 @let isSidebarActive = sidebarService.isSidebarActive();
+
 <app-navbar [navigationConfig]="navConf"></app-navbar>
-<app-sidebar [navigationConfig]="navConf"></app-sidebar>
-<router-outlet></router-outlet>
+
+<div class="app-layout">
+  <app-sidebar [navigationConfig]="navConf"></app-sidebar>
+  <main class="content-wrapper">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+
 <div
   class="overlay"
   [class.overlay-active]="isSidebarActive"
@@ -10,4 +17,5 @@
   tabindex="0"
   role="button"
 ></div>
+
 <app-footer></app-footer>

@@ -6,14 +6,14 @@ namespace App\Services;
 
 use App\Models\Notice;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class NoticeService
 {
     /** @param array<string, mixed> $filters
-     * @return CursorPaginator<int, Notice>
+     * @return LengthAwarePaginator<int, Notice>
      */
-    public function getNotices(array $filters = []): CursorPaginator
+    public function getNotices(array $filters = []): LengthAwarePaginator
     {
         $query = Notice::query()->with([
             'procedure.buyer',
@@ -54,6 +54,11 @@ class NoticeService
         return $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->cursorPaginate((int) ($filters['per_page'] ?? 15));
+            ->paginate(
+                (int) ($filters['per_page'] ?? 15),
+                ['*'],
+                'page',
+                (int) ($filters['page'] ?? 1),
+            );
     }
 }

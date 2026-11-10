@@ -23,6 +23,7 @@ class EtlLogIndexRequest extends FormRequest
             'created_from' => ['nullable', 'date'],
             'created_to' => ['nullable', 'date', 'after_or_equal:created_from'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

@@ -1,0 +1,36 @@
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+
+  mat-form-field {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
+
+  .submit-btn {
+    --mat-button-filled-container-shape: 0;
+    --mdc-filled-button-container-shape: 0;
+    border-radius: var(--radius-md);
+
+    min-width: 180px;
+    height: 48px;
+    padding: 0 2rem;
+  }
+}

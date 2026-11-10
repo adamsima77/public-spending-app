@@ -23,6 +23,7 @@ class ProcedureIndexRequest extends FormRequest
             'main_cpv' => ['nullable', 'string', 'exists:cpv_codes,code'],
             'nuts_code' => ['nullable', 'string', 'exists:nut_codes,code'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

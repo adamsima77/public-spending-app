@@ -10,16 +10,12 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { SidebarService } from '../../../core/services/sidebar.service';
+import { SidebarService } from '../../../core/services/sidebar/sidebar.service';
 import { NavConfig } from '../../../config/nav-config';
 import { LucideCircleUser, LucideMenu } from '@lucide/angular';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-
-export interface IndicatorStyle {
-  left: string;
-  width: string;
-}
+import { IndicatorStyle } from './navbar.model';
 
 @Component({
   imports: [LucideCircleUser, LucideMenu, RouterLink, MatButtonModule],

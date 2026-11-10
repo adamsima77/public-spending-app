@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\EtlLog;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EtlLogService
 {
     /** @param array<string, mixed> $filters
-     * @return CursorPaginator<int, EtlLog>
+     * @return LengthAwarePaginator<int, EtlLog>
      */
-    public function getAllLogs(array $filters = []): CursorPaginator
+    public function getAllLogs(array $filters = []): LengthAwarePaginator
     {
         $query = EtlLog::query()->with(['file.status']);
 
@@ -37,6 +37,11 @@ class EtlLogService
         return $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->cursorPaginate((int) ($filters['per_page'] ?? 15));
+            ->paginate(
+                (int) ($filters['per_page'] ?? 15),
+                ['*'],
+                'page',
+                (int) ($filters['page'] ?? 1),
+            );
     }
 }

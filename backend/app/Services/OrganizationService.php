@@ -6,14 +6,14 @@ namespace App\Services;
 
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class OrganizationService
 {
     /** @param array<string, mixed> $filters
-     * @return CursorPaginator<int, Organization>
+     * @return LengthAwarePaginator<int, Organization>
      */
-    public function getAllOrganizations(array $filters = []): CursorPaginator
+    public function getAllOrganizations(array $filters = []): LengthAwarePaginator
     {
         $query = Organization::query()->with(['nutCode', 'companySize']);
 
@@ -33,6 +33,11 @@ class OrganizationService
 
         return $query
             ->orderBy('id')
-            ->cursorPaginate((int) ($filters['per_page'] ?? 15));
+            ->paginate(
+                (int) ($filters['per_page'] ?? 15),
+                ['*'],
+                'page',
+                (int) ($filters['page'] ?? 1),
+            );
     }
 }

@@ -6,14 +6,14 @@ namespace App\Services;
 
 use App\Models\DownloadedFile;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DownloadedFileService
 {
     /** @param array<string, mixed> $filters
-     * @return CursorPaginator<int, DownloadedFile>
+     * @return LengthAwarePaginator<int, DownloadedFile>
      */
-    public function getAllDownloadedFiles(array $filters = []): CursorPaginator
+    public function getAllDownloadedFiles(array $filters = []): LengthAwarePaginator
     {
         $query = DownloadedFile::query()->with(['status']);
 
@@ -33,6 +33,11 @@ class DownloadedFileService
         return $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->cursorPaginate((int) ($filters['per_page'] ?? 15));
+            ->paginate(
+                (int) ($filters['per_page'] ?? 15),
+                ['*'],
+                'page',
+                (int) ($filters['page'] ?? 1),
+            );
     }
 }

@@ -25,6 +25,7 @@ class NoticeIndexRequest extends FormRequest
             'published_from' => ['nullable', 'date'],
             'published_to' => ['nullable', 'date', 'after_or_equal:published_from'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

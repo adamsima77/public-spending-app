@@ -10,6 +10,48 @@
         }
     ],
     "paths": {
+        "/contact-messages": {
+            "post": {
+                "operationId": "contactMessage.store",
+                "tags": [
+                    "ContactMessage"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ContactMessageRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Contact message created successfully."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
         "/cpv-codes": {
             "get": {
                 "operationId": "cpv-codes.index",
@@ -59,6 +101,17 @@
                             ],
                             "minimum": 1,
                             "maximum": 100
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
                         }
                     }
                 ],
@@ -301,6 +354,17 @@
                             "minimum": 1,
                             "maximum": 100
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -365,6 +429,47 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -377,26 +482,29 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "next_cursor": {
+                                                "to": {
                                                     "type": [
-                                                        "string",
+                                                        "integer",
                                                         "null"
                                                     ],
-                                                    "description": "The \"cursor\" that points to the next set of items."
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
                                                 },
-                                                "prev_cursor": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "The \"cursor\" that points to the previous set of items."
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
                                                 }
                                             },
                                             "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "next_cursor",
-                                                "prev_cursor"
+                                                "to",
+                                                "total"
                                             ]
                                         }
                                     },
@@ -559,6 +667,17 @@
                             "minimum": 1,
                             "maximum": 100
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -623,6 +742,47 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -635,26 +795,29 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "next_cursor": {
+                                                "to": {
                                                     "type": [
-                                                        "string",
+                                                        "integer",
                                                         "null"
                                                     ],
-                                                    "description": "The \"cursor\" that points to the next set of items."
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
                                                 },
-                                                "prev_cursor": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "The \"cursor\" that points to the previous set of items."
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
                                                 }
                                             },
                                             "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "next_cursor",
-                                                "prev_cursor"
+                                                "to",
+                                                "total"
                                             ]
                                         }
                                     },
@@ -1266,6 +1429,17 @@
                             "minimum": 1,
                             "maximum": 100
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -1333,6 +1507,47 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -1345,26 +1560,29 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "next_cursor": {
+                                                "to": {
                                                     "type": [
-                                                        "string",
+                                                        "integer",
                                                         "null"
                                                     ],
-                                                    "description": "The \"cursor\" that points to the next set of items."
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
                                                 },
-                                                "prev_cursor": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "The \"cursor\" that points to the previous set of items."
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
                                                 }
                                             },
                                             "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "next_cursor",
-                                                "prev_cursor"
+                                                "to",
+                                                "total"
                                             ]
                                         }
                                     },
@@ -1512,6 +1730,17 @@
                             "minimum": 1,
                             "maximum": 100
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -1584,6 +1813,47 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -1596,26 +1866,29 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "next_cursor": {
+                                                "to": {
                                                     "type": [
-                                                        "string",
+                                                        "integer",
                                                         "null"
                                                     ],
-                                                    "description": "The \"cursor\" that points to the next set of items."
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
                                                 },
-                                                "prev_cursor": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "The \"cursor\" that points to the previous set of items."
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
                                                 }
                                             },
                                             "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "next_cursor",
-                                                "prev_cursor"
+                                                "to",
+                                                "total"
                                             ]
                                         }
                                     },
@@ -1953,6 +2226,17 @@
                             "minimum": 1,
                             "maximum": 100
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -2018,6 +2302,47 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -2030,26 +2355,29 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "next_cursor": {
+                                                "to": {
                                                     "type": [
-                                                        "string",
+                                                        "integer",
                                                         "null"
                                                     ],
-                                                    "description": "The \"cursor\" that points to the next set of items."
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
                                                 },
-                                                "prev_cursor": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "The \"cursor\" that points to the previous set of items."
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
                                                 }
                                             },
                                             "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "next_cursor",
-                                                "prev_cursor"
+                                                "to",
+                                                "total"
                                             ]
                                         }
                                     },
@@ -2182,6 +2510,17 @@
                             "minimum": 1,
                             "maximum": 100
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -2250,6 +2589,47 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -2262,26 +2642,29 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "next_cursor": {
+                                                "to": {
                                                     "type": [
-                                                        "string",
+                                                        "integer",
                                                         "null"
                                                     ],
-                                                    "description": "The \"cursor\" that points to the next set of items."
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
                                                 },
-                                                "prev_cursor": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "The \"cursor\" that points to the previous set of items."
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
                                                 }
                                             },
                                             "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "next_cursor",
-                                                "prev_cursor"
+                                                "to",
+                                                "total"
                                             ]
                                         }
                                     },
@@ -2443,6 +2826,17 @@
                             "minimum": 1,
                             "maximum": 100
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -2507,6 +2901,47 @@
                                         "meta": {
                                             "type": "object",
                                             "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
                                                 "path": {
                                                     "type": [
                                                         "string",
@@ -2519,26 +2954,29 @@
                                                     "description": "Number of items shown per page.",
                                                     "minimum": 0
                                                 },
-                                                "next_cursor": {
+                                                "to": {
                                                     "type": [
-                                                        "string",
+                                                        "integer",
                                                         "null"
                                                     ],
-                                                    "description": "The \"cursor\" that points to the next set of items."
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
                                                 },
-                                                "prev_cursor": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "The \"cursor\" that points to the previous set of items."
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
                                                 }
                                             },
                                             "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
                                                 "path",
                                                 "per_page",
-                                                "next_cursor",
-                                                "prev_cursor"
+                                                "to",
+                                                "total"
                                             ]
                                         }
                                     },
@@ -2990,6 +3428,36 @@
                     "updated_at"
                 ],
                 "title": "CodelistResource"
+            },
+            "ContactMessageRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "surname": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "message": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 1000
+                    }
+                },
+                "required": [
+                    "name",
+                    "surname",
+                    "email",
+                    "message"
+                ],
+                "title": "ContactMessageRequest"
             },
             "CpvCodeResource": {
                 "type": "object",

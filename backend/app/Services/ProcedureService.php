@@ -6,14 +6,14 @@ namespace App\Services;
 
 use App\Models\Procedure;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProcedureService
 {
     /** @param array<string, mixed> $filters
-     * @return CursorPaginator<int, Procedure>
+     * @return LengthAwarePaginator<int, Procedure>
      */
-    public function getAllProcedures(array $filters = []): CursorPaginator
+    public function getAllProcedures(array $filters = []): LengthAwarePaginator
     {
         $query = Procedure::query()->with([
             'buyer.nutCode',
@@ -41,6 +41,11 @@ class ProcedureService
         return $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->cursorPaginate((int) ($filters['per_page'] ?? 15));
+            ->paginate(
+                (int) ($filters['per_page'] ?? 15),
+                ['*'],
+                'page',
+                (int) ($filters['page'] ?? 1),
+            );
     }
 }

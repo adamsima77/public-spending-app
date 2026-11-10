@@ -21,6 +21,7 @@ class CpvCodeIndexRequest extends FormRequest
             'level' => ['nullable', 'integer', 'min:1'],
             'parent_code' => ['nullable', 'string', 'exists:cpv_codes,code'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

@@ -23,6 +23,7 @@ class NoticeLotIndexRequest extends FormRequest
             'nuts_code' => ['nullable', 'string', 'exists:nut_codes,code'],
             'eu_funded' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

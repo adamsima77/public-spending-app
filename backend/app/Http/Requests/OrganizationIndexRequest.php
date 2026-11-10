@@ -22,6 +22,7 @@ class OrganizationIndexRequest extends FormRequest
             'nuts_code' => ['nullable', 'string', 'exists:nut_codes,code'],
             'company_size' => ['nullable', 'string', 'exists:cl_company_sizes,code'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

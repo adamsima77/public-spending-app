@@ -1,4 +1,6 @@
+@use './colors' as *;
 html {
+  height: 100%;
   font-size: 16px;
   background: var(--color-background);
   color: var(--color-text-primary);
@@ -6,9 +8,11 @@ html {
 
 body {
   margin: 0;
+  height: 100%;
   font-family: var(--font-body);
   font-size: var(--font-size-base);
   line-height: 1.5;
+  background-color: var(--color-background);
   color: var(--color-text-primary);
 }
 
@@ -41,4 +45,24 @@ h5 {
 }
 h6 {
   font-size: var(--h6-size);
+}
+
+@mixin toast($bg) {
+  --mat-snack-bar-container-color: #{$bg};
+  --mat-snack-bar-supporting-text-color: #fff;
+  --mdc-snackbar-container-color: #{$bg};
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+.toast-success {
+  @include toast(var(--color-success));
+}
+.toast-info {
+  @include toast(var(--color-info));
+}
+.toast-warning {
+  @include toast(var(--color-warning));
+}
+.toast-error {
+  @include toast(var(--color-danger));
 }

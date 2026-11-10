@@ -28,5 +28,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('admin-api', function (Request $request): Limit {
             return Limit::perMinute(60)->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip()));
         });
+
+        RateLimiter::for('contact-messages', function (Request $request): Limit {
+            return Limit::perMinute(5)->by($request->ip());
+        });
     }
 }

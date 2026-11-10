@@ -30,6 +30,11 @@ class CpvCodeService
             });
         }
 
-        return $query->orderBy('code')->paginate((int) ($filters['per_page'] ?? 50));
+        return $query->orderBy('code')->paginate(
+            (int) ($filters['per_page'] ?? 50),
+            ['*'],
+            'page',
+            (int) ($filters['page'] ?? 1),
+        );
     }
 }

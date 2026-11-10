@@ -1,7 +1,7 @@
 import { Component, inject, input } from '@angular/core';
 import { NavConfig } from '../../../config/nav-config';
 import { RouterLink } from '@angular/router';
-import { SidebarService } from '../../../core/services/sidebar.service';
+import { SidebarService } from '../../../core/services/sidebar/sidebar.service';
 
 @Component({
   imports: [RouterLink],

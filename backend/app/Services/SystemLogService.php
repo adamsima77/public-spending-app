@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\SystemLog;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class SystemLogService
 {
     /** @param array<string, mixed> $filters
-     * @return CursorPaginator<int, SystemLog>
+     * @return LengthAwarePaginator<int, SystemLog>
      */
-    public function getAllLogs(array $filters = []): CursorPaginator
+    public function getAllLogs(array $filters = []): LengthAwarePaginator
     {
         $query = SystemLog::query()->with(['user.role']);
 
@@ -33,6 +33,11 @@ class SystemLogService
         return $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->cursorPaginate((int) ($filters['per_page'] ?? 15));
+            ->paginate(
+                (int) ($filters['per_page'] ?? 15),
+                ['*'],
+                'page',
+                (int) ($filters['page'] ?? 1),
+            );
     }
 }

@@ -21,6 +21,7 @@ class DownloadedFileIndexRequest extends FormRequest
             'format' => ['nullable', 'string', 'max:16'],
             'search' => ['nullable', 'string', 'max:255'],
             'per_page' => ['nullable', 'integer', 'between:1,100'],
+            'page' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

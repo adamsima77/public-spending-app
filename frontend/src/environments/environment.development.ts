@@ -1,3 +1,5 @@
-export const environment: { apiUrl: string } = {
-  apiUrl: 'http://localhost:8000',
+import { Enviroment } from './models/environment.model';
+
+export const environment: Enviroment = {
+  apiUrl: 'http://localhost:8000/api',
 };

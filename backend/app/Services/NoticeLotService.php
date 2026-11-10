@@ -6,14 +6,14 @@ namespace App\Services;
 
 use App\Models\NoticeLot;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class NoticeLotService
 {
     /** @param array<string, mixed> $filters
-     * @return CursorPaginator<int, NoticeLot>
+     * @return LengthAwarePaginator<int, NoticeLot>
      */
-    public function getLots(array $filters = []): CursorPaginator
+    public function getLots(array $filters = []): LengthAwarePaginator
     {
         $query = NoticeLot::query()->with([
             'procedure.buyer',
@@ -47,6 +47,11 @@ class NoticeLotService
         return $query
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->cursorPaginate((int) ($filters['per_page'] ?? 15));
+            ->paginate(
+                (int) ($filters['per_page'] ?? 15),
+                ['*'],
+                'page',
+                (int) ($filters['page'] ?? 1),
+            );
     }
 }

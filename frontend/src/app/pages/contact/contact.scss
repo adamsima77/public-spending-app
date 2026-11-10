@@ -1,0 +1,22 @@
+@use '../../../styles/breakpoints' as *;
+
+.contact-page {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.contact-card {
+  width: 100%;
+  max-width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.contact-description {
+  margin-bottom: 24px;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}

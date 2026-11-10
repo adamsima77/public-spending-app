@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\CpvCodeController;
 use App\Http\Controllers\DownloadedFileController;
 use App\Http\Controllers\EtlLogController;
@@ -66,4 +67,8 @@ Route::prefix('users')->group(function (): void {
         Route::delete('/{user}', [UserController::class, 'anonymize']);
         Route::post('/', [UserController::class, 'invite']);
     });
+});
+
+Route::prefix('contact-messages')->group(function (): void {
+    Route::post('/', [ContactMessageController::class, 'store'])->middleware('throttle:contact-messages');
 });

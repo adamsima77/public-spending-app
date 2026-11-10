@@ -1,0 +1,58 @@
+@let isBeingSubmitted = isSubmitting();
+
+<form class="contact-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="row">
+    <mat-form-field appearance="outline">
+      <mat-label>Meno</mat-label>
+      <input matInput placeholder="Zadajte vaše meno" formControlName="name" />
+      @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <mat-error>Zadané meno nie je platné</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Priezvisko</mat-label>
+      <input matInput placeholder="Zadajte vaše priezvisko" formControlName="surname" />
+      @if (form.get('surname')?.invalid && form.get('surname')?.touched) {
+        <mat-error>Zadané priezvisko nie je platné</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Email</mat-label>
+    <input matInput type="email" placeholder="vas@email.sk" formControlName="email" />
+    @if (form.get('email')?.invalid && form.get('email')?.touched) {
+      <mat-error>Zadaný email nie je platný</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Správa</mat-label>
+    <textarea
+      matInput
+      rows="6"
+      placeholder="Napíšte nám vašu správu..."
+      formControlName="message"
+    ></textarea>
+    @if (form.get('message')?.invalid && form.get('message')?.touched) {
+      <mat-error>Zadaná správa nie je platná</mat-error>
+    }
+  </mat-form-field>
+
+  <div class="actions">
+    <button
+      [disabled]="form.invalid || isBeingSubmitted"
+      mat-flat-button
+      color="primary"
+      type="submit"
+      class="submit-btn"
+    >
+      @if (isBeingSubmitted) {
+        <mat-spinner diameter="20"></mat-spinner>
+      } @else {
+        Odoslať správu
+      }
+    </button>
+  </div>
+</form>

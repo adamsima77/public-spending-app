@@ -7,7 +7,6 @@
 @use './styles/effects';
 @use './styles/base';
 @use './styles/breakpoints';
-
 html {
   color-scheme: light;
 
@@ -22,4 +21,8 @@ html {
       density: 0,
     )
   );
+
+  @media (prefers-contrast: more) {
+    @include theme.high-contrast-overrides(light);
+  }
 }
