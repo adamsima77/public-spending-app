@@ -14,6 +14,6 @@ export class Sidebar {
   sidebarService = inject(SidebarService);
 
   closeSidebar(): void {
-    this.sidebarService.updateSidebarState(false);
+    this.sidebarService.close();
   }
 }

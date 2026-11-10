@@ -1,6 +1,7 @@
 @let isSidebarOpen = sidebarService.isSidebarActive();
 
 <aside
+  id="sidebar"
   [class.open-sidebar]="isSidebarOpen"
   [class.close-sidebar]="!isSidebarOpen"
   [attr.inert]="!isSidebarOpen ? '' : null"

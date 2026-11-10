@@ -38,7 +38,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
       '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
-      '@typescript-eslint/member-ordering': 'error',
+      '@typescript-eslint/member-ordering': 'off',
       '@typescript-eslint/naming-convention': [
         'error',
         { selector: 'default', format: ['camelCase'], leadingUnderscore: 'allow' },

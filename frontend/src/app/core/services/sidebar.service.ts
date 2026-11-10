@@ -1,30 +1,33 @@
-import { Service, inject, signal } from '@angular/core';
+import { Service, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
 @Service()
 export class SidebarService {
-  isSidebarActive = signal<boolean>(false);
-  currentUrl = signal<string>('');
-
   private readonly router = inject(Router);
-
+  private readonly _isSidebarActive = signal(false);
+  private readonly _currentUrl = signal(this.router.url);
+  private readonly currentPath = computed(() => this._currentUrl().split(/[?#]/)[0]);
+  readonly isSidebarActive = this._isSidebarActive.asReadonly();
+  readonly currentUrl = this._currentUrl.asReadonly();
   constructor() {
-    this.currentUrl.set(this.router.url);
-
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
-        this.currentUrl.set(event.urlAfterRedirects);
-        this.isSidebarActive.set(false);
+        this._currentUrl.set(event.urlAfterRedirects);
+        this._isSidebarActive.set(false);
       });
   }
 
-  updateSidebarState(isActive: boolean): void {
-    this.isSidebarActive.set(isActive);
+  toggle(): void {
+    this._isSidebarActive.update((v) => !v);
+  }
+
+  close(): void {
+    this._isSidebarActive.set(false);
   }
 
   isActive(path: string): boolean {
-    return this.currentUrl() === path;
+    return this.currentPath() === path;
   }
 }

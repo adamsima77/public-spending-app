@@ -16,7 +16,7 @@ import { SidebarService } from '../../core/services/sidebar.service';
 export class Default {
   navigationConfig = signal<NavConfig[]>(navConfig);
   sidebarService = inject(SidebarService);
-  changeSidebarState(): void {
-    this.sidebarService.isSidebarActive.update((prev) => !prev);
+  closeSidebar(): void {
+    this.sidebarService.close();
   }
 }

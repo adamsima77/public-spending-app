@@ -3,27 +3,20 @@
 <nav>
   <span class="icon">Placeholder</span>
 
-  <div #navigation class="navigation">
-    <ul class="links">
+  <div class="navigation">
+    <ul #links class="links">
       @for (item of navigationConfig(); track item.path) {
         <li>
-          <a
-            #navLink
-            [routerLink]="item.path"
-            (click)="updateIndicatorPosition()"
-            [class.active]="sidebarService.isActive(item.path)"
-          >
+          <a #navLink [routerLink]="item.path" [class.active]="sidebarService.isActive(item.path)">
             {{ item.label }}
           </a>
         </li>
       }
     </ul>
 
-    <div
-      class="indicator"
-      [style.left]="indicatorStyle().left"
-      [style.width]="indicatorStyle().width"
-    ></div>
+    @if (indicatorStyle(); as style) {
+      <div class="indicator" [style.left]="style.left" [style.width]="style.width"></div>
+    }
   </div>
 
   <div class="icons">
