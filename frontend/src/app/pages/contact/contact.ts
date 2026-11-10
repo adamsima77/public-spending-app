@@ -7,7 +7,7 @@ import { ContactFacade } from './contact-facade/contact-facade';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef } from '@angular/core';
 import { ToastService } from '../../components/ui/toast-notification/toast-service/toast-service';
-import { finalize } from 'rxjs';
+import { finalize, tap } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
@@ -32,25 +32,26 @@ export class Contact {
       .sendMessage(data)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
+        tap({
+          next: () => {
+            this.isSuccess.set(true);
+            this.toastService.success(
+              'Správa bola úspešne odoslaná. Ďakujeme, ozveme sa vám čo najskôr.',
+            );
+          },
+          error: (err: HttpErrorResponse) => {
+            const message =
+              err.status === 422
+                ? 'Skontrolujte prosím vyplnené údaje.'
+                : err.status === 0
+                  ? 'Server je nedostupný. Skontrolujte pripojenie.'
+                  : 'Správu sa nepodarilo odoslať. Skúste to prosím neskôr.';
+
+            this.toastService.error(message);
+          },
+        }),
         finalize(() => this.isSubmitting.set(false)),
       )
-      .subscribe({
-        next: () => {
-          this.isSuccess.set(true); // Toto spustí reset formulára cez effect
-          this.toastService.success(
-            'Správa bola úspešne odoslaná. Ďakujeme, ozveme sa vám čo najskôr.',
-          );
-        },
-        error: (err: HttpErrorResponse) => {
-          const message =
-            err.status === 422
-              ? 'Skontrolujte prosím vyplnené údaje.'
-              : err.status === 0
-                ? 'Server je nedostupný. Skontrolujte pripojenie.'
-                : 'Správu sa nepodarilo odoslať. Skúste to prosím neskôr.';
-
-          this.toastService.error(message);
-        },
-      });
+      .subscribe();
   }
 }
