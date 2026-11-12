@@ -1,0 +1,65 @@
+@use '../../../styles/breakpoints' as *;
+
+.about-page {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.about-card {
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  max-width: 900px;
+  margin: 0 auto;
+  .link {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      text-decoration-thickness: 2px;
+    }
+  }
+
+  h2 {
+    margin: 32px 0 12px;
+    font-size: 1.2rem;
+    color: var(--color-text-primary);
+  }
+
+  p,
+  li {
+    color: var(--color-text-primary);
+    line-height: 1.6;
+  }
+
+  ul {
+    margin: 0 0 16px;
+    padding-left: 24px;
+  }
+
+  li + li {
+    margin-top: 6px;
+  }
+
+  .about-actions {
+    margin-top: 20px;
+  }
+  .link {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+}
+
+.about-description {
+  margin-bottom: 24px;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+.data-info {
+  opacity: 0.8;
+}

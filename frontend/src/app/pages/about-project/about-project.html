@@ -1,1 +1,66 @@
-<p>about-project works!</p>
+<div class="about-page">
+  <mat-card class="about-card">
+    <mat-card-header>
+      <mat-card-title><h1>O projekte</h1></mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <p class="about-description">
+        Verejné výdavky Slovenskej republiky sú dostupné ako otvorené dáta, no v surovej podobe sa v
+        nich ťažko orientuje. Táto aplikácia ich spracúva a zobrazuje prehľadne, pomocou grafov a
+        filtrov.
+      </p>
+
+      <h2>Čo tu nájdete</h2>
+      <ul>
+        <li>prehliadanie výdavkov podľa kategórií, ministerstiev a projektov</li>
+        <li>filtrovanie podľa obdobia, inštitúcie alebo sumy</li>
+        <li>interaktívne grafy a sledovanie trendov</li>
+      </ul>
+
+      <h2>Pre koho je určená</h2>
+      <p>
+        Pre občanov, novinárov aj výskumníkov, ktorí chcú jednoducho zistiť, ako sa nakladá s
+        verejnými peniazmi.
+      </p>
+
+      <h2>Zdroj dát</h2>
+      <p>
+        Dáta pochádzajú z portálu
+        <a class="link" href="https://data.slovensko.sk" target="_blank" rel="noopener"
+          >data.slovensko.sk</a
+        >. Aplikácia ich len spracúva a vizualizuje, za ich správnosť a úplnosť zodpovedajú pôvodní
+        poskytovatelia.
+      </p>
+      <p class="data-info">
+        Rozsah dát: <strong>2020 - 2025</strong> · Posledná aktualizácia:
+        <strong>DD. MM. RRRR</strong>
+      </p>
+
+      <h2>API</h2>
+      <p>
+        Dáta sú dostupné aj cez REST API pre strojové spracovanie.
+        <a class="link" href="{{ docsUrl }}" target="_blank" rel="noopener">OpenAPI dokumentácia</a>
+      </p>
+
+      <h2>O práci</h2>
+      <p>
+        Aplikácia vznikla ako bakalárska práca na Univerzite Konštantína Filozofa v Nitre, odbor
+        Aplikovaná informatika. Cieľom je prispieť k väčšej transparentnosti hospodárenia štátu.
+      </p>
+      <p>
+        <a
+          class="link"
+          href="https://github.com/adamsima77/public-spending-app"
+          target="_blank"
+          rel="noopener"
+          >GitHub repozitár</a
+        >
+      </p>
+    </mat-card-content>
+
+    <mat-card-actions class="about-actions">
+      <a mat-flat-button color="primary" routerLink="/">Preskúmať výdavky</a>
+    </mat-card-actions>
+  </mat-card>
+</div>

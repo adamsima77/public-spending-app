@@ -34,6 +34,11 @@ export const routes: Routes = [
           import('./pages/visualizations/visualizations').then((m) => m.Visualizations),
       },
       {
+        path: 'zmluvy',
+        loadComponent: () =>
+          import('./pages/settled-contracts/settled-contracts').then((m) => m.SettledContracts),
+      },
+      {
         path: '**',
         loadComponent: () => import('./pages/not-found/not-found').then((m) => m.NotFound),
       },

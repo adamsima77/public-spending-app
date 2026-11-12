@@ -5,12 +5,12 @@ export interface NavConfig {
 
 export const navConfig: NavConfig[] = [
   {
-    label: 'Domov',
-    path: '/',
-  },
-  {
     label: 'Oznámenia',
     path: '/oznamenia',
+  },
+  {
+    label: 'Zmluvy',
+    path: '/zmluvy',
   },
   {
     label: 'Organizácie',
