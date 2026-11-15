@@ -1,34 +1,31 @@
-import { Service, computed, inject, signal } from '@angular/core';
-import {
-  NavigationCancel,
-  NavigationEnd,
-  NavigationError,
-  NavigationStart,
-  Router,
-} from '@angular/router';
+import { DestroyRef, Service, Signal, inject, signal } from '@angular/core';
+import { IsActiveMatchOptions, NavigationEnd, Router, isActive } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DestroyRef } from '@angular/core';
+
+const EXACT_MATCH: IsActiveMatchOptions = {
+  paths: 'exact',
+  queryParams: 'ignored',
+  fragment: 'ignored',
+  matrixParams: 'ignored',
+};
+
+const SUBSET_MATCH: IsActiveMatchOptions = {
+  ...EXACT_MATCH,
+  paths: 'subset',
+};
 
 @Service()
 export class SidebarService {
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly _isSidebarActive = signal(false);
   private readonly _currentUrl = signal(this.router.url);
-  private readonly currentPath = computed(() => this._currentUrl().split(/[?#]/)[0]);
+  private readonly activeSignals = new Map<string, Signal<boolean>>();
   readonly isSidebarActive = this._isSidebarActive.asReadonly();
   readonly currentUrl = this._currentUrl.asReadonly();
-  private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
     this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
-      if (event instanceof NavigationStart) {
-        return;
-      }
-
-      if (event instanceof NavigationCancel || event instanceof NavigationError) {
-        return;
-      }
-
       if (!(event instanceof NavigationEnd)) {
         return;
       }
@@ -47,9 +44,13 @@ export class SidebarService {
   }
 
   isActive(path: string): boolean {
-    const currentPath = this.currentPath();
-    const active = currentPath === path;
+    let active = this.activeSignals.get(path);
 
-    return active;
+    if (!active) {
+      active = isActive(path, this.router, path === '/' ? EXACT_MATCH : SUBSET_MATCH);
+      this.activeSignals.set(path, active);
+    }
+
+    return active();
   }
 }

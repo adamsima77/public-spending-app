@@ -4,9 +4,11 @@ import {
   ElementRef,
   afterNextRender,
   afterRenderEffect,
+  computed,
   inject,
   input,
   signal,
+  untracked,
   viewChild,
   viewChildren,
 } from '@angular/core';
@@ -31,9 +33,16 @@ export class Navbar {
   indicatorStyle = signal<IndicatorStyle | null>(null);
   private readonly destroyRef = inject(DestroyRef);
 
+  protected readonly activeIndex = computed(() =>
+    (this.navigationConfig() ?? []).findIndex((item) => this.sidebarService.isActive(item.path)),
+  );
+
   constructor() {
     afterRenderEffect(() => {
-      this.updateIndicatorPosition();
+      this.activeIndex();
+      this.linkElements();
+
+      untracked(() => this.updateIndicatorPosition());
     });
 
     afterNextRender(() => {
@@ -55,21 +64,12 @@ export class Navbar {
   }
 
   private updateIndicatorPosition(): void {
-    const links = this.linkElements();
-    const activeLinks = links.filter(({ nativeElement }) =>
-      nativeElement.classList.contains('active'),
-    );
-
-    if (activeLinks.length === 0) {
-      this.indicatorStyle.set(null);
-
-      return;
-    }
-
-    const el = activeLinks[0].nativeElement;
+    const index = this.activeIndex();
+    const el = index >= 0 ? this.linkElements()[index]?.nativeElement : undefined;
     const navigation = this.linksElement()?.nativeElement.parentElement;
+
     const nextIndicatorStyle =
-      navigation && el.offsetWidth > 0
+      el && navigation && el.offsetWidth > 0
         ? {
             left: `${String(el.getBoundingClientRect().left - navigation.getBoundingClientRect().left)}px`,
             width: `${String(el.offsetWidth)}px`,

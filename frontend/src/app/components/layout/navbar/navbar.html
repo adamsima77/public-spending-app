@@ -7,7 +7,7 @@
     <ul #links class="links">
       @for (item of navigationConfig(); track item.path) {
         <li>
-          <a #navLink [routerLink]="item.path" [class.active]="sidebarService.isActive(item.path)">
+          <a #navLink [routerLink]="item.path" [class.active]="$index === activeIndex()">
             {{ item.label }}
           </a>
         </li>

@@ -1,9 +1,9 @@
-import { computed, effect, inject, Service, Signal } from '@angular/core';
+import { computed, DestroyRef, effect, inject, Service, Signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, skip, startWith, switchMap, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs';
 import { OrganizationKpisResponse } from './models/organization-kpi.model';
 import { OrganizationService } from '../../../generated/services/organization.service';
 import { OrganizationKpisResource } from '../../../generated';
@@ -47,60 +47,54 @@ export class OrganizationFacade {
     organizations: Signal<Paginated<Organization> | undefined>;
     hasActiveFilters: Signal<boolean>;
   } {
+    const destroyRef = inject(DestroyRef);
+
     const queryFilters = toSignal(
       this.route.queryParamMap.pipe(
-        map((params) => ({
+        map((params): OrganizationFilterValues => ({
           search: params.get('search') ?? '',
           country: this.queryValues('country', params),
           company_size: this.queryValues('company_size', params),
           role: this.queryValues('role', params) as OrganizationRole[],
         })),
+
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
       ),
-      { initialValue: null },
+      { requireSync: true },
     );
 
     effect(() => {
       const filters = queryFilters();
 
-      if (filters) {
+      if (
+        JSON.stringify(filters) !==
+        JSON.stringify(this.normalizeFilterValues(filterForm.getRawValue()))
+      ) {
         filterForm.reset(filters, { emitEvent: false });
       }
     });
 
-    const filters = toSignal<OrganizationFilterParams>(
-      filterForm.valueChanges.pipe(
-        startWith(filterForm.getRawValue()),
-        skip(1),
+    filterForm.valueChanges
+      .pipe(
         map((value) => this.normalizeFilterValues(value)),
-        tap(({ search, country, company_size: companySize, role }) => {
-          void this.router.navigate([], {
-            queryParams: {
-              search: search || null,
-              country: country.length ? country : null,
-              company_size: companySize.length ? companySize : null,
-              role: role.length ? role : null,
-              page: null,
-            },
-            queryParamsHandling: 'merge',
-          });
-        }),
         debounceTime(250),
-        distinctUntilChanged(
-          (previous, current) => JSON.stringify(previous) === JSON.stringify(current),
-        ),
-        map((value) => this.toFilterParams(value)),
-      ),
-      { initialValue: undefined },
-    );
-    const filterParams = computed<OrganizationFilterParams>(
-      () =>
-        filters() ?? {
-          search: undefined,
-          'country[]': undefined,
-          'company_size[]': undefined,
-          'role[]': undefined,
-        },
-    );
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        takeUntilDestroyed(destroyRef),
+      )
+      .subscribe(({ search, country, company_size: companySize, role }) => {
+        void this.router.navigate([], {
+          queryParams: {
+            search: search || null,
+            country: country.length ? country : null,
+            company_size: companySize.length ? companySize : null,
+            role: role.length ? role : null,
+            page: null,
+          },
+          queryParamsHandling: 'merge',
+        });
+      });
+
+    const filterParams = computed(() => this.toFilterParams(queryFilters()));
     const requestParams = computed<OrganizationQueryParams>(() => ({
       ...pageState(),
       ...filterParams(),
@@ -111,13 +105,13 @@ export class OrganizationFacade {
         toObservable(requestParams).pipe(switchMap((params) => this.getAllOrganizations(params))),
       ),
       hasActiveFilters: computed(() => {
-        const activeFilters = filterParams();
+        const f = filterParams();
 
         return [
-          activeFilters.search?.trim(),
-          activeFilters['country[]']?.length,
-          activeFilters['company_size[]']?.length,
-          activeFilters['role[]']?.length,
+          f.search?.trim(),
+          f['country[]']?.length,
+          f['company_size[]']?.length,
+          f['role[]']?.length,
         ].some(Boolean);
       }),
     };
