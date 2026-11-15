@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrganizationIndexRequest;
+use App\Http\Resources\OrganizationKpisResource;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
 use App\Services\OrganizationService;
@@ -30,5 +31,13 @@ class OrganizationController extends Controller
     public function show(Organization $organization): OrganizationResource
     {
         return new OrganizationResource($organization);
+    }
+
+    /**
+     * Get the KPIs for the organization.
+     */
+    public function getOrganizationKpis(OrganizationService $organizationService): OrganizationKpisResource
+    {
+        return new OrganizationKpisResource($organizationService->getOrganizationKpis());
     }
 }

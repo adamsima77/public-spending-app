@@ -16,6 +16,13 @@ body {
   color: var(--color-text-primary);
 }
 
+.mat-mdc-card {
+  --mat-card-container-color: var(--color-surface);
+  --mat-card-elevated-container-color: var(--color-surface);
+  --mat-card-outlined-container-color: var(--color-surface);
+  background-color: var(--color-surface);
+}
+
 h1,
 h2,
 h3,

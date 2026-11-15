@@ -1,0 +1,28 @@
+@if (data(); as data) {
+  <header class="page-header">
+    <div class="header-content">
+      <h1 class="title">{{ data.title }}</h1>
+      <p class="description">{{ data.description }}</p>
+    </div>
+  </header>
+
+  <mat-divider />
+
+  @if (data.loading) {
+    <div class="kpi-loader">
+      <mat-spinner diameter="40" aria-label="Načítavam štatistiky" />
+    </div>
+  } @else if (data.kpis; as kpis) {
+    <section class="kpi-grid">
+      @for (kpi of kpis; track kpi.label) {
+        <mat-card appearance="outlined" class="kpi-card">
+          <mat-card-content>
+            <mat-icon class="kpi-icon">{{ kpi.icon }}</mat-icon>
+            <div class="kpi-value">{{ kpi.value }}</div>
+            <div class="kpi-label">{{ kpi.label }}</div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </section>
+  }
+}

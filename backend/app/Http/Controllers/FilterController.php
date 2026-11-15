@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CodelistResource;
+use App\Http\Resources\OrganizationCountryResource;
 use App\Services\CodelistService;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -119,6 +120,14 @@ class FilterController extends Controller
     ): AnonymousResourceCollection {
         return CodelistResource::collection(
             $codelistService->submissionTypes(),
+        );
+    }
+
+    public function organizationCountries(
+        CodelistService $codelistService,
+    ): AnonymousResourceCollection {
+        return OrganizationCountryResource::collection(
+            $codelistService->organizationCountries(),
         );
     }
 }

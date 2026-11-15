@@ -1,0 +1,98 @@
+<mat-card appearance="outlined" class="table-card">
+  <div class="table-filters">
+    <ng-content select="[filters]" />
+  </div>
+
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <div class="card-list">
+    @for (row of rows(); track $index) {
+      <article class="row-card">
+        @for (col of columns(); track col.key) {
+          @if (col.primary) {
+            <h3 class="card-title">
+              @if (rowLink(); as link) {
+                <a class="row-link" [routerLink]="link(row)">{{ col.value(row) ?? '-' }}</a>
+              } @else {
+                {{ col.value(row) ?? '-' }}
+              }
+            </h3>
+          }
+        }
+
+        <dl class="card-fields">
+          @for (col of columns(); track col.key) {
+            @if (!col.primary) {
+              <div class="field">
+                <dt>{{ col.header }}</dt>
+                <dd>{{ col.value(row) ?? '-' }}</dd>
+              </div>
+            }
+          }
+        </dl>
+      </article>
+    } @empty {
+      <div class="no-data">
+        <mat-icon>info</mat-icon>
+        <p>Žiadne dáta na zobrazenie</p>
+      </div>
+    }
+  </div>
+
+  <div class="table-scroll">
+    <table
+      mat-table
+      [dataSource]="rows()"
+      matSort
+      [matSortActive]="sort()?.active ?? ''"
+      [matSortDirection]="sort()?.direction ?? ''"
+      (matSortChange)="sortChange.emit($event)"
+    >
+      @for (col of columns(); track col.key) {
+        <ng-container [matColumnDef]="col.key">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            [mat-sort-header]="col.key"
+            [disabled]="!col.sortable"
+          >
+            {{ col.header }}
+          </th>
+          <td mat-cell *matCellDef="let row">
+            @if (col.primary && rowLink(); as link) {
+              <a class="row-link" [routerLink]="link(row)">{{ col.value(row) ?? '-' }}</a>
+            } @else {
+              {{ col.value(row) ?? '-' }}
+            }
+          </td>
+        </ng-container>
+      }
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns().length">
+          @if (!loading()) {
+            <div class="no-data">
+              <mat-icon>info</mat-icon>
+              <p>Žiadne záznamy na zobrazenie</p>
+            </div>
+          }
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  @if (meta(); as m) {
+    <mat-paginator
+      [length]="m.total"
+      [pageSize]="m.perPage"
+      [pageIndex]="m.currentPage - 1"
+      [pageSizeOptions]="pageSizeOptions()"
+      showFirstLastButtons
+      (page)="onPage($event)"
+    />
+  }
+</mat-card>

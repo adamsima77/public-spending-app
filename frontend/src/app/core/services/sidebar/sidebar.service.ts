@@ -1,6 +1,11 @@
 import { Service, computed, inject, signal } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  NavigationStart,
+  Router,
+} from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef } from '@angular/core';
 
@@ -15,15 +20,22 @@ export class SidebarService {
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
-    this.router.events
-      .pipe(
-        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((event) => {
-        this._currentUrl.set(event.urlAfterRedirects);
-        this._isSidebarActive.set(false);
-      });
+    this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        return;
+      }
+
+      if (event instanceof NavigationCancel || event instanceof NavigationError) {
+        return;
+      }
+
+      if (!(event instanceof NavigationEnd)) {
+        return;
+      }
+
+      this._currentUrl.set(event.urlAfterRedirects);
+      this._isSidebarActive.set(false);
+    });
   }
 
   toggle(): void {
@@ -35,6 +47,9 @@ export class SidebarService {
   }
 
   isActive(path: string): boolean {
-    return this.currentPath() === path;
+    const currentPath = this.currentPath();
+    const active = currentPath === path;
+
+    return active;
   }
 }

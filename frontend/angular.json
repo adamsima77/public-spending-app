@@ -28,7 +28,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/material-theme.scss", "src/styles.scss"],
+            "styles": [
+              "src/material-theme.scss",
+              "node_modules/@angular/cdk/overlay-prebuilt.css",
+              "src/styles.scss"
+            ],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "security": {

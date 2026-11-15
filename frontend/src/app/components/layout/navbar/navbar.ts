@@ -12,13 +12,13 @@ import {
 } from '@angular/core';
 import { SidebarService } from '../../../core/services/sidebar/sidebar.service';
 import { NavConfig } from '../../../config/nav-config';
-import { LucideCircleUser, LucideMenu } from '@lucide/angular';
+import { LucideMenu } from '@lucide/angular';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { IndicatorStyle } from './navbar.model';
 
 @Component({
-  imports: [LucideCircleUser, LucideMenu, RouterLink, MatButtonModule],
+  imports: [LucideMenu, RouterLink, MatButtonModule],
   selector: 'app-navbar',
   styleUrl: './navbar.scss',
   templateUrl: './navbar.html',
@@ -33,8 +33,6 @@ export class Navbar {
 
   constructor() {
     afterRenderEffect(() => {
-      this.sidebarService.currentUrl();
-      this.linkElements();
       this.updateIndicatorPosition();
     });
 
@@ -57,14 +55,34 @@ export class Navbar {
   }
 
   private updateIndicatorPosition(): void {
-    const el = this.linkElements().find(({ nativeElement }) =>
+    const links = this.linkElements();
+    const activeLinks = links.filter(({ nativeElement }) =>
       nativeElement.classList.contains('active'),
-    )?.nativeElement;
-
-    this.indicatorStyle.set(
-      el && el.offsetWidth > 0
-        ? { left: `${String(el.offsetLeft)}px`, width: `${String(el.offsetWidth)}px` }
-        : null,
     );
+
+    if (activeLinks.length === 0) {
+      this.indicatorStyle.set(null);
+
+      return;
+    }
+
+    const el = activeLinks[0].nativeElement;
+    const navigation = this.linksElement()?.nativeElement.parentElement;
+    const nextIndicatorStyle =
+      navigation && el.offsetWidth > 0
+        ? {
+            left: `${String(el.getBoundingClientRect().left - navigation.getBoundingClientRect().left)}px`,
+            width: `${String(el.offsetWidth)}px`,
+          }
+        : null;
+
+    const previousIndicatorStyle = this.indicatorStyle();
+    const unchanged =
+      previousIndicatorStyle?.left === nextIndicatorStyle?.left &&
+      previousIndicatorStyle?.width === nextIndicatorStyle?.width;
+
+    if (!unchanged) {
+      this.indicatorStyle.set(nextIndicatorStyle);
+    }
   }
 }

@@ -1335,6 +1335,37 @@
                 }
             }
         },
+        "/codelists/organization-countries": {
+            "get": {
+                "operationId": "codelists.organization-countries",
+                "tags": [
+                    "Filter"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `OrganizationCountryResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/OrganizationCountryResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/notices": {
             "get": {
                 "operationId": "notices.index",
@@ -2184,15 +2215,15 @@
                         }
                     },
                     {
-                        "name": "country",
+                        "name": "country[]",
                         "in": "query",
                         "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
-                            "minLength": 2,
-                            "maxLength": 2
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3
+                            }
                         }
                     },
                     {
@@ -2202,16 +2233,83 @@
                             "type": [
                                 "string",
                                 "null"
+                            ],
+                            "maxLength": 10
+                        }
+                    },
+                    {
+                        "name": "company_size[]",
+                        "in": "query",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "without_company_size",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "boolean",
+                                "null"
                             ]
                         }
                     },
                     {
-                        "name": "company_size",
+                        "name": "role[]",
+                        "in": "query",
+                        "schema": {
+                            "type": "array",
+                            "enum": [
+                                "buyer",
+                                "supplier",
+                                "tender_organization",
+                                "other"
+                            ],
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "buyer",
+                                    "supplier",
+                                    "tender_organization",
+                                    "other"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "sort",
                         "in": "query",
                         "schema": {
                             "type": [
                                 "string",
                                 "null"
+                            ],
+                            "enum": [
+                                "name",
+                                "cin",
+                                "town",
+                                "country",
+                                "company_size",
+                                "created_at",
+                                null
+                            ]
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "asc",
+                                "desc",
+                                null
                             ]
                         }
                     },
@@ -2435,6 +2533,35 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/organization-kpis": {
+            "get": {
+                "operationId": "organization-kpis",
+                "summary": "Get the KPIs for the organization",
+                "tags": [
+                    "Organization"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`OrganizationKpisResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrganizationKpisResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -4503,6 +4630,49 @@
                     "updated_at"
                 ],
                 "title": "NutCodeResource"
+            },
+            "OrganizationCountryResource": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ],
+                "title": "OrganizationCountryResource"
+            },
+            "OrganizationKpisResource": {
+                "type": "object",
+                "properties": {
+                    "total_organizations": {
+                        "type": "integer"
+                    },
+                    "buyers": {
+                        "type": "integer"
+                    },
+                    "suppliers": {
+                        "type": "integer"
+                    },
+                    "countries": {
+                        "type": "integer"
+                    },
+                    "sme_suppliers_pct": {
+                        "type": [
+                            "number",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "total_organizations",
+                    "buyers",
+                    "suppliers",
+                    "countries",
+                    "sme_suppliers_pct"
+                ],
+                "title": "OrganizationKpisResource"
             },
             "OrganizationResource": {
                 "type": "object",

@@ -18,7 +18,9 @@ use App\Models\ClPermission;
 use App\Models\ClProcedureType;
 use App\Models\ClReservedProcurement;
 use App\Models\ClSubmissionType;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 
 class CodelistService
 {
@@ -26,6 +28,20 @@ class CodelistService
     public function applicabilities(): Collection
     {
         return ClApplicability::all();
+    }
+
+    /** @return SupportCollection<int, string> */
+    public function organizationCountries(): SupportCollection
+    {
+        $countries = Organization::query()
+            ->whereNotNull('country')
+            ->where('country', '<>', '')
+            ->distinct()
+            ->orderBy('country')
+            ->pluck('country')
+            ->all();
+
+        return collect($countries);
     }
 
     /** @return Collection<int, ClAwardCriterionType> */

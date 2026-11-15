@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class LotSupplier extends Pivot
 {
+    protected $table = 'lot_suppliers';
+
     protected $fillable = [
         'lot_id',
         'organization_id',

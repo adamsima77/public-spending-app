@@ -32,12 +32,14 @@ Route::middleware('throttle:public-api')->group(function (): void {
         Route::get('procedure-types', [FilterController::class, 'procedureTypes'])->name('procedure-types');
         Route::get('reserved-procurement', [FilterController::class, 'reservedProcurement'])->name('reserved-procurement');
         Route::get('submission-types', [FilterController::class, 'submissionTypes'])->name('submission-types');
+        Route::get('organization-countries', [FilterController::class, 'organizationCountries'])->name('organization-countries');
     });
     Route::apiResource('notices', NoticeController::class)->only(['index', 'show']);
     Route::apiResource('notice-lots', NoticeLotController::class)
         ->parameters(['notice-lots' => 'noticeLot'])
         ->only(['index', 'show']);
     Route::apiResource('organizations', OrganizationController::class)->only(['index', 'show']);
+    Route::get('organization-kpis', [OrganizationController::class, 'getOrganizationKpis'])->name('organization-kpis');
     Route::apiResource('procedures', ProcedureController::class)->only(['index', 'show']);
     Route::apiResource('nut-codes', NutCodeController::class)
         ->parameters(['nut-codes' => 'nutCode'])
