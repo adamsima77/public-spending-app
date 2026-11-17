@@ -1,1 +1,31 @@
-<p>not-found works!</p>
+<mat-card appearance="outlined" class="page-card not-found-card">
+  <mat-card-content class="not-found-content">
+    <div class="not-found-icon-wrapper">
+      <svg lucideSearchX class="not-found-icon"></svg>
+      <span class="error-code">404</span>
+    </div>
+
+    <div class="not-found-text">
+      <h1>Hups, táto stránka sa stratila</h1>
+      <p>
+        Stránku, ktorú hľadáte, sa nepodarilo nájsť. Možno mala zmenenú adresu, bola presunutá alebo
+        už neexistuje.
+      </p>
+    </div>
+
+    <div class="not-found-actions">
+      <a mat-flat-button color="primary" routerLink="/">
+        <svg lucideHouse class="btn-icon"></svg>
+        Prejsť domov
+      </a>
+      <a mat-stroked-button routerLink="/organizacie">
+        <svg lucideBuildingComplex class="btn-icon"></svg>
+        Prejsť na Organizácie
+      </a>
+      <a mat-stroked-button routerLink="/oznamenia">
+        <svg lucideFileText class="btn-icon"></svg>
+        Prejsť na Oznámenia
+      </a>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,115 @@
+@use '../../../styles/breakpoints' as *;
+
+.page-card.not-found-card {
+  max-width: 600px;
+  margin: 60px auto;
+  text-align: center;
+  border-radius: 20px;
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+.not-found-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 48px 32px;
+
+  @media (max-width: $tablet) {
+    padding: 32px 16px;
+  }
+}
+
+.not-found-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: auto;
+  height: 96px;
+  padding: 0 32px;
+  background-color: var(--color-background);
+  border-radius: var(--radius-full);
+  color: var(--color-danger);
+
+  .not-found-icon {
+    width: 48px;
+    height: 48px;
+    stroke-width: 1.75px;
+    flex-shrink: 0;
+  }
+
+  .error-code {
+    font-size: 36px;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    line-height: 1;
+  }
+}
+
+.not-found-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+
+  h1 {
+    font-size: var(--h2-size);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+    text-align: center;
+  }
+
+  p {
+    font-size: var(--font-size-sm);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+    margin: 0;
+    max-width: 420px;
+    text-align: center;
+  }
+}
+
+.not-found-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  width: 100%;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: var(--radius-lg);
+    height: 44px;
+    padding: 0 20px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    flex: 1 1 200px;
+    max-width: 100%;
+
+    @media (max-width: $mobile) {
+      flex: 1 1 100%;
+    }
+
+    .btn-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke-width: 2px;
+      display: inline-flex;
+      align-self: center;
+    }
+  }
+}
