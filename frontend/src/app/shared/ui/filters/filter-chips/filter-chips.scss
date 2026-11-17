@@ -1,0 +1,38 @@
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filters-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+mat-chip-listbox {
+  --mat-chip-outline-color: var(--color-border);
+  --mat-chip-elevated-container-color: var(--color-surface);
+  --mat-chip-label-text-size: 13px;
+
+  mat-chip-option {
+    --mat-chip-label-text-color: var(--color-text-primary);
+    --mat-chip-with-icon-icon-color: var(--color-text-primary);
+
+    &.mat-mdc-chip-selected,
+    &.mdc-evolution-chip--selected {
+      background: var(--color-primary);
+      --mat-chip-selected-label-text-color: #fff;
+      --mat-chip-with-icon-selected-icon-color: #fff;
+      --mat-chip-label-text-color: #fff;
+      color: #fff;
+    }
+
+    &:not(.mat-mdc-chip-selected):hover {
+      background: var(--color-background);
+    }
+  }
+}

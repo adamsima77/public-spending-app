@@ -1,0 +1,9 @@
+<mat-form-field appearance="outline" subscriptSizing="dynamic">
+  <svg lucideSearch matPrefix aria-hidden="true"></svg>
+  <input matInput type="search" [placeholder]="placeholder()" [formControl]="control()" />
+  @if (control().value) {
+    <button matSuffix mat-icon-button type="button" aria-label="Vymazať" (click)="clear()">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
+</mat-form-field>

@@ -1,0 +1,56 @@
+@use '../../../styles/breakpoints' as *;
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+
+  > *:nth-child(1) {
+    --field-accent: var(--color-primary);
+  }
+
+  > *:nth-child(2) {
+    --field-accent: var(--color-secondary);
+  }
+
+  > *:nth-child(3) {
+    --field-accent: var(--chart-color-5);
+  }
+}
+
+.filters-row--secondary,
+.filters-row--roles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filters-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.filters-reset {
+  margin-left: auto;
+  color: var(--color-danger);
+}
+
+@media (max-width: $tablet) {
+  .filters-row {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-reset {
+    margin-left: 0;
+  }
+}

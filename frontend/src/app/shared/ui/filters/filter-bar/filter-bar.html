@@ -1,0 +1,12 @@
+<div class="filters">
+  <div class="filters-row"><ng-content /></div>
+  <div class="filters-row filters-row--secondary">
+    <ng-content select="[secondary]" />
+    @if (hasActive()) {
+      <button mat-button type="button" class="filters-reset" (click)="resetFilters.emit()">
+        <mat-icon>filter_alt_off</mat-icon>
+        Zrušiť filtre
+      </button>
+    }
+  </div>
+</div>

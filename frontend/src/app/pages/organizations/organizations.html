@@ -14,60 +14,14 @@
       (pageChange)="onPageChange($event)"
       (sortChange)="onSortChange($event)"
     >
-      <form filters class="filters" [formGroup]="filterForm">
-        <div class="filters-row">
-          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="field-search">
-            <svg lucideSearch matPrefix aria-hidden="true"></svg>
-            <input matInput type="search" formControlName="search" placeholder="Vyhľadajte..." />
-            <button
-              matSuffix
-              mat-icon-button
-              type="button"
-              aria-label="Vymazať"
-              (click)="clearSearch()"
-            >
-              @if (filterForm.get('search')?.value) {
-                <mat-icon>close</mat-icon>
-              }
-            </button>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Krajina</mat-label>
-            <mat-select formControlName="country" multiple>
-              @for (country of countryFilters()?.data; track country) {
-                <mat-option [value]="country.name">{{ country.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Veľkosť</mat-label>
-            <mat-select formControlName="company_size" multiple>
-              @for (size of companySizeFilters()?.data; track size) {
-                <mat-option [value]="size.code">{{ size.label_sk }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <div class="filters-row filters-row--roles">
-          <span class="filters-label">Rola</span>
-
-          <mat-chip-listbox formControlName="role" multiple aria-label="Rola organizácie">
-            @for (role of roleFilterOptions; track role.value) {
-              <mat-chip-option [value]="role.value">{{ role.label }}</mat-chip-option>
-            }
-          </mat-chip-listbox>
-
-          @if (hasActiveFilters()) {
-            <button mat-button type="button" class="filters-reset" (click)="resetFilters()">
-              <mat-icon>filter_alt_off</mat-icon>
-              Zrušiť filtre
-            </button>
-          }
-        </div>
-      </form>
+      <app-organization-filters
+        filters
+        [form]="filterForm"
+        [countries]="countryFilters() ?? []"
+        [companySizes]="companySizeFilters() ?? []"
+        [roles]="roleFilterOptions"
+        [hasActive]="hasActiveFilters()"
+      />
     </app-data-table>
   </mat-card-content>
 </mat-card>

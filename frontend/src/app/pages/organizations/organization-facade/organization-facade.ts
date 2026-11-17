@@ -19,8 +19,7 @@ import {
 import { PageHeaderKpi } from '../../../components/ui/page-header/page-header';
 import { PageParams, Paginated } from '../../../config/tables/models/paginated.model';
 import { FilterService } from '../../../generated';
-import { CompanySizesResponse } from './models/company-sizes.model';
-import { OrganizationCountryResponse } from './models/organization-country.model';
+import { FilterOption } from '../../../shared/ui/filters/models/filter-option.model';
 
 @Service()
 export class OrganizationFacade {
@@ -154,12 +153,26 @@ export class OrganizationFacade {
     ];
   }
 
-  public getCompanySizes(): Observable<CompanySizesResponse> {
-    return this.filterService.codelistsCompanySizes();
+  public getCompanySizes(): Observable<FilterOption[]> {
+    return this.filterService.codelistsCompanySizes().pipe(
+      map(({ data }) =>
+        data.map(({ code, label_sk: label }) => ({
+          value: code,
+          label,
+        })),
+      ),
+    );
   }
 
-  public getOrganizationCountries(): Observable<OrganizationCountryResponse> {
-    return this.filterService.codelistsOrganizationCountries();
+  public getOrganizationCountries(): Observable<FilterOption[]> {
+    return this.filterService.codelistsOrganizationCountries().pipe(
+      map(({ data }) =>
+        data.map(({ name }) => ({
+          value: name,
+          label: name,
+        })),
+      ),
+    );
   }
 
   private toFilterParams({

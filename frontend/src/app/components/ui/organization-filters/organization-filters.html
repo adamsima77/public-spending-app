@@ -1,0 +1,8 @@
+@let f = form().controls;
+<app-filter-bar [hasActive]="hasActive()" (resetFilters)="reset()">
+  <app-search-field [control]="f.search" />
+  <app-filter-select label="Krajina" [options]="countries()" [control]="f.country" />
+  <app-filter-select label="Veľkosť" [options]="companySizes()" [control]="f.company_size" />
+
+  <app-filter-chips secondary label="Rola" [options]="roles()" [control]="f.role" />
+</app-filter-bar>

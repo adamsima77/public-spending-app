@@ -1,0 +1,6 @@
+<span class="filters-label">{{ label() }}</span>
+<mat-chip-listbox [formControl]="control()" [multiple]="multiple()" [attr.aria-label]="label()">
+  @for (o of options(); track o.value) {
+    <mat-chip-option [value]="o.value">{{ o.label }}</mat-chip-option>
+  }
+</mat-chip-listbox>

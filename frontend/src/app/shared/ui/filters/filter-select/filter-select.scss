@@ -1,0 +1,18 @@
+mat-form-field {
+  width: 100%;
+  min-width: 0;
+  background: #fff;
+  border-radius: 12px;
+
+  --mat-form-field-container-height: 48px;
+  --mat-form-field-outlined-outline-color: #e5e7eb;
+  --mat-form-field-outlined-hover-outline-color: #c7d2e0;
+  --mat-form-field-outlined-container-shape: 12px;
+  --mat-form-field-outlined-focus-outline-color: var(--field-accent, #1e56a0);
+  --mat-form-field-focus-select-arrow-color: var(--field-accent, #1e56a0);
+  --mat-form-field-focus-label-text-color: var(--field-accent, #1e56a0);
+
+  &:has(.mat-mdc-select-value-text) {
+    --mat-form-field-outlined-outline-color: var(--field-accent, #1e56a0);
+  }
+}
