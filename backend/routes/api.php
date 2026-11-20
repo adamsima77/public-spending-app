@@ -35,6 +35,7 @@ Route::middleware('throttle:public-api')->group(function (): void {
         Route::get('organization-countries', [FilterController::class, 'organizationCountries'])->name('organization-countries');
     });
     Route::apiResource('notices', NoticeController::class)->only(['index', 'show']);
+    Route::get('notice-kpis', [NoticeController::class, 'getKpis'])->name('notice-kpis');
     Route::apiResource('notice-lots', NoticeLotController::class)
         ->parameters(['notice-lots' => 'noticeLot'])
         ->only(['index', 'show']);

@@ -1,5 +1,5 @@
 import { OrganizationResource } from '@generated';
-import { TableColumn } from './models/table-column.model';
+import { TableColumn } from '@shared/config/tables/models/table-column.model';
 
 export const organizationColumns: TableColumn<OrganizationResource>[] = [
   { key: 'name', header: 'Názov', value: (o) => o.name, primary: true, sortable: true },

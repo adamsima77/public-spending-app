@@ -1386,25 +1386,25 @@
                         }
                     },
                     {
-                        "name": "notice_type",
+                        "name": "notice_type[]",
                         "in": "query",
                         "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
-                            "maxLength": 32
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "maxLength": 32
+                            }
                         }
                     },
                     {
-                        "name": "form_type",
+                        "name": "form_type[]",
                         "in": "query",
                         "schema": {
-                            "type": [
-                                "string",
-                                "null"
-                            ],
-                            "maxLength": 32
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "maxLength": 32
+                            }
                         }
                     },
                     {
@@ -1435,7 +1435,7 @@
                                 "string",
                                 "null"
                             ],
-                            "format": "date-time"
+                            "format": "date"
                         }
                     },
                     {
@@ -1446,7 +1446,41 @@
                                 "string",
                                 "null"
                             ],
-                            "format": "date-time"
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "title",
+                                "notice_id",
+                                "notice_type",
+                                "published_at",
+                                "issue_date",
+                                "created_at",
+                                null
+                            ]
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "asc",
+                                "desc",
+                                null
+                            ]
                         }
                     },
                     {
@@ -1687,6 +1721,34 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/notice-kpis": {
+            "get": {
+                "operationId": "notice-kpis",
+                "tags": [
+                    "Notice"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`NoticeKpiResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/NoticeKpiResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -4109,6 +4171,123 @@
                     "updated_at"
                 ],
                 "title": "LotTenderResource"
+            },
+            "NoticeKpiResource": {
+                "type": "object",
+                "properties": {
+                    "notices": {
+                        "type": "object",
+                        "properties": {
+                            "total": {
+                                "type": "integer"
+                            },
+                            "last_30_days": {
+                                "type": "integer"
+                            },
+                            "change_percent": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "total",
+                            "last_30_days",
+                            "change_percent"
+                        ]
+                    },
+                    "lots": {
+                        "type": "object",
+                        "properties": {
+                            "total": {
+                                "type": "integer"
+                            },
+                            "total_estimated_value": {
+                                "type": "number"
+                            },
+                            "currency": {
+                                "type": "string",
+                                "const": "EUR"
+                            }
+                        },
+                        "required": [
+                            "total",
+                            "total_estimated_value",
+                            "currency"
+                        ]
+                    },
+                    "award_rate": {
+                        "type": "object",
+                        "properties": {
+                            "awarded": {
+                                "type": "integer"
+                            },
+                            "of": {
+                                "type": "integer"
+                            },
+                            "percent": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "awarded",
+                            "of",
+                            "percent"
+                        ]
+                    },
+                    "competition": {
+                        "type": "object",
+                        "properties": {
+                            "avg_bids_per_lot": {
+                                "type": "number"
+                            },
+                            "single_bid_lots": {
+                                "type": "integer"
+                            },
+                            "single_bid_percent": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "avg_bids_per_lot",
+                            "single_bid_lots",
+                            "single_bid_percent"
+                        ]
+                    },
+                    "eu_funding": {
+                        "type": "object",
+                        "properties": {
+                            "eu_funded_lots": {
+                                "type": "integer"
+                            },
+                            "percent": {
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "eu_funded_lots",
+                            "percent"
+                        ]
+                    }
+                },
+                "required": [
+                    "notices",
+                    "lots",
+                    "award_rate",
+                    "competition",
+                    "eu_funding"
+                ],
+                "title": "NoticeKpiResource"
             },
             "NoticeLotResource": {
                 "type": "object",

@@ -2,19 +2,19 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  width: 100%;
-  max-width: 100%;
   margin: 0;
+  max-width: 100%;
+  width: 100%;
 
   mat-form-field {
-    width: 100%;
     margin-bottom: 20px;
+    width: 100%;
   }
 
   .row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 1rem;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
   }
 
@@ -27,10 +27,10 @@
   .submit-btn {
     --mat-button-filled-container-shape: 0;
     --mdc-filled-button-container-shape: 0;
-    border-radius: var(--radius-md);
 
-    min-width: 180px;
+    border-radius: var(--radius-md);
     height: 48px;
+    min-width: 180px;
     padding: 0 2rem;
   }
 }

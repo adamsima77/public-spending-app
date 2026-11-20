@@ -1,25 +1,27 @@
 @use './colors' as *;
+
 html {
-  height: 100%;
-  font-size: 16px;
   background: var(--color-background);
   color: var(--color-text-primary);
+  font-size: 16px;
+  height: 100%;
 }
 
 body {
-  margin: 0;
-  height: 100%;
-  font-family: var(--font-body);
-  font-size: var(--font-size-base);
-  line-height: 1.5;
   background-color: var(--color-background);
   color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  height: 100%;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .mat-mdc-card {
   --mat-card-container-color: var(--color-surface);
   --mat-card-elevated-container-color: var(--color-surface);
   --mat-card-outlined-container-color: var(--color-surface);
+
   background-color: var(--color-surface);
 }
 
@@ -38,18 +40,23 @@ h6 {
 h1 {
   font-size: var(--h1-size);
 }
+
 h2 {
   font-size: var(--h2-size);
 }
+
 h3 {
   font-size: var(--h3-size);
 }
+
 h4 {
   font-size: var(--h4-size);
 }
+
 h5 {
   font-size: var(--h5-size);
 }
+
 h6 {
   font-size: var(--h6-size);
 }
@@ -64,12 +71,15 @@ h6 {
 .toast-success {
   @include toast(var(--color-success));
 }
+
 .toast-info {
   @include toast(var(--color-info));
 }
+
 .toast-warning {
   @include toast(var(--color-warning));
 }
+
 .toast-error {
   @include toast(var(--color-danger));
 }

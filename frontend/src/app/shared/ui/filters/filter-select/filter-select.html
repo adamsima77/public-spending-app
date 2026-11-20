@@ -1,6 +1,9 @@
 <mat-form-field appearance="outline" subscriptSizing="dynamic">
   <mat-label>{{ label() }}</mat-label>
   <mat-select [formControl]="control()" [multiple]="multiple()">
+    @if (!multiple()) {
+      <mat-option [value]="''">Všetky</mat-option>
+    }
     @for (o of options(); track o.value) {
       <mat-option [value]="o.value">{{ o.label }}</mat-option>
     }

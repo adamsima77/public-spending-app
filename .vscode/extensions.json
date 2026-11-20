@@ -2,6 +2,7 @@
   "recommendations": [
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
+    "stylelint.vscode-stylelint",
     "angular.ng-template",
     "open-southeners.laravel-pint",
     "sanderronde.phpstan-vscode",

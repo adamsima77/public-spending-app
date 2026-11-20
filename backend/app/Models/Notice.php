@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -73,5 +75,17 @@ class Notice extends Model
     public function settledContracts(): HasMany
     {
         return $this->hasMany(SettledContract::class, 'notice_record_id');
+    }
+
+    public function scopeCurrent(Builder $query): Builder
+    {
+        return $query->where('is_latest', true);
+    }
+
+    public function scopePublishedBetween(Builder $query, CarbonInterface $from, ?CarbonInterface $to = null): Builder
+    {
+        return $query
+            ->where('published_at', '>=', $from)
+            ->when($to, fn(Builder $q) => $q->where('published_at', '<', $to));
     }
 }

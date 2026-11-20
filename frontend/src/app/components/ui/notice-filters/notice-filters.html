@@ -1,0 +1,14 @@
+@let f = form().controls;
+
+<app-filter-bar [hasActive]="hasActive()" (resetFilters)="reset()">
+  <app-search-field [control]="f.search" />
+  <app-filter-select label="Typ oznámenia" [options]="noticeTypes()" [control]="f.notice_type" />
+  <app-filter-select label="Typ formulára" [options]="formTypes()" [control]="f.form_type" />
+
+  <app-filter-date-range
+    secondary
+    label="Dátum zverejnenia"
+    [fromControl]="f.published_from"
+    [toControl]="f.published_to"
+  />
+</app-filter-bar>

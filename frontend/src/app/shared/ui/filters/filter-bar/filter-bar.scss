@@ -9,10 +9,10 @@
 }
 
 .filters-row {
-  display: grid;
-  grid-template-columns: minmax(260px, 1.5fr) minmax(180px, 1fr) minmax(180px, 1fr);
   align-items: start;
+  display: grid;
   gap: 12px 16px;
+  grid-template-columns: minmax(260px, 1.5fr) minmax(180px, 1fr) minmax(180px, 1fr);
 
   .filters-reset {
     margin-left: auto;
@@ -23,13 +23,13 @@
   }
 
   &--secondary {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
     gap: 8px 12px;
   }
 
-  @media (max-width: 760px) {
+  @media (width <= 760px) {
     grid-template-columns: 1fr;
   }
 }

@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { FilterOption } from '../models/filter-option.model';
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-filter-select',
@@ -16,5 +15,5 @@ export class FilterSelect<T = string> {
   readonly label = input.required<string>();
   readonly options = input.required<readonly FilterOption<T>[]>();
   readonly multiple = input(true);
-  readonly control = input.required<FormControl<T[]>>();
+  readonly control = input.required<FormControl<T[]> | FormControl<T>>();
 }

@@ -1,16 +1,16 @@
 :host {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 8px 12px;
 }
 
 .filters-label {
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--color-text-secondary);
 }
 
 mat-chip-listbox {
@@ -25,9 +25,11 @@ mat-chip-listbox {
     &.mat-mdc-chip-selected,
     &.mdc-evolution-chip--selected {
       background: var(--color-primary);
+
       --mat-chip-selected-label-text-color: #fff;
       --mat-chip-with-icon-selected-icon-color: #fff;
       --mat-chip-label-text-color: #fff;
+
       color: #fff;
     }
 

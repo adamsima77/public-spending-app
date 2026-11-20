@@ -10,7 +10,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
 import { PageHeader, PageHeaderData } from '@shared/ui/page-header/page-header';
-import { OrganizationFacade } from './organization-facade/organization-facade';
+import { OrganizationFacade } from '@shared/facades/organization-facade/organization-facade';
 import { ORGANIZATIONS_PAGE_CONFIG } from '@shared/config/page-headers/organization-header.config';
 import { DataTable } from '@shared/ui/data-table/data-table';
 import { organizationColumns } from '@shared/config/tables/organization-table.config';

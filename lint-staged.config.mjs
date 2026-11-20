@@ -3,7 +3,11 @@ export default {
     'frontend/node_modules/.bin/eslint --fix --no-warn-ignored --config frontend/eslint.config.js',
     'frontend/node_modules/.bin/prettier --write --config frontend/.prettierrc',
   ],
-  'frontend/**/*.{css,json}': [
+  'frontend/**/*.{css,scss}': [
+    'frontend/node_modules/.bin/stylelint --fix --config frontend/stylelint.config.mjs',
+    'frontend/node_modules/.bin/prettier --write --config frontend/.prettierrc',
+  ],
+  'frontend/**/*.json': [
     'frontend/node_modules/.bin/prettier --write --config frontend/.prettierrc',
   ],
 

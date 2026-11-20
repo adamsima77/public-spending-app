@@ -1,19 +1,19 @@
 @use '../../../styles/breakpoints' as *;
 
 .page-card.not-found-card {
-  max-width: 600px;
-  margin: 60px auto;
-  text-align: center;
-  border-radius: 20px;
   background-color: var(--color-surface);
   border-color: var(--color-border);
+  border-radius: 20px;
   box-shadow: var(--shadow-md);
+  margin: 60px auto;
+  max-width: 600px;
+  text-align: center;
 }
 
 .not-found-content {
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 24px;
   padding: 48px 32px;
 
@@ -23,54 +23,54 @@
 }
 
 .not-found-icon-wrapper {
-  position: relative;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: auto;
-  height: 96px;
-  padding: 0 32px;
   background-color: var(--color-background);
   border-radius: var(--radius-full);
   color: var(--color-danger);
+  display: flex;
+  gap: 12px;
+  height: 96px;
+  justify-content: center;
+  padding: 0 32px;
+  position: relative;
+  width: auto;
 
   .not-found-icon {
-    width: 48px;
+    flex-shrink: 0;
     height: 48px;
     stroke-width: 1.75px;
-    flex-shrink: 0;
+    width: 48px;
   }
 
   .error-code {
+    font-family: var(--font-heading);
     font-size: 36px;
     font-weight: 700;
-    font-family: var(--font-heading);
     line-height: 1;
   }
 }
 
 .not-found-text {
+  align-items: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 12px;
   width: 100%;
 
   h1 {
-    font-size: var(--h2-size);
-    font-family: var(--font-heading);
-    font-weight: 700;
     color: var(--color-text-primary);
+    font-family: var(--font-heading);
+    font-size: var(--h2-size);
+    font-weight: 700;
     margin: 0;
     text-align: center;
   }
 
   p {
-    font-size: var(--font-size-sm);
-    font-family: var(--font-body);
-    line-height: 1.5;
     color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
     margin: 0;
     max-width: 420px;
     text-align: center;
@@ -78,38 +78,38 @@
 }
 
 .not-found-actions {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  display: flex;
   flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
   margin-top: 8px;
   width: 100%;
 
   a {
-    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
     border-radius: var(--radius-lg);
-    height: 44px;
-    padding: 0 20px;
-    font-weight: 500;
-    font-family: var(--font-body);
+    display: inline-flex;
     flex: 1 1 200px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    gap: 8px;
+    height: 44px;
+    justify-content: center;
     max-width: 100%;
+    padding: 0 20px;
 
     @media (max-width: $mobile) {
       flex: 1 1 100%;
     }
 
     .btn-icon {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-      stroke-width: 2px;
-      display: inline-flex;
       align-self: center;
+      display: inline-flex;
+      flex-shrink: 0;
+      height: 18px;
+      stroke-width: 2px;
+      width: 18px;
     }
   }
 }

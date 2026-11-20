@@ -1,1 +1,27 @@
-<p>notices works!</p>
+@let headerData = pageHeaderData();
+
+<mat-card appearance="outlined" class="page-card">
+  <mat-card-content class="notice-page">
+    <app-page-header [data]="headerData" />
+
+    <app-data-table
+      [columns]="columns"
+      [rows]="rows()"
+      [meta]="meta()"
+      [sort]="sortState()"
+      [rowLink]="rowLink"
+      [pageSizeOptions]="pageSizeOptions"
+      [loading]="!notices()"
+      (pageChange)="onPageChange($event)"
+      (sortChange)="onSortChange($event)"
+    >
+      <app-notice-filters
+        filters
+        [form]="filterForm"
+        [noticeTypes]="noticeTypeFilters() ?? []"
+        [formTypes]="formTypeFilters() ?? []"
+        [hasActive]="hasActiveFilters()"
+      />
+    </app-data-table>
+  </mat-card-content>
+</mat-card>

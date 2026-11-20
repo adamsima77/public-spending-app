@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -123,5 +124,20 @@ class NoticeLot extends Model
     public function tenders(): HasMany
     {
         return $this->hasMany(LotTender::class, 'lot_id');
+    }
+
+    public function scopeCurrent(Builder $query): Builder
+    {
+        return $query->whereHas('lotResults', fn(Builder $q) => $q->current());
+    }
+
+    public function scopeInEur(Builder $query): Builder
+    {
+        return $query->where('estimated_currency', 'EUR');
+    }
+
+    public function scopeEuFunded(Builder $query): Builder
+    {
+        return $query->where('eu_funded', true);
     }
 }

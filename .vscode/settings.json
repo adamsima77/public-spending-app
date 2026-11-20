@@ -7,7 +7,8 @@
   "editor.rulers": [100],
 
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "always"
+    "source.fixAll.eslint": "always",
+    "source.fixAll.stylelint": "always"
   },
 
   "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
@@ -24,6 +25,16 @@
   "eslint.format.enable": false,
   "eslint.validate": ["javascript", "typescript", "html"],
   "eslint.workingDirectories": [{ "directory": "frontend", "changeProcessCWD": true }],
+
+  "css.validate": false,
+  "scss.validate": false,
+  "stylelint.enable": true,
+  "stylelint.validate": ["css", "scss"],
+  "stylelint.configFile": "frontend/stylelint.config.mjs",
+  "stylelint.stylelintPath": "frontend/node_modules/stylelint",
+  "stylelint.packageManager": "npm",
+
+  "typescript.preferences.importModuleSpecifier": "non-relative",
 
   "python.defaultInterpreterPath": "${workspaceFolder}/etl/.venv/bin/python",
   "python.analysis.typeCheckingMode": "standard",

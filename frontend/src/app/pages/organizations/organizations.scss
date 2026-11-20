@@ -4,9 +4,10 @@
   --mat-card-outlined-container-color: #fff;
   --mat-card-outlined-outline-color: #e5e7eb;
   --mat-card-outlined-container-shape: 20px;
+
+  box-shadow: var(--shadow-md);
   margin-top: 30px;
   padding: 16px;
-  box-shadow: var(--shadow-md);
 }
 
 .organization-page {

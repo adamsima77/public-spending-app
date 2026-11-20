@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\NoticeIndexRequest;
+use App\Http\Resources\NoticeKpiResource;
 use App\Http\Resources\NoticeResource;
 use App\Models\Notice;
 use App\Services\NoticeService;
@@ -49,5 +50,10 @@ class NoticeController extends Controller
         ]);
 
         return new NoticeResource($notice);
+    }
+
+    public function getKpis(NoticeService $noticeService): NoticeKpiResource
+    {
+        return new NoticeKpiResource($noticeService->getKpis());
     }
 }

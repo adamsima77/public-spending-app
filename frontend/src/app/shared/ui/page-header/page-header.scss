@@ -11,8 +11,8 @@
   padding-bottom: 16px;
 
   @media (min-width: $tablet) {
-    flex-direction: row;
     align-items: center;
+    flex-direction: row;
     justify-content: space-between;
   }
 }
@@ -24,8 +24,8 @@
 }
 
 .description {
-  margin: 0;
   color: var(--color-text-secondary);
+  margin: 0;
 }
 
 mat-divider {
@@ -35,22 +35,23 @@ mat-divider {
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .kpi-loader {
-  display: flex;
   align-items: center;
+  display: flex;
   justify-content: center;
   min-height: 120px;
 }
 
 .kpi-card mat-card-content {
+  align-items: flex-start;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 4px;
+
   --mat-card-outlined-container-elevation: var(--box-shadow-md);
 }
 
