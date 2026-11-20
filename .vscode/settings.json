@@ -30,7 +30,6 @@
   "scss.validate": false,
   "stylelint.enable": true,
   "stylelint.validate": ["css", "scss"],
-  "stylelint.configFile": "frontend/stylelint.config.mjs",
   "stylelint.stylelintPath": "frontend/node_modules/stylelint",
   "stylelint.packageManager": "npm",
 
