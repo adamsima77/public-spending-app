@@ -15,7 +15,7 @@ const SUBSET_MATCH: IsActiveMatchOptions = {
 };
 
 @Service()
-export class SidebarService {
+export class NavigationService {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly _isSidebarActive = signal(false);

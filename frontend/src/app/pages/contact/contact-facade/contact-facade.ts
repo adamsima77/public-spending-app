@@ -1,6 +1,5 @@
 import { inject, Service } from '@angular/core';
-import { ContactMessageService } from '../../../generated';
-import { ContactMessageRequest } from '../../../generated';
+import { ContactMessageService, ContactMessageRequest } from '@generated';
 import { Observable } from 'rxjs/internal/Observable';
 import { ContactSendResponse } from './contact-facade.model';
 

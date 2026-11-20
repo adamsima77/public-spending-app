@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { ContactForm } from '../../components/ui/contact-form/contact-form';
-import { ContactMessageRequest } from '../../generated';
+import { ContactForm } from '@components/ui/contact-form/contact-form';
+import { ContactMessageRequest } from '@generated';
 import { ContactFacade } from './contact-facade/contact-facade';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef } from '@angular/core';
-import { ToastService } from '../../core/services/toast-service/toast-service';
+import { ToastService } from '@core/services/toast-service/toast-service';
 import { finalize, tap } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 

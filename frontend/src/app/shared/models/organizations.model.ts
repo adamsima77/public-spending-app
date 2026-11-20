@@ -1,5 +1,5 @@
-import { OrganizationResource, OrganizationsIndex$Params } from '../../../../generated';
-import { PageParams } from '../../../../config/tables/models/paginated.model';
+import { OrganizationResource, OrganizationsIndex$Params } from '@generated';
+import { PageParams } from '@shared/config/tables/models/paginated.model';
 import { FormControl, FormGroup } from '@angular/forms';
 
 export type Organization = OrganizationResource;

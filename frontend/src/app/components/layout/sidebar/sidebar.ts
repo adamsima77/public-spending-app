@@ -1,7 +1,7 @@
 import { Component, inject, input } from '@angular/core';
-import { NavConfig } from '../../../config/nav-config';
+import { NavConfig } from '@shared/config/nav-config';
 import { RouterLink } from '@angular/router';
-import { SidebarService } from '../../../core/services/navigation-service/navigation.service';
+import { NavigationService } from '@core/services/navigation-service/navigation.service';
 
 @Component({
   imports: [RouterLink],
@@ -11,9 +11,9 @@ import { SidebarService } from '../../../core/services/navigation-service/naviga
 })
 export class Sidebar {
   navigationConfig = input<NavConfig[]>();
-  sidebarService = inject(SidebarService);
+  navigationService = inject(NavigationService);
 
   closeSidebar(): void {
-    this.sidebarService.close();
+    this.navigationService.close();
   }
 }

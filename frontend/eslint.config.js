@@ -4,6 +4,30 @@ import angular from 'angular-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
 
+const layer = (name) => [`@${name}`, `@${name}/**`];
+
+const restrict = (name, forbidden, extra = []) => ({
+  files: [`src/app/${name}/**/*.ts`, `frontend/src/app/${name}/**/*.ts`],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          ...forbidden.map((f) => ({
+            group: layer(f),
+            message: `The "${name}" layer must not import from "${f}".`,
+          })),
+          {
+            group: ['../../**'],
+            message: 'Use a path alias (@core/..., @shared/...) instead of deep relative imports.',
+          },
+          ...extra,
+        ],
+      },
+    ],
+  },
+});
+
 export default tseslint.config(
   {
     ignores: ['src/app/generated/**', 'frontend/src/app/generated/**'],
@@ -35,7 +59,6 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-shadow': 'error',
-      // Angular's static validators are intentionally passed as callbacks.
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
@@ -58,10 +81,8 @@ export default tseslint.config(
 
       '@stylistic/padding-line-between-statements': [
         'error',
-
         { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
         { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
-
         {
           blankLine: 'always',
           prev: '*',
@@ -81,6 +102,30 @@ export default tseslint.config(
       '@angular-eslint/prefer-on-push-component-change-detection': 'error',
     },
   },
+  restrict('config', ['core', 'components', 'layouts', 'pages']),
+  restrict(
+    'shared',
+    ['core', 'components', 'layouts', 'pages'],
+    [
+      {
+        group: ['@config', '@config/*'],
+        message: 'The "shared" layer must not import from app/config.',
+      },
+    ],
+  ),
+  restrict('core', ['components', 'layouts', 'pages']),
+  restrict('components', ['layouts', 'pages']),
+  restrict('layouts', ['pages']),
+  restrict(
+    'pages',
+    [],
+    [
+      {
+        group: ['@pages', '@pages/**'],
+        message: 'Pages must not import each other. Move shared code to shared or components.',
+      },
+    ],
+  ),
   {
     files: ['src/**/*.spec.ts', 'frontend/src/**/*.spec.ts'],
     rules: {

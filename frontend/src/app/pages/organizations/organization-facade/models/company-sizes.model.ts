@@ -1,4 +1,4 @@
-import { CodelistResource } from '../../../../generated';
+import { CodelistResource } from '@generated';
 
 export interface CompanySizesResponse {
   data: CodelistResource[];

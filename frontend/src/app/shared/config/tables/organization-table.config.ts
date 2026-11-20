@@ -1,4 +1,4 @@
-import { OrganizationResource } from '../../generated';
+import { OrganizationResource } from '@generated';
 import { TableColumn } from './models/table-column.model';
 
 export const organizationColumns: TableColumn<OrganizationResource>[] = [

@@ -1,4 +1,4 @@
-@let isSidebarOpen = sidebarService.isSidebarActive();
+@let isSidebarOpen = navigationService.isSidebarActive();
 
 <aside
   id="sidebar"
@@ -15,7 +15,7 @@
         <a
           [routerLink]="item.path"
           (click)="closeSidebar()"
-          [class.active]="sidebarService.isActive(item.path)"
+          [class.active]="navigationService.isActive(item.path)"
         >
           {{ item.label }}
         </a>

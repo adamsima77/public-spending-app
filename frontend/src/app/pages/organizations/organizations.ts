@@ -9,21 +9,20 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
-import { PageHeader, PageHeaderData } from '../../shared/ui/page-header/page-header';
+import { PageHeader, PageHeaderData } from '@shared/ui/page-header/page-header';
 import { OrganizationFacade } from './organization-facade/organization-facade';
-import { ORGANIZATIONS_PAGE_CONFIG } from '../../config/page-headers/organization-header.config';
-import { DataTable } from '../../shared/ui/data-table/data-table';
-import { organizationColumns } from '../../config/tables/organization-table.config';
-import { PageParams } from '../../config/tables/models/paginated.model';
-import { paginatedSizes } from '../../config/tables/paginated-sizes.config';
+import { ORGANIZATIONS_PAGE_CONFIG } from '@shared/config/page-headers/organization-header.config';
+import { DataTable } from '@shared/ui/data-table/data-table';
+import { organizationColumns } from '@shared/config/tables/organization-table.config';
+import { PageParams } from '@shared/config/tables/models/paginated.model';
+import { paginatedSizes } from '@shared/config/tables/paginated-sizes.config';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Sort } from '@angular/material/sort';
-import { Organization } from './organization-facade/models/organizations.model';
+import { Organization, OrganizationSort } from '@shared/models/organizations.model';
 import { MatCardModule } from '@angular/material/card';
-import { roleOptions } from '../../config/filters/organization-role.config';
-import { OrganizationFilters } from '../../components/ui/organization-filters/organization-filters';
-import { OrganizationSort } from './organization-facade/models/organizations.model';
+import { roleOptions } from '@shared/config/filters/organization-role.config';
+import { OrganizationFilters } from '@components/ui/organization-filters/organization-filters';
 
 @Component({
   imports: [

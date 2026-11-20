@@ -12,8 +12,8 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { SidebarService } from '../../../core/services/navigation-service/navigation.service';
-import { NavConfig } from '../../../config/nav-config';
+import { NavigationService } from '@core/services/navigation-service/navigation.service';
+import { NavConfig } from '@shared/config/nav-config';
 import { LucideMenu } from '@lucide/angular';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,12 +29,12 @@ export class Navbar {
   navigationConfig = input<NavConfig[]>();
   linksElement = viewChild<ElementRef<HTMLElement>>('links');
   linkElements = viewChildren<ElementRef<HTMLAnchorElement>>('navLink');
-  sidebarService = inject(SidebarService);
+  navigationService = inject(NavigationService);
   indicatorStyle = signal<IndicatorStyle | null>(null);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly activeIndex = computed(() =>
-    (this.navigationConfig() ?? []).findIndex((item) => this.sidebarService.isActive(item.path)),
+    (this.navigationConfig() ?? []).findIndex((item) => this.navigationService.isActive(item.path)),
   );
 
   constructor() {
@@ -60,7 +60,7 @@ export class Navbar {
   }
 
   changeSidebarState(): void {
-    this.sidebarService.toggle();
+    this.navigationService.toggle();
   }
 
   private updateIndicatorPosition(): void {

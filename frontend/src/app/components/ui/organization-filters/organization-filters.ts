@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { OrganizationFilterForm } from '../../../pages/organizations/organization-facade/models/organizations.model';
-import { FilterBar } from '../../../shared/ui/filters/filter-bar/filter-bar';
-import { SearchField } from '../../../shared/ui/filters/search-field/search-field';
-import { FilterSelect } from '../../../shared/ui/filters/filter-select/filter-select';
-import { FilterChips } from '../../../shared/ui/filters/filter-chips/filter-chips';
-import { FilterOption } from '../../../shared/ui/filters/models/filter-option.model';
+import { OrganizationFilterForm } from '@shared/models/organizations.model';
+import { FilterBar } from '@shared/ui/filters/filter-bar/filter-bar';
+import { SearchField } from '@shared/ui/filters/search-field/search-field';
+import { FilterSelect } from '@shared/ui/filters/filter-select/filter-select';
+import { FilterChips } from '@shared/ui/filters/filter-chips/filter-chips';
+import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
 
 @Component({
   selector: 'app-organization-filters',

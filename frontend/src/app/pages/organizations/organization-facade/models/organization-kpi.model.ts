@@ -1,4 +1,4 @@
-import { OrganizationKpisResource } from '../../../../generated/models/organization-kpis-resource';
+import { OrganizationKpisResource } from '@generated';
 
 export interface OrganizationKpisResponse {
   data: OrganizationKpisResource;

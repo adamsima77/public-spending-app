@@ -5,8 +5,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs';
 import { OrganizationKpisResponse } from './models/organization-kpi.model';
-import { OrganizationService } from '../../../generated/services/organization.service';
-import { OrganizationKpisResource } from '../../../generated';
+import { OrganizationService, OrganizationKpisResource, FilterService } from '@generated';
 import {
   Organization,
   OrganizationFilterForm,
@@ -15,11 +14,10 @@ import {
   OrganizationQueryParams,
   OrganizationRole,
   OrganizationSort,
-} from './models/organizations.model';
-import { PageHeaderKpi } from '../../../shared/ui/page-header/page-header';
-import { PageParams, Paginated } from '../../../config/tables/models/paginated.model';
-import { FilterService } from '../../../generated';
-import { FilterOption } from '../../../shared/ui/filters/models/filter-option.model';
+} from '@shared/models/organizations.model';
+import { PageHeaderKpi } from '@shared/ui/page-header/page-header';
+import { PageParams, Paginated } from '@shared/config/tables/models/paginated.model';
+import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
 
 @Service()
 export class OrganizationFacade {
