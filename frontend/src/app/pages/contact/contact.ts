@@ -6,7 +6,7 @@ import { ContactMessageRequest } from '../../generated';
 import { ContactFacade } from './contact-facade/contact-facade';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef } from '@angular/core';
-import { ToastService } from '../../components/ui/toast-notification/toast-service/toast-service';
+import { ToastService } from '../../core/services/toast-service/toast-service';
 import { finalize, tap } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 

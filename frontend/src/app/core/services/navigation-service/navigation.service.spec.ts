@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SidebarService } from './sidebar.service';
+import { SidebarService } from './navigation.service';
 
 describe('SidebarService', () => {
   let service: SidebarService;

@@ -9,10 +9,10 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
-import { PageHeader, PageHeaderData } from '../../components/ui/page-header/page-header';
+import { PageHeader, PageHeaderData } from '../../shared/ui/page-header/page-header';
 import { OrganizationFacade } from './organization-facade/organization-facade';
 import { ORGANIZATIONS_PAGE_CONFIG } from '../../config/page-headers/organization-header.config';
-import { DataTable } from '../../components/ui/data-table/data-table';
+import { DataTable } from '../../shared/ui/data-table/data-table';
 import { organizationColumns } from '../../config/tables/organization-table.config';
 import { PageParams } from '../../config/tables/models/paginated.model';
 import { paginatedSizes } from '../../config/tables/paginated-sizes.config';

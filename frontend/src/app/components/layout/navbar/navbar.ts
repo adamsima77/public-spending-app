@@ -12,7 +12,7 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { SidebarService } from '../../../core/services/sidebar/sidebar.service';
+import { SidebarService } from '../../../core/services/navigation-service/navigation.service';
 import { NavConfig } from '../../../config/nav-config';
 import { LucideMenu } from '@lucide/angular';
 import { RouterLink } from '@angular/router';
