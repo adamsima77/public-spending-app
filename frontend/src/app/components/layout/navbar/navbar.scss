@@ -3,7 +3,7 @@
 nav {
   align-items: center;
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: var(--border-default);
   box-shadow: var(--shadow-md);
   color: var(--color-text-primary);
   display: flex;

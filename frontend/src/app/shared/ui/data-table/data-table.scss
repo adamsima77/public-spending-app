@@ -6,8 +6,8 @@
 }
 
 .table-filters {
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--color-background);
+  border-bottom: var(--border-default);
   padding: 16px 20px;
 }
 
@@ -23,17 +23,17 @@
       row-item-container-height: 56px,
       header-headline-size: 12px,
       header-headline-weight: 600,
-      header-headline-color: #6b7280,
-      row-item-label-text-color: #1f2937,
+      header-headline-color: var(--color-text-muted),
+      row-item-label-text-color: var(--color-text-primary),
       row-item-label-text-size: 14px,
-      row-item-outline-color: #f0f1f4,
+      row-item-outline-color: var(--color-border),
       footer-container-height: 0,
     )
   );
 }
 
 .table-card {
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   overflow: hidden;
 
@@ -48,13 +48,13 @@
 }
 
 th.mat-mdc-header-cell {
-  background: #f9fafb;
+  background: var(--color-surface-subtle);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 tr.mat-mdc-row:hover {
-  background: #f5f7fa;
+  background: var(--color-background);
 }
 
 tr.mat-mdc-row:last-child td {
@@ -91,14 +91,14 @@ tr.mat-mdc-row:last-child td {
 }
 
 .row-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  background: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
 }
 
 .card-title {
-  color: #111827;
+  color: var(--color-text-primary);
   font-size: 15px;
   font-weight: 600;
   line-height: 1.3;
@@ -116,7 +116,7 @@ tr.mat-mdc-row:last-child td {
   min-width: 0;
 
   dt {
-    color: #6b7280;
+    color: var(--color-text-muted);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -124,7 +124,7 @@ tr.mat-mdc-row:last-child td {
   }
 
   dd {
-    color: #1f2937;
+    color: var(--color-text-primary);
     font-size: 14px;
     margin: 2px 0 0;
     overflow-wrap: anywhere;
@@ -160,7 +160,7 @@ tr.mat-mdc-row:has(.row-link) {
     outline: none;
 
     &::after {
-      outline: 2px solid var(--color-primary);
+      outline: var(--focus-ring);
       outline-offset: -2px;
     }
   }
@@ -168,7 +168,7 @@ tr.mat-mdc-row:has(.row-link) {
 
 .no-data {
   align-items: center;
-  color: #6b7280;
+  color: var(--color-text-muted);
   display: flex;
   flex-direction: column;
   gap: 8px;

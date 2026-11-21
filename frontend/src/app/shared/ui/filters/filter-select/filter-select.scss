@@ -1,18 +1,18 @@
 mat-form-field {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
   min-width: 0;
   width: 100%;
 
   --mat-form-field-container-height: 48px;
-  --mat-form-field-outlined-outline-color: #e5e7eb;
-  --mat-form-field-outlined-hover-outline-color: #c7d2e0;
-  --mat-form-field-outlined-container-shape: 12px;
-  --mat-form-field-outlined-focus-outline-color: var(--field-accent, #1e56a0);
-  --mat-form-field-focus-select-arrow-color: var(--field-accent, #1e56a0);
-  --mat-form-field-focus-label-text-color: var(--field-accent, #1e56a0);
+  --mat-form-field-outlined-outline-color: var(--color-border);
+  --mat-form-field-outlined-hover-outline-color: var(--color-border-hover);
+  --mat-form-field-outlined-container-shape: var(--radius-lg);
+  --mat-form-field-outlined-focus-outline-color: var(--field-accent, var(--color-primary));
+  --mat-form-field-focus-select-arrow-color: var(--field-accent, var(--color-primary));
+  --mat-form-field-focus-label-text-color: var(--field-accent, var(--color-primary));
 
   &:has(.mat-mdc-select-value-text) {
-    --mat-form-field-outlined-outline-color: var(--field-accent, #1e56a0);
+    --mat-form-field-outlined-outline-color: var(--field-accent, var(--color-primary));
   }
 }

@@ -3,7 +3,7 @@
 .page-card.not-found-card {
   background-color: var(--color-surface);
   border-color: var(--color-border);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-md);
   margin: 60px auto;
   max-width: 600px;

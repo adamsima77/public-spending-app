@@ -1,6 +1,6 @@
 aside {
   background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  border-right: var(--border-default);
   box-shadow: var(--shadow-md);
   box-sizing: border-box;
   color: var(--color-text-primary);
@@ -18,7 +18,7 @@ aside {
 
   hr {
     border: none;
-    border-top: 3px solid var(--color-border);
+    border-top: var(--border-default);
     margin: 5px 5px 15px;
   }
 
@@ -44,7 +44,7 @@ aside {
     padding: 0;
 
     li a {
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       color: var(--color-text-secondary);
       display: block;
       padding: 5px;

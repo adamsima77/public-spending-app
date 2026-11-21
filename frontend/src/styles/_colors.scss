@@ -19,4 +19,10 @@
   --chart-color-4: #d97706;
   --chart-color-5: #7c5cbf;
   --chart-color-6: #16a34a;
+  --border-default: 1px solid var(--color-border);
+  --border-on-dark: 1px solid rgb(255 255 255 / 15%);
+  --color-surface-subtle: #f9fafb;
+  --focus-ring: 2px solid var(--color-primary);
+  --color-text-on-primary: #fff;
+  --color-border-hover: #c7d2e0;
 }

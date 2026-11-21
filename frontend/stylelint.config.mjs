@@ -1,12 +1,14 @@
 export default {
-  extends: ['stylelint-config-standard-scss', 'stylelint-config-prettier-scss'],
-  plugins: ['stylelint-order'],
+  extends: ['stylelint-config-standard-scss'],
+  plugins: ['stylelint-order', 'stylelint-declaration-strict-value'],
   ignoreFiles: [
     'dist/**',
     '.angular/**',
     'node_modules/**',
     'src/app/generated/**',
     'src/styles/_theme-colors.scss',
+    'src/material-theme.scss',
+    'src/styles.scss',
   ],
   rules: {
     'no-empty-source': null,
@@ -16,6 +18,48 @@ export default {
     'selector-class-pattern': null,
     'selector-max-id': 0,
     'max-nesting-depth': [3, { ignoreAtRules: ['include', 'media'] }],
+    'selector-max-compound-selectors': 3,
+    'declaration-block-no-redundant-longhand-properties': [
+      true,
+      { ignoreShorthands: ['/flex/', '/grid/', '/border/'] },
+    ],
     'order/properties-alphabetical-order': true,
+
+    'scss/at-extend-no-missing-placeholder': true,
+    'scss/dollar-variable-no-missing-interpolation': true,
+    'scss/no-global-function-names': true,
+
+    'scale-unlimited/declaration-strict-value': [
+      [
+        'color',
+        'background-color',
+        'background',
+        'border',
+        'border-top',
+        'border-right',
+        'border-bottom',
+        'border-left',
+        'outline',
+        'border-color',
+        '/^border-.*-color$/',
+        'border-radius',
+        '/^border-.*-radius$/',
+        'z-index',
+      ],
+      {
+        disableFix: true,
+        ignoreValues: [
+          '0',
+          'auto',
+          'inherit',
+          'initial',
+          'unset',
+          'revert',
+          'none',
+          'transparent',
+          'currentColor',
+        ],
+      },
+    ],
   },
 };

@@ -26,11 +26,11 @@ mat-chip-listbox {
     &.mdc-evolution-chip--selected {
       background: var(--color-primary);
 
-      --mat-chip-selected-label-text-color: #fff;
-      --mat-chip-with-icon-selected-icon-color: #fff;
-      --mat-chip-label-text-color: #fff;
+      --mat-chip-selected-label-text-color: var(--color-text-on-primary);
+      --mat-chip-with-icon-selected-icon-color: var(--color-text-on-primary);
+      --mat-chip-label-text-color: var(--color-text-on-primary);
 
-      color: #fff;
+      color: var(--color-text-on-primary);
     }
 
     &:not(.mat-mdc-chip-selected):hover {
