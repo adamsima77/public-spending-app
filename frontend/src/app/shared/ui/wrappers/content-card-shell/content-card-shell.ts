@@ -15,5 +15,6 @@ import {
   templateUrl: './content-card-shell.html',
 })
 export class ContentCardShell {
-  readonly title = input.required<string>();
+  readonly title = input<string>();
+  maxWidth = input<string>('900px');
 }

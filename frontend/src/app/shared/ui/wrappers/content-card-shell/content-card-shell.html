@@ -1,9 +1,13 @@
+@let mainTitle = title() ?? null;
+
 <div class="content-page">
-  <mat-card class="content-card">
+  <mat-card class="content-card" [style.max-width]="maxWidth()">
     <mat-card-header>
-      <mat-card-title
-        ><h1>{{ title() }}</h1></mat-card-title
-      >
+      @if (mainTitle) {
+        <mat-card-title
+          ><h1>{{ mainTitle }}</h1></mat-card-title
+        >
+      }
     </mat-card-header>
 
     <mat-card-content>

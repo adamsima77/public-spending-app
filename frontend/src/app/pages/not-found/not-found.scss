@@ -1,25 +1,14 @@
 @use 'styles/breakpoints' as *;
 
-.page-card.not-found-card {
-  --mat-card-outlined-container-color: var(--color-surface);
-  --mat-card-outlined-outline-color: var(--color-border);
-  --mat-card-outlined-container-shape: var(--radius-xl);
-
-  box-shadow: var(--shadow-md);
-  margin: var(--spacing-12) auto;
-  max-width: 600px;
-  text-align: center;
-}
-
 .not-found-content {
   align-items: center;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-6);
-  padding: var(--spacing-12) var(--spacing-8);
+  padding: var(--spacing-8) var(--spacing-4);
 
   @media (max-width: $tablet) {
-    padding: var(--spacing-8) var(--spacing-4);
+    padding: var(--spacing-6) var(--spacing-2);
   }
 }
 
@@ -32,9 +21,10 @@
   gap: var(--spacing-3);
   height: 96px;
   justify-content: center;
+  margin: 0 auto;
+  margin-bottom: 20px;
   padding: 0 var(--spacing-8);
-  position: relative;
-  width: auto;
+  width: fit-content;
 
   .not-found-icon {
     flex-shrink: 0;
@@ -103,8 +93,8 @@
       transform var(--transition-fast),
       box-shadow var(--transition-fast);
 
-    &:hover {
-      transform: translateY(-1px);
+    &:first-child {
+      flex: 1 1 100%;
     }
 
     @media (max-width: $mobile) {

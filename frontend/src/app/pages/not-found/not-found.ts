@@ -3,11 +3,13 @@ import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { LucideSearchX, LucideHouse, LucideBuildingComplex, LucideFileText } from '@lucide/angular';
+import { ContentCardShell } from '@shared/ui/wrappers/content-card-shell/content-card-shell';
 
 @Component({
   selector: 'app-not-found',
   standalone: true,
   imports: [
+    ContentCardShell,
     RouterLink,
     MatCardModule,
     MatButtonModule,
