@@ -14,7 +14,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { DataTable } from '@shared/ui/data-table/data-table';
-import { PageHeader } from '@shared/ui/page-header/page-header';
 import { PageHeaderData } from '@shared/ui/page-header/models/page-header.model';
 import { NoticeFacade } from '@shared/facades/notice-facade/notice-facade';
 import { NOTICE_PAGE_CONFIG } from '@shared/config/page-headers/notice-header.config';
@@ -23,9 +22,17 @@ import { NOTICE_COLUMNS } from '@shared/config/tables/notice-table.config';
 import { PageParams } from '@shared/config/tables/models/paginated.model';
 import { paginatedSizes } from '@shared/config/tables/paginated-sizes.config';
 import { Notice, NoticeSort } from '@shared/models/notices.model';
+import { PageCardShellComponent } from '@shared/ui/wrappers/page-card-shell.component/page-card-shell.component';
 
 @Component({
-  imports: [PageHeader, DataTable, MatButtonModule, MatIconModule, MatCardModule, NoticeFilters],
+  imports: [
+    PageCardShellComponent,
+    DataTable,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    NoticeFilters,
+  ],
   selector: 'app-notices',
   styleUrl: './notices.scss',
   templateUrl: './notices.html',

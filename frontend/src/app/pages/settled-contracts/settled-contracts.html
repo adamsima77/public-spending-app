@@ -1,20 +1,15 @@
-@let headerData = pageHeaderData();
-<mat-card appearance="outlined" class="page-card">
-  <mat-card-content class="settled-contract-page">
-    <app-page-header [data]="headerData" />
-
-    <app-data-table
-      [columns]="columns"
-      [rows]="rows()"
-      [meta]="meta()"
-      [sort]="sortState()"
-      [rowLink]="rowLink"
-      [pageSizeOptions]="pageSizeOptions"
-      [loading]="!settledContracts()"
-      (pageChange)="onPageChange($event)"
-      (sortChange)="onSortChange($event)"
-    >
-      <app-settled-contract-filters filters [form]="filterForm" [searchBuyers]="searchBuyers" />
-    </app-data-table>
-  </mat-card-content>
-</mat-card>
+<app-page-card-shell [headerData]="pageHeaderData()">
+  <app-data-table
+    [columns]="columns"
+    [rows]="rows()"
+    [meta]="meta()"
+    [sort]="sortState()"
+    [rowLink]="rowLink"
+    [pageSizeOptions]="pageSizeOptions"
+    [loading]="!settledContracts()"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+  >
+    <app-settled-contract-filters filters [form]="filterForm" [searchBuyers]="searchBuyers" />
+  </app-data-table>
+</app-page-card-shell>

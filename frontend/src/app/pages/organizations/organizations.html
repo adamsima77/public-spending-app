@@ -1,27 +1,22 @@
-@let headerData = pageHeaderData();
-<mat-card appearance="outlined" class="page-card">
-  <mat-card-content class="organization-page">
-    <app-page-header [data]="headerData" />
-
-    <app-data-table
-      [columns]="columns"
-      [rows]="rows()"
-      [meta]="meta()"
-      [sort]="sortState()"
-      [rowLink]="rowLink"
-      [pageSizeOptions]="pageSizeOptions"
-      [loading]="!organizations()"
-      (pageChange)="onPageChange($event)"
-      (sortChange)="onSortChange($event)"
-    >
-      <app-organization-filters
-        filters
-        [form]="filterForm"
-        [countries]="countryFilters() ?? []"
-        [companySizes]="companySizeFilters() ?? []"
-        [roles]="roleFilterOptions"
-        [hasActive]="hasActiveFilters()"
-      />
-    </app-data-table>
-  </mat-card-content>
-</mat-card>
+<app-page-card-shell [headerData]="pageHeaderData()">
+  <app-data-table
+    [columns]="columns"
+    [rows]="rows()"
+    [meta]="meta()"
+    [sort]="sortState()"
+    [rowLink]="rowLink"
+    [pageSizeOptions]="pageSizeOptions"
+    [loading]="!organizations()"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+  >
+    <app-organization-filters
+      filters
+      [form]="filterForm"
+      [countries]="countryFilters() ?? []"
+      [companySizes]="companySizeFilters() ?? []"
+      [roles]="roleFilterOptions"
+      [hasActive]="hasActiveFilters()"
+    />
+  </app-data-table>
+</app-page-card-shell>

@@ -12,7 +12,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { Sort } from '@angular/material/sort';
-import { PageHeader } from '@shared/ui/page-header/page-header';
 import { PageHeaderData } from '@shared/ui/page-header/models/page-header.model';
 import { SettledContractFacade } from '@shared/facades/settled-contract-facade/settled-contract-facade';
 import { SETTLED_CONTRACTS_PAGE_CONFIG } from '@shared/config/page-headers/settled-contract-header.config';
@@ -23,10 +22,11 @@ import { paginatedSizes } from '@shared/config/tables/paginated-sizes.config';
 import { SettledContract, SettledContractSort } from '@shared/models/settled-contracts.model';
 import { SettledContractFilters } from '@components/ui/settled-contract-filters/settled-contract-filters';
 import { Router } from '@angular/router';
+import { PageCardShellComponent } from '@shared/ui/wrappers/page-card-shell.component/page-card-shell.component';
 
 @Component({
   imports: [
-    PageHeader,
+    PageCardShellComponent,
     DataTable,
     MatButtonModule,
     MatIconModule,

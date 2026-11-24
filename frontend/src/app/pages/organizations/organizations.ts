@@ -9,7 +9,6 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
-import { PageHeader } from '@shared/ui/page-header/page-header';
 import { PageHeaderData } from '@shared/ui/page-header/models/page-header.model';
 import { OrganizationFacade } from '@shared/facades/organization-facade/organization-facade';
 import { ORGANIZATIONS_PAGE_CONFIG } from '@shared/config/page-headers/organization-header.config';
@@ -24,10 +23,11 @@ import { Organization, OrganizationSort } from '@shared/models/organizations.mod
 import { MatCardModule } from '@angular/material/card';
 import { roleOptions } from '@shared/config/filters/organization-role.config';
 import { OrganizationFilters } from '@components/ui/organization-filters/organization-filters';
+import { PageCardShellComponent } from '@shared/ui/wrappers/page-card-shell.component/page-card-shell.component';
 
 @Component({
   imports: [
-    PageHeader,
+    PageCardShellComponent,
     DataTable,
     MatButtonModule,
     MatIconModule,
