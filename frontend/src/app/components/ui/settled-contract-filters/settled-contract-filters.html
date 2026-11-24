@@ -1,7 +1,13 @@
 @let f = form().controls;
 <app-filter-bar [hasActive]="hasActive()" (resetFilters)="reset()">
   <app-search-field [control]="f.search" />
-  <app-filter-autocomplete label="Obstarávateľ" [control]="f.buyer_id" [search]="searchBuyers()" />
+  <app-filter-autocomplete
+    label="Obstarávateľ"
+    [control]="form().controls.buyer_id"
+    [options]="buyers().options()"
+    [selected]="buyers().selected()"
+    (queryChange)="buyers().onQuery($event)"
+  />
   <app-filter-date-range
     label="Dátum uzavretia"
     [fromControl]="f.conclusion_from"

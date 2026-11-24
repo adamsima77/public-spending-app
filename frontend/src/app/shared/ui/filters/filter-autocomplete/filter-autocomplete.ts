@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, input, output, linkedSignal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   MatAutocompleteModule,
@@ -7,17 +6,6 @@ import {
 } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  EMPTY,
-  filter,
-  map,
-  Observable,
-  of,
-  startWith,
-  switchMap,
-} from 'rxjs';
 import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
 
 @Component({
@@ -30,59 +18,30 @@ import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
 export class FilterAutocomplete {
   readonly label = input.required<string>();
   readonly control = input.required<FormControl<string>>();
-  readonly search =
-    input.required<(query: string, selectedId: string) => Observable<FilterOption[]>>();
+  readonly options = input.required<readonly FilterOption[]>();
+  readonly selected = input<FilterOption | null>(null);
 
-  protected readonly text = new FormControl<string | FilterOption>('', { nonNullable: true });
+  readonly queryChange = output<string>();
 
-  protected readonly options = toSignal(
-    this.text.valueChanges.pipe(
-      filter((v): v is string => typeof v === 'string'),
-      startWith(''),
-      debounceTime(250),
-      distinctUntilChanged(),
-      switchMap((q) => this.search()(q, this.control().value)),
-    ),
-    { initialValue: [] as FilterOption[] },
-  );
+  protected readonly text = linkedSignal(() => this.selected()?.label ?? '');
 
-  protected readonly displayWith = (v: string | FilterOption | null): string =>
-    typeof v === 'string' ? v : (v?.label ?? '');
+  protected readonly displayWith = (o: FilterOption | null): string => o?.label ?? '';
 
-  constructor() {
-    toObservable(this.control)
-      .pipe(
-        switchMap((c) => c.valueChanges.pipe(startWith(c.value))),
-        distinctUntilChanged(),
-        switchMap((id) => {
-          if (!id) {
-            return of(null);
-          }
+  protected onInput(event: Event): void {
+    const query = (event.target as HTMLInputElement).value;
 
-          const current = this.text.value;
+    this.text.set(query);
+    this.queryChange.emit(query);
 
-          if (typeof current !== 'string' && current.value === id) {
-            return EMPTY;
-          }
-
-          return this.search()('', id).pipe(
-            map((opts) => opts.find((o) => o.value === id) ?? null),
-          );
-        }),
-        takeUntilDestroyed(),
-      )
-      .subscribe((match) => {
-        this.text.setValue(match ?? '', { emitEvent: false });
-      });
-
-    this.text.valueChanges.pipe(takeUntilDestroyed()).subscribe((v) => {
-      if (v === '' && this.control().value) {
-        this.control().setValue('');
-      }
-    });
+    if (!query) {
+      this.control().setValue('');
+    }
   }
 
   protected onSelected(event: MatAutocompleteSelectedEvent): void {
-    this.control().setValue((event.option.value as FilterOption).value);
+    const option = event.option.value as FilterOption;
+
+    this.text.set(option.label);
+    this.control().setValue(option.value);
   }
 }

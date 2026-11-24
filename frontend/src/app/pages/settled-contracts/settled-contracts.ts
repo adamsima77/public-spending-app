@@ -54,8 +54,6 @@ export class SettledContracts {
     direction: this.direction(),
   }));
 
-  protected readonly searchBuyers = this.facade.searchBuyers;
-
   protected readonly columns = settledContractColumns;
   protected readonly rows = computed(() => this.settledContracts()?.data ?? []);
   protected readonly meta = computed(() => this.settledContracts()?.meta);
@@ -68,7 +66,7 @@ export class SettledContracts {
 
   protected readonly settledContracts = this.state.settledContracts;
   protected readonly hasActiveFilters = this.state.hasActiveFilters;
-
+  protected readonly buyers = this.state.buyers;
   protected readonly pageHeaderData = computed<PageHeaderData>(() => {
     const kpis = this.kpis();
 

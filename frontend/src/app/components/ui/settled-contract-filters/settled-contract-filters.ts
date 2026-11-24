@@ -7,7 +7,7 @@ import { FilterChips } from '@shared/ui/filters/filter-chips/filter-chips';
 import { FilterDateRange } from '@shared/ui/filters/filter-date-range/filter-date-range';
 import { FilterAutocomplete } from '@shared/ui/filters/filter-autocomplete/filter-autocomplete';
 import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
-import { AutocompleteSearch } from '@shared/models/autocomplete-search.model';
+import { BuyerFilter } from '@shared/models/settled-contracts.model';
 import { SettledContractFilterForm } from '@shared/models/settled-contracts.model';
 
 @Component({
@@ -18,7 +18,7 @@ import { SettledContractFilterForm } from '@shared/models/settled-contracts.mode
 })
 export class SettledContractFilters {
   readonly form = input.required<SettledContractFilterForm>();
-  readonly searchBuyers = input.required<AutocompleteSearch>();
+  readonly buyers = input.required<BuyerFilter>();
 
   protected readonly yesNo: FilterOption[] = [
     { value: '1', label: 'Áno' },

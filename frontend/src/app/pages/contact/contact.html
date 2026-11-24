@@ -1,21 +1,13 @@
-<div class="contact-page">
-  <mat-card class="contact-card">
-    <mat-card-header>
-      <mat-card-title><h1>Kontakt</h1></mat-card-title>
-    </mat-card-header>
+<app-content-card-shell title="Kontakt">
+  <p class="contact-description">
+    V prípade akýchkoľvek otázok, nejasností alebo technických problémov nás môžete jednoducho
+    kontaktovať pomocou tohto formulára. Vašu správu spracujeme a odpovieme vám na ňu v priebehu
+    niekoľkých dní.
+  </p>
 
-    <mat-card-content>
-      <p class="contact-description">
-        V prípade akýchkoľvek otázok, nejasností alebo technických problémov nás môžete jednoducho
-        kontaktovať pomocou tohto formulára. Vašu správu spracujeme a odpovieme vám na ňu v priebehu
-        niekoľkých dní.
-      </p>
-
-      <app-contact-form
-        [isSubmitting]="isSubmitting()"
-        [submissionSucceeded]="isSuccess()"
-        (emitForm)="handleFormSubmit($event)"
-      />
-    </mat-card-content>
-  </mat-card>
-</div>
+  <app-contact-form
+    [isSubmitting]="isSubmitting()"
+    [submissionSucceeded]="isSuccess()"
+    (emitForm)="handleFormSubmit($event)"
+  />
+</app-content-card-shell>

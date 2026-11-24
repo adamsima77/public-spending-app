@@ -1,6 +1,15 @@
-import { computed, DestroyRef, effect, inject, Service, Signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import {
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  linkedSignal,
+  Service,
+  signal,
+  Signal,
+} from '@angular/core';
+import { ActivatedRoute, Router, Params } from '@angular/router';
+import { rxResource, takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
   debounceTime,
@@ -10,9 +19,13 @@ import {
   switchMap,
   of,
   catchError,
+  timer,
+  filter,
+  tap,
 } from 'rxjs';
 import { SettledContractService, SettledContractKpiResource } from '@generated';
 import {
+  BuyerFilter,
   SettledContract,
   SettledContractFilterForm,
   SettledContractFilterParams,
@@ -56,6 +69,7 @@ export class SettledContractFacade {
   ): {
     settledContracts: Signal<Paginated<SettledContract> | undefined>;
     hasActiveFilters: Signal<boolean>;
+    buyers: BuyerFilter;
   } {
     const destroyRef = inject(DestroyRef);
 
@@ -85,29 +99,58 @@ export class SettledContractFacade {
         filterForm.reset(filters, { emitEvent: false });
       }
     });
-
     filterForm.valueChanges
       .pipe(
         map((value) => this.normalizeFilterValues(value)),
         debounceTime(250),
         distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        filter((v) => JSON.stringify(v) !== JSON.stringify(queryFilters())),
+        tap((v) => {
+          void this.router.navigate([], {
+            queryParams: this.toQueryParams(v),
+            queryParamsHandling: 'merge',
+          });
+        }),
         takeUntilDestroyed(destroyRef),
       )
-      .subscribe((v) => {
-        void this.router.navigate([], {
-          queryParams: {
-            search: v.search || null,
-            buyer_id: v.buyer_id || null,
-            conclusion_from: v.conclusion_from ?? null,
-            conclusion_to: v.conclusion_to ?? null,
-            has_url: v.has_url.length ? v.has_url : null,
-            has_tenders: v.has_tenders.length ? v.has_tenders : null,
-            only_current: v.only_current.length ? v.only_current : null,
-            page: null,
-          },
-          queryParamsHandling: 'merge',
-        });
-      });
+      .subscribe();
+
+    const buyerId = computed(() => queryFilters().buyer_id);
+    const buyerQuery = signal('');
+
+    const buyerOptionsResource = rxResource({
+      params: buyerQuery,
+      stream: ({ params }) =>
+        timer(250).pipe(
+          switchMap(() => this.getBuyers(params, buyerId() ? Number(buyerId()) : null)),
+        ),
+    });
+
+    const buyerOptions = linkedSignal<FilterOption[] | undefined, FilterOption[]>({
+      source: buyerOptionsResource.value,
+      computation: (value, previous) => value ?? previous?.value ?? [],
+    });
+
+    const selectedBuyerResource = rxResource({
+      params: () => buyerId() || undefined,
+      stream: ({ params: id }) =>
+        this.getBuyers('', Number(id)).pipe(
+          map((opts) => opts.find((o) => o.value === id) ?? null),
+        ),
+    });
+
+    const selectedBuyer = linkedSignal<FilterOption | null | undefined, FilterOption | null>({
+      source: selectedBuyerResource.value,
+      computation: (value, previous) => (buyerId() ? (value ?? previous?.value ?? null) : null),
+    });
+
+    const buyers: BuyerFilter = {
+      options: buyerOptions,
+      selected: selectedBuyer,
+      onQuery: (query) => {
+        buyerQuery.set(query);
+      },
+    };
 
     const filterParams = computed(() => this.toFilterParams(queryFilters()));
     const requestParams = computed<SettledContractQueryParams>(() => ({
@@ -122,7 +165,25 @@ export class SettledContractFacade {
         ),
       ),
       hasActiveFilters: computed(() => Object.values(filterParams()).some((v) => v !== null)),
+      buyers,
     };
+  }
+
+  private toQueryParams(v: SettledContractFilterValues): Params {
+    return {
+      search: this.emptyToNull(v.search),
+      buyer_id: this.emptyToNull(v.buyer_id),
+      conclusion_from: this.emptyToNull(v.conclusion_from),
+      conclusion_to: this.emptyToNull(v.conclusion_to),
+      has_url: v.has_url.length ? v.has_url : null,
+      has_tenders: v.has_tenders.length ? v.has_tenders : null,
+      only_current: v.only_current.length ? v.only_current : null,
+      page: null,
+    };
+  }
+
+  private emptyToNull<T extends string | Date | null>(value: T): T | null {
+    return value === '' ? null : value;
   }
 
   public getSettledContractKpis(): Observable<SettledContractKpiResource> {
@@ -172,6 +233,15 @@ export class SettledContractFacade {
       },
       { label: 'Obstarávatelia', value: nf.format(kpis.reach.buyers), icon: 'account_balance' },
     ];
+  }
+
+  public getBuyers(search = '', selectedId: number | null = null): Observable<FilterOption[]> {
+    return this.filterService
+      .codelistsBuyers({ search: search || undefined, selected_id: selectedId ?? undefined })
+      .pipe(
+        map(({ data }) => data.map(({ id, name }) => ({ value: id, label: name }))),
+        catchError(() => of([])),
+      );
   }
 
   private toFilterParams(v: SettledContractFilterValues): SettledContractFilterParams {
@@ -237,16 +307,4 @@ export class SettledContractFacade {
 
     return '';
   }
-
-  public getBuyers(search = '', selectedId: number | null = null): Observable<FilterOption[]> {
-    return this.filterService
-      .codelistsBuyers({ search: search || undefined, selected_id: selectedId ?? undefined })
-      .pipe(
-        map(({ data }) => data.map(({ id, name }) => ({ value: id, label: name }))),
-        catchError(() => of([])),
-      );
-  }
-
-  public readonly searchBuyers = (query: string, selectedId: string): Observable<FilterOption[]> =>
-    this.getBuyers(query, selectedId ? Number(selectedId) : null);
 }

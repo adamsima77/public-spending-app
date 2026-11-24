@@ -17,6 +17,12 @@ body {
   margin: 0;
 }
 
+.page-lead {
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-6);
+}
+
 .mat-mdc-card {
   --mat-card-container-color: var(--color-surface);
   --mat-card-elevated-container-color: var(--color-surface);

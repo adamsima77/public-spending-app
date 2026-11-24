@@ -1,35 +1,5 @@
-@use 'styles/breakpoints' as *;
-
-.contact-page {
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-  padding: var(--spacing-6);
-  width: 100%;
-
-  @media (max-width: $tablet) {
-    padding: var(--spacing-4);
-  }
-}
-
-.contact-card {
-  background: var(--color-surface);
-  border: var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  box-sizing: border-box;
-  margin: 0 auto;
-  max-width: 900px;
-  padding: var(--spacing-6);
-  width: 100%;
-
-  @media (max-width: $tablet) {
-    padding: var(--spacing-4);
-  }
-}
-
 .contact-description {
   color: var(--color-text-primary);
   line-height: 1.6;
-  margin-bottom: var(--spacing-6);
+  margin-bottom: var(--spacing-8);
 }

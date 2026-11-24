@@ -1,6 +1,8 @@
 import { FormControl, FormGroup } from '@angular/forms';
 import { SettledContractIndex$Params, SettledContractResource } from '@generated';
 import { PageParams } from '@shared/config/tables/models/paginated.model';
+import { Signal } from '@angular/core';
+import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
 
 export type SettledContract = SettledContractResource;
 
@@ -36,6 +38,12 @@ export type SettledContractFilterParams = Pick<
   | 'has_tenders'
   | 'only_current'
 >;
+
+export interface BuyerFilter {
+  options: Signal<FilterOption[]>;
+  selected: Signal<FilterOption | null>;
+  onQuery: (query: string) => void;
+}
 
 export type SettledContractQueryParams = PageParams<SettledContractSort> &
   SettledContractFilterParams;
