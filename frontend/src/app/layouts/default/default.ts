@@ -5,7 +5,7 @@ import { Sidebar } from '@components/layout/sidebar/sidebar';
 import { Footer } from '@components/layout/footer/footer';
 import { NavConfig } from '@shared/config/nav-config';
 import { navConfig } from '@shared/config/nav-config';
-import { NavigationService } from '@core/services/navigation-service/navigation.service';
+import { NavigationService } from '@shared/services/navigation-service/navigation.service';
 
 @Component({
   imports: [RouterOutlet, Navbar, Sidebar, Footer],

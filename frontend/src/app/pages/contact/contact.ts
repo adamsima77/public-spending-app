@@ -1,14 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { tap, catchError, finalize, EMPTY } from 'rxjs';
 import { ContactForm } from '@components/ui/contact-form/contact-form';
 import { ContactMessageRequest } from '@generated';
 import { ContactFacade } from '@shared/facades/contact-facade/contact-facade';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DestroyRef } from '@angular/core';
-import { ToastService } from '@core/services/toast-service/toast-service';
-import { finalize, tap } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ContentCardShell } from '@shared/ui/wrappers/content-card-shell/content-card-shell';
 
 @Component({
@@ -19,7 +16,6 @@ import { ContentCardShell } from '@shared/ui/wrappers/content-card-shell/content
 })
 export class Contact {
   private contactFacade = inject(ContactFacade);
-  private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   isSubmitting = signal<boolean>(false);
@@ -33,24 +29,8 @@ export class Contact {
       .sendMessage(data)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        tap({
-          next: () => {
-            this.isSuccess.set(true);
-            this.toastService.success(
-              'Správa bola úspešne odoslaná. Ďakujeme, ozveme sa vám čo najskôr.',
-            );
-          },
-          error: (err: HttpErrorResponse) => {
-            const message =
-              err.status === 422
-                ? 'Skontrolujte prosím vyplnené údaje.'
-                : err.status === 0
-                  ? 'Server je nedostupný. Skontrolujte pripojenie.'
-                  : 'Správu sa nepodarilo odoslať. Skúste to prosím neskôr.';
-
-            this.toastService.error(message);
-          },
-        }),
+        tap(() => this.isSuccess.set(true)),
+        catchError(() => EMPTY),
         finalize(() => this.isSubmitting.set(false)),
       )
       .subscribe();

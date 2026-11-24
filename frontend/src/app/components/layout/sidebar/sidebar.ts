@@ -1,7 +1,7 @@
 import { Component, inject, input } from '@angular/core';
 import { NavConfig } from '@shared/config/nav-config';
 import { RouterLink } from '@angular/router';
-import { NavigationService } from '@core/services/navigation-service/navigation.service';
+import { NavigationService } from '@shared/services/navigation-service/navigation.service';
 
 @Component({
   imports: [RouterLink],
