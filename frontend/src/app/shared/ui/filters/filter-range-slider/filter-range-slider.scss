@@ -1,0 +1,36 @@
+.range-filter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  min-width: 260px;
+}
+
+.range-filter__header {
+  align-items: baseline;
+  display: flex;
+  font-size: var(--font-size-sm);
+  gap: var(--spacing-3);
+  justify-content: space-between;
+}
+
+.range-filter__label {
+  color: var(--color-text-muted);
+}
+
+.range-filter__value {
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+mat-slider {
+  margin: 0;
+  width: 100%;
+
+  --mdc-slider-handle-color: var(--field-accent, var(--color-primary));
+  --mdc-slider-focus-handle-color: var(--field-accent, var(--color-primary));
+  --mdc-slider-hover-handle-color: var(--field-accent, var(--color-primary));
+  --mdc-slider-active-track-color: var(--field-accent, var(--color-primary));
+  --mdc-slider-inactive-track-color: var(--color-border);
+  --mdc-slider-with-tick-marks-inactive-container-color: var(--color-border-hover);
+}

@@ -1,3 +1,5 @@
+@use '../../../../../styles/breakpoints' as *;
+
 :host {
   display: block;
 }
@@ -5,31 +7,34 @@
 .filters {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-4);
 }
 
 .filters-row {
   align-items: start;
   display: grid;
-  gap: 12px 16px;
+  gap: var(--spacing-3) var(--spacing-4);
   grid-template-columns: minmax(260px, 1.5fr) minmax(180px, 1fr) minmax(180px, 1fr);
-
-  .filters-reset {
-    margin-left: auto;
-  }
 
   > * {
     min-width: 0;
+  }
+
+  .filters-reset {
+    margin-left: auto;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast);
   }
 
   &--secondary {
     align-items: center;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 12px;
+    gap: var(--spacing-2) var(--spacing-3);
   }
 
-  @media (width <= 760px) {
+  @media (max-width: $tablet) {
     grid-template-columns: 1fr;
   }
 }

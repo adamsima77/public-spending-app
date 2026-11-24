@@ -10,9 +10,11 @@ import { ElementRef } from '@angular/core';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { ProgressBarComponent } from '@shared/ui/loaders/progress-bar/progress-bar';
 
 @Component({
   imports: [
+    ProgressBarComponent,
     MatCardModule,
     RouterLink,
     MatPaginatorModule,

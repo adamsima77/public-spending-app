@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BuyerOptionsRequest;
+use App\Http\Resources\BuyerOptionResource;
 use App\Http\Resources\CodelistResource;
 use App\Http\Resources\OrganizationCountryResource;
 use App\Services\CodelistService;
@@ -128,6 +130,18 @@ class FilterController extends Controller
     ): AnonymousResourceCollection {
         return OrganizationCountryResource::collection(
             $codelistService->organizationCountries(),
+        );
+    }
+
+    public function buyers(
+        BuyerOptionsRequest $request,
+        CodelistService $codelistService,
+    ): AnonymousResourceCollection {
+        return BuyerOptionResource::collection(
+            $codelistService->buyers(
+                $request->validated('search'),
+                $request->integer('selected_id') ?: null,
+            ),
         );
     }
 }

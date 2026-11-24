@@ -2,7 +2,7 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: var(--spacing-2) var(--spacing-3);
 }
 
 .filters-label {
@@ -19,22 +19,30 @@ mat-chip-listbox {
   --mat-chip-label-text-size: 13px;
 
   mat-chip-option {
+    transition:
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      color var(--transition-fast);
+
     --mat-chip-label-text-color: var(--color-text-primary);
     --mat-chip-with-icon-icon-color: var(--color-text-primary);
 
+    &:not(.mat-mdc-chip-selected):hover {
+      background: var(--color-surface-subtle);
+
+      --mat-chip-outline-color: var(--color-border-hover);
+    }
+
     &.mat-mdc-chip-selected,
     &.mdc-evolution-chip--selected {
-      background: var(--color-primary);
+      background: var(--field-accent, var(--color-primary));
+      color: var(--color-text-on-primary);
 
+      --mat-chip-elevated-container-color: var(--field-accent, var(--color-primary));
+      --mat-chip-outline-color: var(--field-accent, var(--color-primary));
       --mat-chip-selected-label-text-color: var(--color-text-on-primary);
       --mat-chip-with-icon-selected-icon-color: var(--color-text-on-primary);
       --mat-chip-label-text-color: var(--color-text-on-primary);
-
-      color: var(--color-text-on-primary);
-    }
-
-    &:not(.mat-mdc-chip-selected):hover {
-      background: var(--color-background);
     }
   }
 }

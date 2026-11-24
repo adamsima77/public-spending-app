@@ -4,19 +4,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
-export interface PageHeaderKpi {
-  label: string;
-  value: string;
-  icon: string;
-}
-
-export interface PageHeaderData {
-  title: string;
-  description: string;
-  kpis?: PageHeaderKpi[];
-  loading?: boolean;
-}
+import { SpinnerLoaderComponent } from '@shared/ui/loaders/spinner-loader/spinner-loader';
+import { PageHeaderData } from '@shared/ui/page-header/models/page-header.model';
 
 @Component({
   imports: [
@@ -25,6 +14,7 @@ export interface PageHeaderData {
     MatIconModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    SpinnerLoaderComponent,
   ],
   selector: 'app-page-header',
   styleUrl: './page-header.scss',

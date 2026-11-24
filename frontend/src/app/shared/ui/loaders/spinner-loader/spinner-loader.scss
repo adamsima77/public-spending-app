@@ -1,0 +1,22 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.loader {
+  align-items: center;
+  animation: loader-fade-in 200ms ease 180ms forwards;
+  display: flex;
+  justify-content: center;
+  min-height: 120px;
+  opacity: 0;
+  padding: var(--spacing-6);
+
+  --mdc-circular-progress-active-indicator-color: var(--color-primary);
+}
+
+@keyframes loader-fade-in {
+  to {
+    opacity: 1;
+  }
+}

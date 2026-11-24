@@ -1,0 +1,10 @@
+<div class="range-filter">
+  <div class="range-filter__header">
+    <span class="range-filter__label">{{ label() }}</span>
+    <span class="range-filter__value">{{ summary() }}</span>
+  </div>
+  <mat-slider [min]="min()" [max]="max()" [step]="step()" [displayWith]="format()">
+    <input matSliderStartThumb [value]="start()" (valueChange)="setFrom($event)" />
+    <input matSliderEndThumb [value]="end()" (valueChange)="setTo($event)" />
+  </mat-slider>
+</div>

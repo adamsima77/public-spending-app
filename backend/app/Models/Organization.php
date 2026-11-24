@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -56,5 +57,15 @@ class Organization extends Model
             ->using(LotSupplier::class)
             ->withPivot('winning_amount', 'winning_currency', 'notice_record_id')
             ->withTimestamps();
+    }
+
+    public function scopeBuyers(Builder $query): Builder
+    {
+        return $query->whereHas('procedures');
+    }
+
+    public function scopeBuyersWithContracts(Builder $query): Builder
+    {
+        return $query->whereHas('procedures.notices.settledContracts');
     }
 }

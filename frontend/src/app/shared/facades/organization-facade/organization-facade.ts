@@ -15,7 +15,7 @@ import {
   OrganizationRole,
   OrganizationSort,
 } from '@shared/models/organizations.model';
-import { PageHeaderKpi } from '@shared/ui/page-header/page-header';
+import { PageHeaderKpi } from '@shared/ui/page-header/models/page-header.model';
 import { PageParams, Paginated } from '@shared/config/tables/models/paginated.model';
 import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
 

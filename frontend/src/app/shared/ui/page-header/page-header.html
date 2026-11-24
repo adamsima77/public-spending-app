@@ -9,9 +9,7 @@
   <mat-divider />
 
   @if (data.loading) {
-    <div class="kpi-loader">
-      <mat-spinner diameter="40" aria-label="Načítavam štatistiky" />
-    </div>
+    <app-spinner-loader label="Načítavam štatistiky" />
   } @else if (data.kpis; as kpis) {
     <section class="kpi-grid">
       @for (kpi of kpis; track kpi.label) {

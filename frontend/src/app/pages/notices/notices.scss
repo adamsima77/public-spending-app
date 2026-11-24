@@ -1,22 +1,22 @@
 @use '../../../styles/breakpoints' as *;
 
 .page-card {
-  --mat-card-outlined-container-color: #fff;
-  --mat-card-outlined-outline-color: #e5e7eb;
-  --mat-card-outlined-container-shape: 20px;
+  --mat-card-outlined-container-color: var(--color-surface);
+  --mat-card-outlined-outline-color: var(--color-border);
+  --mat-card-outlined-container-shape: var(--radius-xl);
 
   box-shadow: var(--shadow-md);
-  margin-top: 30px;
-  padding: 16px;
+  margin-top: var(--spacing-8);
+  padding: var(--spacing-4);
 }
 
 .notice-page {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  padding: 32px;
+  gap: var(--spacing-8);
+  padding: var(--spacing-8);
 
   @media (max-width: $tablet) {
-    padding: 16px;
+    padding: var(--spacing-4);
   }
 }

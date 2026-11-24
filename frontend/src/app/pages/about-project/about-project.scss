@@ -4,31 +4,25 @@
   box-sizing: border-box;
   display: flex;
   justify-content: center;
-  padding: 24px;
+  padding: var(--spacing-6);
   width: 100%;
 }
 
 .about-card {
+  background: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   box-sizing: border-box;
   margin: 0 auto;
   max-width: 900px;
-  padding: 20px;
+  padding: var(--spacing-6);
   width: 100%;
-
-  .link {
-    color: var(--color-primary);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-
-    &:hover {
-      text-decoration-thickness: 2px;
-    }
-  }
 
   h2 {
     color: var(--color-text-primary);
     font-size: 1.2rem;
-    margin: 32px 0 12px;
+    margin: var(--spacing-8) 0 var(--spacing-3);
   }
 
   p,
@@ -38,30 +32,37 @@
   }
 
   ul {
-    margin: 0 0 16px;
-    padding-left: 24px;
+    margin: 0 0 var(--spacing-4);
+    padding-left: var(--spacing-6);
   }
 
   li + li {
-    margin-top: 6px;
-  }
-
-  .about-actions {
-    margin-top: 20px;
+    margin-top: var(--spacing-2);
   }
 
   .link {
     color: var(--color-primary);
     text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-primary-dark);
+      text-decoration-thickness: 2px;
+    }
+  }
+
+  .about-actions {
+    margin-top: var(--spacing-6);
   }
 }
 
 .about-description {
   color: var(--color-text-primary);
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-6);
 }
 
 .data-info {
-  opacity: 0.8;
+  color: var(--color-text-secondary);
 }

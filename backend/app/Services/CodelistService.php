@@ -19,6 +19,7 @@ use App\Models\ClProcedureType;
 use App\Models\ClReservedProcurement;
 use App\Models\ClSubmissionType;
 use App\Models\Organization;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 
@@ -120,5 +121,26 @@ class CodelistService
     public function submissionTypes(): Collection
     {
         return ClSubmissionType::all();
+    }
+
+    public function buyers(?string $search = null, ?int $selectedId = null, int $limit = 50): Collection
+    {
+        return Organization::query()
+            ->whereNotNull('name')
+            ->where(function (Builder $query) use ($selectedId): void {
+                $query->buyersWithContracts();
+
+                if ($selectedId !== null) {
+                    $query->orWhere('id', $selectedId);
+                }
+            })
+            ->when($search, fn(Builder $query, string $term) => $query->where(
+                fn(Builder $q) => $q
+                    ->where('name', 'ilike', '%' . addcslashes($term, '%_\\') . '%')
+                    ->when($selectedId, fn(Builder $w) => $w->orWhere('id', $selectedId)),
+            ))
+            ->orderBy('name')
+            ->limit($limit)
+            ->get(['id', 'name']);
     }
 }

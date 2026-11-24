@@ -1,0 +1,24 @@
+@let f = form().controls;
+<app-filter-bar [hasActive]="hasActive()" (resetFilters)="reset()">
+  <app-search-field [control]="f.search" />
+  <app-filter-autocomplete label="Obstarávateľ" [control]="f.buyer_id" [search]="searchBuyers()" />
+  <app-filter-date-range
+    label="Dátum uzavretia"
+    [fromControl]="f.conclusion_from"
+    [toControl]="f.conclusion_to"
+  />
+
+  <app-filter-chips secondary label="Odkaz na zmluvu" [options]="yesNo" [control]="f.has_url" />
+  <app-filter-chips
+    secondary
+    label="Prepojené ponuky"
+    [options]="yesNo"
+    [control]="f.has_tenders"
+  />
+  <app-filter-chips
+    secondary
+    label="Oznámenia"
+    [options]="currentOnly"
+    [control]="f.only_current"
+  />
+</app-filter-bar>

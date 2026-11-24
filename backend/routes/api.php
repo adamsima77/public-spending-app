@@ -12,6 +12,7 @@ use App\Http\Controllers\NoticeLotController;
 use App\Http\Controllers\NutCodeController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ProcedureController;
+use App\Http\Controllers\SettledContractController;
 use App\Http\Controllers\SystemLogController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -33,12 +34,16 @@ Route::middleware('throttle:public-api')->group(function (): void {
         Route::get('reserved-procurement', [FilterController::class, 'reservedProcurement'])->name('reserved-procurement');
         Route::get('submission-types', [FilterController::class, 'submissionTypes'])->name('submission-types');
         Route::get('organization-countries', [FilterController::class, 'organizationCountries'])->name('organization-countries');
+        Route::get('buyers', [FilterController::class, 'buyers'])->name('buyers');
     });
     Route::apiResource('notices', NoticeController::class)->only(['index', 'show']);
     Route::get('notice-kpis', [NoticeController::class, 'getKpis'])->name('notice-kpis');
     Route::apiResource('notice-lots', NoticeLotController::class)
         ->parameters(['notice-lots' => 'noticeLot'])
         ->only(['index', 'show']);
+    Route::get('settled-contracts/kpis', [SettledContractController::class, 'kpis']);
+    Route::get('settled-contracts', [SettledContractController::class, 'index']);
+    Route::get('settled-contracts/{settledContract}', [SettledContractController::class, 'show']);
     Route::apiResource('organizations', OrganizationController::class)->only(['index', 'show']);
     Route::get('organization-kpis', [OrganizationController::class, 'getOrganizationKpis'])->name('organization-kpis');
     Route::apiResource('procedures', ProcedureController::class)->only(['index', 'show']);

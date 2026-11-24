@@ -1,0 +1,18 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+mat-progress-bar {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease 0ms;
+
+  --mdc-linear-progress-active-indicator-color: var(--color-primary);
+  --mdc-linear-progress-track-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+
+  &.is-loading {
+    opacity: 1;
+    transition: opacity 200ms ease 180ms;
+  }
+}

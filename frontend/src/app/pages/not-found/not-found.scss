@@ -1,11 +1,12 @@
 @use '../../../styles/breakpoints' as *;
 
 .page-card.not-found-card {
-  background-color: var(--color-surface);
-  border-color: var(--color-border);
-  border-radius: var(--radius-xl);
+  --mat-card-outlined-container-color: var(--color-surface);
+  --mat-card-outlined-outline-color: var(--color-border);
+  --mat-card-outlined-container-shape: var(--radius-xl);
+
   box-shadow: var(--shadow-md);
-  margin: 60px auto;
+  margin: var(--spacing-12) auto;
   max-width: 600px;
   text-align: center;
 }
@@ -14,24 +15,24 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 48px 32px;
+  gap: var(--spacing-6);
+  padding: var(--spacing-12) var(--spacing-8);
 
   @media (max-width: $tablet) {
-    padding: 32px 16px;
+    padding: var(--spacing-8) var(--spacing-4);
   }
 }
 
 .not-found-icon-wrapper {
   align-items: center;
-  background-color: var(--color-background);
+  background-color: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
   border-radius: var(--radius-full);
   color: var(--color-danger);
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-3);
   height: 96px;
   justify-content: center;
-  padding: 0 32px;
+  padding: 0 var(--spacing-8);
   position: relative;
   width: auto;
 
@@ -54,7 +55,7 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--spacing-3);
   width: 100%;
 
   h1 {
@@ -81,9 +82,9 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--spacing-3);
   justify-content: center;
-  margin-top: 8px;
+  margin-top: var(--spacing-2);
   width: 100%;
 
   a {
@@ -93,11 +94,18 @@
     flex: 1 1 200px;
     font-family: var(--font-body);
     font-weight: 500;
-    gap: 8px;
+    gap: var(--spacing-2);
     height: 44px;
     justify-content: center;
     max-width: 100%;
-    padding: 0 20px;
+    padding: 0 var(--spacing-6);
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast);
+
+    &:hover {
+      transform: translateY(-1px);
+    }
 
     @media (max-width: $mobile) {
       flex: 1 1 100%;

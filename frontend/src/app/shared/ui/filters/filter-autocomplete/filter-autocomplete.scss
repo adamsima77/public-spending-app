@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+mat-form-field {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  width: 100%;
+
+  --mat-form-field-container-height: 56px;
+  --mat-form-field-outlined-container-shape: var(--radius-lg);
+  --mat-form-field-outlined-outline-color: var(--color-border);
+  --mat-form-field-outlined-hover-outline-color: var(--color-border-hover);
+  --mat-form-field-outlined-focus-outline-color: var(--color-primary);
+  --mat-form-field-outlined-label-text-color: var(--color-text-muted);
+  --mat-form-field-outlined-input-text-color: var(--color-text-primary);
+}
+
+input {
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,13 @@
+<mat-form-field appearance="outline" subscriptSizing="dynamic">
+  <mat-label>{{ label() }}</mat-label>
+  <input matInput [formControl]="text" [matAutocomplete]="auto" />
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    [displayWith]="displayWith"
+    (optionSelected)="onSelected($event)"
+  >
+    @for (o of options(); track o.value) {
+      <mat-option [value]="o">{{ o.label }}</mat-option>
+    }
+  </mat-autocomplete>
+</mat-form-field>

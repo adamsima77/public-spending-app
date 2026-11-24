@@ -1,11 +1,9 @@
-<mat-card appearance="outlined" class="table-card">
+<mat-card appearance="outlined" class="table-card" [class.is-loading]="loading()">
   <div class="table-filters">
     <ng-content select="[filters]" />
   </div>
 
-  @if (loading()) {
-    <mat-progress-bar mode="indeterminate" />
-  }
+  <app-progress-bar [loading]="loading()" />
 
   <div class="card-list">
     @for (row of rows(); track $index) {
@@ -34,10 +32,12 @@
         </dl>
       </article>
     } @empty {
-      <div class="no-data">
-        <mat-icon>info</mat-icon>
-        <p>Žiadne dáta na zobrazenie</p>
-      </div>
+      @if (!loading()) {
+        <div class="no-data">
+          <mat-icon>info</mat-icon>
+          <p>Žiadne dáta na zobrazenie</p>
+        </div>
+      }
     }
   </div>
 
