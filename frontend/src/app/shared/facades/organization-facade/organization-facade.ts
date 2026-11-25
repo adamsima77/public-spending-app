@@ -1,9 +1,9 @@
-import { computed, DestroyRef, effect, inject, Service, Signal } from '@angular/core';
+import { computed, effect, inject, Service, Signal, linkedSignal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal, rxResource } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
 import { OrganizationKpisResponse } from './models/organization-kpi.model';
 import { OrganizationService, OrganizationKpisResource, FilterService } from '@generated';
 import {
@@ -18,6 +18,8 @@ import {
 import { PageHeaderKpi } from '@shared/ui/page-header/models/page-header.model';
 import { PageParams, Paginated } from '@shared/config/tables/models/paginated.model';
 import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
+import { filtersEqual } from '@shared/utils/filters-equal.util';
+import { KPI_PLACEHOLDER } from '@shared/ui/page-header/models/page-header.model';
 
 @Service()
 export class OrganizationFacade {
@@ -42,10 +44,11 @@ export class OrganizationFacade {
     filterForm: OrganizationFilterForm,
   ): {
     organizations: Signal<Paginated<Organization> | undefined>;
+    loading: Signal<boolean>;
+    error: Signal<boolean>;
+    reload: () => boolean;
     hasActiveFilters: Signal<boolean>;
   } {
-    const destroyRef = inject(DestroyRef);
-
     const queryFilters = toSignal(
       this.route.queryParamMap.pipe(
         map((params): OrganizationFilterValues => ({
@@ -54,8 +57,7 @@ export class OrganizationFacade {
           company_size: this.queryValues('company_size', params),
           role: this.queryValues('role', params) as OrganizationRole[],
         })),
-
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        distinctUntilChanged(filtersEqual),
       ),
       { requireSync: true },
     );
@@ -63,10 +65,7 @@ export class OrganizationFacade {
     effect(() => {
       const filters = queryFilters();
 
-      if (
-        JSON.stringify(filters) !==
-        JSON.stringify(this.normalizeFilterValues(filterForm.getRawValue()))
-      ) {
+      if (!filtersEqual(filters, this.normalizeFilterValues(filterForm.getRawValue()))) {
         filterForm.reset(filters, { emitEvent: false });
       }
     });
@@ -75,8 +74,8 @@ export class OrganizationFacade {
       .pipe(
         map((value) => this.normalizeFilterValues(value)),
         debounceTime(250),
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-        takeUntilDestroyed(destroyRef),
+        filter((value) => !filtersEqual(value, queryFilters())),
+        takeUntilDestroyed(),
       )
       .subscribe(({ search, country, company_size: companySize, role }) => {
         void this.router.navigate([], {
@@ -97,10 +96,24 @@ export class OrganizationFacade {
       ...filterParams(),
     }));
 
+    const organizationsResource = rxResource({
+      params: requestParams,
+      stream: ({ params }) => this.getAllOrganizations(params),
+    });
+
+    const organizations = linkedSignal<
+      Paginated<Organization> | undefined,
+      Paginated<Organization> | undefined
+    >({
+      source: () => (organizationsResource.hasValue() ? organizationsResource.value() : undefined),
+      computation: (value, previous) => value ?? previous?.value,
+    });
+
     return {
-      organizations: toSignal(
-        toObservable(requestParams).pipe(switchMap((params) => this.getAllOrganizations(params))),
-      ),
+      organizations,
+      loading: organizationsResource.isLoading,
+      error: computed(() => organizationsResource.error() !== undefined),
+      reload: () => organizationsResource.reload(),
       hasActiveFilters: computed(() => {
         const f = filterParams();
 
@@ -135,17 +148,20 @@ export class OrganizationFacade {
     );
   }
 
-  public toKpiCards(kpis: OrganizationKpisResource): PageHeaderKpi[] {
+  public toKpiCards(kpis?: OrganizationKpisResource): PageHeaderKpi[] {
     const nf = new Intl.NumberFormat('sk-SK');
+    const count = (value?: number): string =>
+      value === undefined ? KPI_PLACEHOLDER : nf.format(value);
+    const smePct = kpis?.sme_suppliers_pct;
 
     return [
-      { label: 'Organizácie', value: nf.format(kpis.total_organizations), icon: 'business' },
-      { label: 'Obstarávatelia', value: nf.format(kpis.buyers), icon: 'account_balance' },
-      { label: 'Dodávatelia', value: nf.format(kpis.suppliers), icon: 'local_shipping' },
-      { label: 'Krajiny', value: nf.format(kpis.countries), icon: 'public' },
+      { label: 'Organizácie', value: count(kpis?.total_organizations), icon: 'business' },
+      { label: 'Obstarávatelia', value: count(kpis?.buyers), icon: 'account_balance' },
+      { label: 'Dodávatelia', value: count(kpis?.suppliers), icon: 'local_shipping' },
+      { label: 'Krajiny', value: count(kpis?.countries), icon: 'public' },
       {
         label: 'Podiel MSP medzi dodávateľmi',
-        value: kpis.sme_suppliers_pct !== null ? `${kpis.sme_suppliers_pct.toString()} %` : '-',
+        value: smePct === undefined || smePct === null ? KPI_PLACEHOLDER : `${smePct.toString()} %`,
         icon: 'storefront',
       },
     ];

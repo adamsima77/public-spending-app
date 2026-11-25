@@ -1,8 +1,8 @@
-import { computed, DestroyRef, effect, inject, Service, Signal } from '@angular/core';
+import { computed, effect, inject, Service, Signal, linkedSignal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal, rxResource } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, map, Observable, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, Observable } from 'rxjs';
 import { NoticeKpiResource, NoticeService, FilterService } from '@generated';
 import { NoticeKpisModel } from '@shared/facades/notice-facade/models/notice-kpis.model';
 import {
@@ -16,6 +16,9 @@ import {
 import { PageHeaderKpi } from '@shared/ui/page-header/models/page-header.model';
 import { PageParams, Paginated } from '@shared/config/tables/models/paginated.model';
 import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
+import { filtersEqual } from '@shared/utils/filters-equal.util';
+import { Params } from '@angular/router';
+import { KPI_PLACEHOLDER } from '@shared/ui/page-header/models/page-header.model';
 
 @Service()
 export class NoticeFacade {
@@ -42,15 +45,29 @@ export class NoticeFacade {
     });
   }
 
+  private toQueryParams(v: NoticeFilterValues): Params {
+    return {
+      search: v.search || null,
+      'notice_type[]': v.notice_type.length ? v.notice_type : null,
+      'form_type[]': v.form_type.length ? v.form_type : null,
+      procedure_id: v.procedure_id ?? null,
+      is_latest: v.is_latest ?? null,
+      published_from: v.published_from ?? null,
+      published_to: v.published_to ?? null,
+      page: null,
+    };
+  }
+
   public connectNotices(
     pageState: Signal<PageParams<NoticeSort>>,
     filterForm: NoticeFilterForm,
   ): {
     notices: Signal<Paginated<Notice> | undefined>;
+    loading: Signal<boolean>;
+    error: Signal<boolean>;
+    reload: () => boolean;
     hasActiveFilters: Signal<boolean>;
   } {
-    const destroyRef = inject(DestroyRef);
-
     const queryFilters = toSignal(
       this.route.queryParamMap.pipe(
         map((params): NoticeFilterValues => ({
@@ -62,7 +79,7 @@ export class NoticeFacade {
           published_from: params.get('published_from') ?? '',
           published_to: params.get('published_to') ?? '',
         })),
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        distinctUntilChanged(filtersEqual),
       ),
       { requireSync: true },
     );
@@ -70,10 +87,7 @@ export class NoticeFacade {
     effect(() => {
       const filters = queryFilters();
 
-      if (
-        JSON.stringify(filters) !==
-        JSON.stringify(this.normalizeFilterValues(filterForm.getRawValue()))
-      ) {
+      if (!filtersEqual(filters, this.normalizeFilterValues(filterForm.getRawValue()))) {
         filterForm.reset(filters, { emitEvent: false });
       }
     });
@@ -82,34 +96,15 @@ export class NoticeFacade {
       .pipe(
         map((value) => this.normalizeFilterValues(value)),
         debounceTime(250),
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-        takeUntilDestroyed(destroyRef),
+        filter((value) => !filtersEqual(value, queryFilters())),
+        takeUntilDestroyed(),
       )
-      .subscribe(
-        ({
-          search,
-          notice_type: noticeType,
-          form_type: formType,
-          procedure_id: procedureId,
-          is_latest: isLatest,
-          published_from: publishedFrom,
-          published_to: publishedTo,
-        }) => {
-          void this.router.navigate([], {
-            queryParams: {
-              search: search || null,
-              'notice_type[]': noticeType.length ? noticeType : null,
-              'form_type[]': formType.length ? formType : null,
-              procedure_id: procedureId ?? null,
-              is_latest: isLatest ?? null,
-              published_from: publishedFrom ?? null,
-              published_to: publishedTo ?? null,
-              page: null,
-            },
-            queryParamsHandling: 'merge',
-          });
-        },
-      );
+      .subscribe((value) => {
+        void this.router.navigate([], {
+          queryParams: this.toQueryParams(value),
+          queryParamsHandling: 'merge',
+        });
+      });
 
     const filterParams = computed(() => this.toFilterParams(queryFilters()));
     const requestParams = computed<NoticeQueryParams>(() => ({
@@ -117,22 +112,33 @@ export class NoticeFacade {
       ...filterParams(),
     }));
 
+    const noticesResource = rxResource({
+      params: requestParams,
+      stream: ({ params }) => this.getAllNotices(params),
+    });
+
+    const notices = linkedSignal<Paginated<Notice> | undefined, Paginated<Notice> | undefined>({
+      source: () => (noticesResource.hasValue() ? noticesResource.value() : undefined),
+      computation: (value, previous) => value ?? previous?.value,
+    });
+
     return {
-      notices: toSignal(
-        toObservable(requestParams).pipe(switchMap((params) => this.getAllNotices(params))),
-      ),
+      notices,
+      loading: noticesResource.isLoading,
+      error: computed(() => noticesResource.error() !== undefined),
+      reload: () => noticesResource.reload(),
       hasActiveFilters: computed(() => {
         const f = filterParams();
 
-        return [
-          f.search?.trim(),
-          f['notice_type[]']?.length,
-          f['form_type[]']?.length,
-          f.procedure_id !== undefined,
-          f.is_latest !== undefined,
-          f.published_from,
-          f.published_to,
-        ].some(Boolean);
+        return (
+          f.search !== undefined ||
+          f['notice_type[]'] !== undefined ||
+          f['form_type[]'] !== undefined ||
+          f.procedure_id !== undefined ||
+          f.is_latest !== undefined ||
+          f.published_from !== undefined ||
+          f.published_to !== undefined
+        );
       }),
     };
   }
@@ -157,34 +163,32 @@ export class NoticeFacade {
     );
   }
 
-  public toKpiCards(kpis: NoticeKpiResource): PageHeaderKpi[] {
+  public toKpiCards(kpis?: NoticeKpiResource): PageHeaderKpi[] {
     const nf = new Intl.NumberFormat('sk-SK');
     const pf = new Intl.NumberFormat('sk-SK', { maximumFractionDigits: 1 });
+    const count = (value?: number): string =>
+      value === undefined ? KPI_PLACEHOLDER : nf.format(value);
+    const decimal = (value?: number): string =>
+      value === undefined ? KPI_PLACEHOLDER : pf.format(value);
+    const percent = (value?: number | null): string =>
+      value === undefined || value === null ? KPI_PLACEHOLDER : `${pf.format(value)} %`;
 
     return [
-      {
-        label: 'Oznámenia celkom',
-        value: nf.format(kpis.notices.total),
-        icon: 'description',
-      },
-      {
-        label: 'Časti zákaziek',
-        value: nf.format(kpis.lots.total),
-        icon: 'layers',
-      },
+      { label: 'Oznámenia celkom', value: count(kpis?.notices.total), icon: 'description' },
+      { label: 'Časti zákaziek', value: count(kpis?.lots.total), icon: 'layers' },
       {
         label: 'Úspešnosť pridelenia',
-        value: kpis.award_rate.percent !== null ? `${pf.format(kpis.award_rate.percent)} %` : '—',
+        value: percent(kpis?.award_rate.percent),
         icon: 'check_circle',
       },
       {
         label: 'Priemer ponúk na časť',
-        value: pf.format(kpis.competition.avg_bids_per_lot),
+        value: decimal(kpis?.competition.avg_bids_per_lot),
         icon: 'groups',
       },
       {
         label: 'Financované z EÚ',
-        value: kpis.eu_funding.percent !== null ? `${pf.format(kpis.eu_funding.percent)} %` : '—',
+        value: percent(kpis?.eu_funding.percent),
         icon: 'euro',
       },
     ];

@@ -6,15 +6,16 @@
     [sort]="sortState()"
     [rowLink]="rowLink"
     [pageSizeOptions]="pageSizeOptions"
-    [loading]="!notices()"
+    [loading]="loading()"
+    [rowKey]="rowKey"
     (pageChange)="onPageChange($event)"
     (sortChange)="onSortChange($event)"
   >
     <app-notice-filters
       filters
       [form]="filterForm"
-      [noticeTypes]="noticeTypeFilters() ?? []"
-      [formTypes]="formTypeFilters() ?? []"
+      [noticeTypes]="noticeTypeFilters()"
+      [formTypes]="formTypeFilters()"
       [hasActive]="hasActiveFilters()"
     />
   </app-data-table>

@@ -6,11 +6,8 @@ import {
   input,
   numberAttribute,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { DataTable } from '@shared/ui/data-table/data-table';
@@ -25,14 +22,7 @@ import { Notice, NoticeSort } from '@shared/models/notices.model';
 import { PageCardShellComponent } from '@shared/ui/wrappers/page-card-shell.component/page-card-shell.component';
 
 @Component({
-  imports: [
-    PageCardShellComponent,
-    DataTable,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    NoticeFilters,
-  ],
+  imports: [PageCardShellComponent, DataTable, NoticeFilters],
   selector: 'app-notices',
   styleUrl: './notices.scss',
   templateUrl: './notices.html',
@@ -41,7 +31,6 @@ import { PageCardShellComponent } from '@shared/ui/wrappers/page-card-shell.comp
 export class Notices {
   private readonly noticeFacade = inject(NoticeFacade);
   private readonly router = inject(Router);
-  private readonly kpis = toSignal(this.noticeFacade.getKpis());
 
   readonly page = input(1, { transform: (v: unknown): number => numberAttribute(v, 1) });
   readonly per_page = input(25, { transform: (v: unknown): number => numberAttribute(v, 25) });
@@ -60,24 +49,34 @@ export class Notices {
   protected readonly meta = computed(() => this.notices()?.meta);
   protected readonly pageSizeOptions = paginatedSizes;
   protected readonly rowLink = (notice: Notice): (string | number)[] => ['/oznamenia', notice.id];
+  protected readonly rowKey = (notice: Notice): number => notice.id;
+  protected readonly noticeTypeFilters = toSignal(this.noticeFacade.getNoticeTypes(), {
+    initialValue: [],
+  });
 
-  protected readonly noticeTypeFilters = toSignal(this.noticeFacade.getNoticeTypes());
-  protected readonly formTypeFilters = toSignal(this.noticeFacade.getFormTypes());
+  protected readonly formTypeFilters = toSignal(this.noticeFacade.getFormTypes(), {
+    initialValue: [],
+  });
 
   protected readonly filterForm = this.noticeFacade.getInitialFilterValues();
 
   private readonly noticeState = this.noticeFacade.connectNotices(this.pageState, this.filterForm);
 
   protected readonly notices = this.noticeState.notices;
+  protected readonly loading = this.noticeState.loading;
   protected readonly hasActiveFilters = this.noticeState.hasActiveFilters;
 
+  private readonly kpisResource = rxResource({
+    stream: () => this.noticeFacade.getKpis(),
+  });
+
   protected readonly pageHeaderData = computed<PageHeaderData>(() => {
-    const kpis = this.kpis();
+    const kpis = this.kpisResource.hasValue() ? this.kpisResource.value() : undefined;
 
     return {
       ...NOTICE_PAGE_CONFIG,
-      kpis: kpis ? this.noticeFacade.toKpiCards(kpis) : undefined,
-      loading: !kpis,
+      kpis: this.noticeFacade.toKpiCards(kpis),
+      loading: this.kpisResource.isLoading(),
     };
   });
 

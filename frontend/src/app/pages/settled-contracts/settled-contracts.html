@@ -6,7 +6,8 @@
     [sort]="sortState()"
     [rowLink]="rowLink"
     [pageSizeOptions]="pageSizeOptions"
-    [loading]="!settledContracts()"
+    [loading]="loading()"
+    [rowKey]="rowKey"
     (pageChange)="onPageChange($event)"
     (sortChange)="onSortChange($event)"
   >

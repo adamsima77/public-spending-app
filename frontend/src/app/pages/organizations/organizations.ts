@@ -6,7 +6,7 @@ import {
   input,
   numberAttribute,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
 import { PageHeaderData } from '@shared/ui/page-header/models/page-header.model';
@@ -42,7 +42,6 @@ import { PageCardShellComponent } from '@shared/ui/wrappers/page-card-shell.comp
 export class Organizations {
   private readonly organizationFacade = inject(OrganizationFacade);
   private readonly router = inject(Router);
-  private readonly kpis = toSignal(this.organizationFacade.getOrganizationKpis());
 
   readonly page = input(1, { transform: (v: unknown): number => numberAttribute(v, 1) });
   readonly per_page = input(25, { transform: (v: unknown): number => numberAttribute(v, 25) });
@@ -56,6 +55,7 @@ export class Organizations {
     direction: this.direction(),
   }));
 
+  protected readonly rowKey = (org: Organization): number => org.id;
   protected readonly columns = organizationColumns;
   protected readonly rows = computed(() => this.organizations()?.data ?? []);
   protected readonly meta = computed(() => this.organizations()?.meta);
@@ -63,8 +63,13 @@ export class Organizations {
   protected readonly rowLink = (org: Organization): (string | number)[] => ['/organizacie', org.id];
   protected readonly roleFilterOptions = roleOptions;
 
-  protected readonly companySizeFilters = toSignal(this.organizationFacade.getCompanySizes());
-  protected readonly countryFilters = toSignal(this.organizationFacade.getOrganizationCountries());
+  protected readonly companySizeFilters = toSignal(this.organizationFacade.getCompanySizes(), {
+    initialValue: [],
+  });
+
+  protected readonly countryFilters = toSignal(this.organizationFacade.getOrganizationCountries(), {
+    initialValue: [],
+  });
 
   protected readonly filterForm = this.organizationFacade.getInitialFilterValues();
 
@@ -73,16 +78,23 @@ export class Organizations {
     this.filterForm,
   );
 
+  protected readonly loading = this.organizationState.loading;
+  protected readonly error = this.organizationState.error;
+
   protected readonly organizations = this.organizationState.organizations;
   protected readonly hasActiveFilters = this.organizationState.hasActiveFilters;
 
+  private readonly kpisResource = rxResource({
+    stream: () => this.organizationFacade.getOrganizationKpis(),
+  });
+
   protected readonly pageHeaderData = computed<PageHeaderData>(() => {
-    const kpis = this.kpis();
+    const kpis = this.kpisResource.hasValue() ? this.kpisResource.value() : undefined;
 
     return {
       ...ORGANIZATIONS_PAGE_CONFIG,
-      kpis: kpis ? this.organizationFacade.toKpiCards(kpis) : undefined,
-      loading: !kpis,
+      kpis: this.organizationFacade.toKpiCards(kpis),
+      loading: this.kpisResource.isLoading(),
     };
   });
 

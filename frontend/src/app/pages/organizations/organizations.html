@@ -6,15 +6,16 @@
     [sort]="sortState()"
     [rowLink]="rowLink"
     [pageSizeOptions]="pageSizeOptions"
-    [loading]="!organizations()"
+    [loading]="loading()"
+    [rowKey]="rowKey"
     (pageChange)="onPageChange($event)"
     (sortChange)="onSortChange($event)"
   >
     <app-organization-filters
       filters
       [form]="filterForm"
-      [countries]="countryFilters() ?? []"
-      [companySizes]="companySizeFilters() ?? []"
+      [countries]="countryFilters()"
+      [companySizes]="companySizeFilters()"
       [roles]="roleFilterOptions"
       [hasActive]="hasActiveFilters()"
     />

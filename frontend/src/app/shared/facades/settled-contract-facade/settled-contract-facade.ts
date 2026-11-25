@@ -1,15 +1,6 @@
-import {
-  computed,
-  DestroyRef,
-  effect,
-  inject,
-  linkedSignal,
-  Service,
-  signal,
-  Signal,
-} from '@angular/core';
+import { computed, effect, inject, linkedSignal, Service, signal, Signal } from '@angular/core';
 import { ActivatedRoute, Router, Params } from '@angular/router';
-import { rxResource, takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { rxResource, takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
   debounceTime,
@@ -37,6 +28,8 @@ import { PageHeaderKpi } from '@shared/ui/page-header/models/page-header.model';
 import { PageParams, Paginated } from '@shared/config/tables/models/paginated.model';
 import { FilterOption } from '@shared/ui/filters/models/filter-option.model';
 import { FilterService } from '@generated';
+import { filtersEqual } from '@shared/utils/filters-equal.util';
+import { KPI_PLACEHOLDER } from '@shared/ui/page-header/models/page-header.model';
 
 @Service()
 export class SettledContractFacade {
@@ -68,11 +61,12 @@ export class SettledContractFacade {
     filterForm: SettledContractFilterForm,
   ): {
     settledContracts: Signal<Paginated<SettledContract> | undefined>;
+    loading: Signal<boolean>;
+    error: Signal<boolean>;
+    reload: () => boolean;
     hasActiveFilters: Signal<boolean>;
     buyers: BuyerFilter;
   } {
-    const destroyRef = inject(DestroyRef);
-
     const queryFilters = toSignal(
       this.route.queryParamMap.pipe(
         map((params): SettledContractFilterValues => ({
@@ -84,7 +78,7 @@ export class SettledContractFacade {
           has_tenders: params.getAll('has_tenders'),
           only_current: params.getAll('only_current'),
         })),
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        distinctUntilChanged(filtersEqual),
       ),
       { requireSync: true },
     );
@@ -92,26 +86,23 @@ export class SettledContractFacade {
     effect(() => {
       const filters = queryFilters();
 
-      if (
-        JSON.stringify(filters) !==
-        JSON.stringify(this.normalizeFilterValues(filterForm.getRawValue()))
-      ) {
+      if (!filtersEqual(filters, this.normalizeFilterValues(filterForm.getRawValue()))) {
         filterForm.reset(filters, { emitEvent: false });
       }
     });
+
     filterForm.valueChanges
       .pipe(
         map((value) => this.normalizeFilterValues(value)),
         debounceTime(250),
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-        filter((v) => JSON.stringify(v) !== JSON.stringify(queryFilters())),
-        tap((v) => {
+        filter((value) => !filtersEqual(value, queryFilters())),
+        tap((value) => {
           void this.router.navigate([], {
-            queryParams: this.toQueryParams(v),
+            queryParams: this.toQueryParams(value),
             queryParamsHandling: 'merge',
           });
         }),
-        takeUntilDestroyed(destroyRef),
+        takeUntilDestroyed(),
       )
       .subscribe();
 
@@ -158,13 +149,38 @@ export class SettledContractFacade {
       ...filterParams(),
     }));
 
+    const settledContractsResource = rxResource({
+      params: requestParams,
+      stream: ({ params }) => this.getAllSettledContracts(params),
+    });
+
+    const settledContracts = linkedSignal<
+      Paginated<SettledContract> | undefined,
+      Paginated<SettledContract> | undefined
+    >({
+      source: () =>
+        settledContractsResource.hasValue() ? settledContractsResource.value() : undefined,
+      computation: (value, previous) => value ?? previous?.value,
+    });
+
     return {
-      settledContracts: toSignal(
-        toObservable(requestParams).pipe(
-          switchMap((params) => this.getAllSettledContracts(params)),
-        ),
-      ),
-      hasActiveFilters: computed(() => Object.values(filterParams()).some((v) => v !== null)),
+      settledContracts,
+      loading: settledContractsResource.isLoading,
+      error: computed(() => settledContractsResource.error() !== undefined),
+      reload: () => settledContractsResource.reload(),
+      hasActiveFilters: computed(() => {
+        const f = filterParams();
+
+        return (
+          f.search !== undefined ||
+          f.buyer_id !== undefined ||
+          f.conclusion_from !== undefined ||
+          f.conclusion_to !== undefined ||
+          f.has_url !== undefined ||
+          f.has_tenders !== undefined ||
+          f.only_current !== undefined
+        );
+      }),
       buyers,
     };
   }
@@ -206,32 +222,36 @@ export class SettledContractFacade {
     );
   }
 
-  public toKpiCards(kpis: SettledContractKpiResource): PageHeaderKpi[] {
+  public toKpiCards(kpis?: SettledContractKpiResource): PageHeaderKpi[] {
     const nf = new Intl.NumberFormat('sk-SK');
     const pf = new Intl.NumberFormat('sk-SK', { maximumFractionDigits: 1 });
-    const change = Number(kpis.contracts.change_pct);
+    const count = (value?: number): string =>
+      value === undefined ? KPI_PLACEHOLDER : nf.format(value);
+    const percent = (value?: number): string =>
+      value === undefined ? KPI_PLACEHOLDER : `${pf.format(value)} %`;
+    const change = Number(kpis?.contracts.change_pct);
     const changeLabel = Number.isFinite(change)
       ? ` (${change > 0 ? '+' : ''}${pf.format(change)} %)`
       : '';
 
     return [
-      { label: 'Zmluvy', value: nf.format(kpis.contracts.total), icon: 'description' },
+      { label: 'Zmluvy', value: count(kpis?.contracts.total), icon: 'description' },
       {
         label: `Za posledných 30 dní${changeLabel}`,
-        value: nf.format(kpis.contracts.last_30),
+        value: count(kpis?.contracts.last_30),
         icon: 'trending_up',
       },
       {
         label: 'S odkazom na zmluvu',
-        value: `${pf.format(kpis.coverage.with_url_pct)} %`,
+        value: percent(kpis?.coverage.with_url_pct),
         icon: 'link',
       },
       {
         label: 'Prepojené s ponukami',
-        value: `${pf.format(kpis.coverage.with_tenders_pct)} %`,
+        value: percent(kpis?.coverage.with_tenders_pct),
         icon: 'account_tree',
       },
-      { label: 'Obstarávatelia', value: nf.format(kpis.reach.buyers), icon: 'account_balance' },
+      { label: 'Obstarávatelia', value: count(kpis?.reach.buyers), icon: 'account_balance' },
     ];
   }
 

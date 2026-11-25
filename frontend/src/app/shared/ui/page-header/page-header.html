@@ -8,13 +8,11 @@
 
   <mat-divider />
 
-  @if (data.loading) {
-    <app-spinner-loader label="Načítavam štatistiky" />
-  } @else if (data.kpis; as kpis) {
-    <section class="kpi-grid">
+  @if (data.kpis; as kpis) {
+    <section class="kpi-grid" [attr.aria-busy]="data.loading">
       @for (kpi of kpis; track kpi.label) {
-        <mat-card appearance="outlined" class="kpi-card">
-          <mat-card-content>
+        <mat-card appearance="outlined" class="kpi-card" [class.is-loading]="data.loading">
+          <mat-card-content class="kpi-content">
             <mat-icon class="kpi-icon">{{ kpi.icon }}</mat-icon>
             <div class="kpi-value">{{ kpi.value }}</div>
             <div class="kpi-label">{{ kpi.label }}</div>

@@ -10,3 +10,5 @@ export interface PageHeaderData {
   kpis?: PageHeaderKpi[];
   loading?: boolean;
 }
+
+export const KPI_PLACEHOLDER = '—';

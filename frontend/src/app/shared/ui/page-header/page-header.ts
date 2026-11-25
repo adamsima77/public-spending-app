@@ -1,24 +1,15 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SpinnerLoader } from '@shared/ui/loaders/spinner-loader/spinner-loader';
 import { PageHeaderData } from '@shared/ui/page-header/models/page-header.model';
 
 @Component({
-  imports: [
-    MatDividerModule,
-    MatCardModule,
-    MatIconModule,
-    MatProgressBarModule,
-    MatProgressSpinnerModule,
-    SpinnerLoader,
-  ],
+  imports: [MatDividerModule, MatCardModule, MatIconModule],
   selector: 'app-page-header',
   styleUrl: './page-header.scss',
   templateUrl: './page-header.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageHeader {
   readonly data = input<PageHeaderData>();

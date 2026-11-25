@@ -207,3 +207,9 @@ tr.mat-mdc-row {
 .no-data-cell {
   border-bottom: 0;
 }
+
+@media (max-width: $tablet) {
+  .table-scroll {
+    min-height: 0;
+  }
+}

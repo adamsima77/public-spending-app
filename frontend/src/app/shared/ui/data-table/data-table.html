@@ -6,7 +6,7 @@
   <app-progress-bar [loading]="loading()" />
 
   <div class="card-list">
-    @for (row of rows(); track $index) {
+    @for (row of rows(); track trackRow($index, row)) {
       <article class="row-card">
         @for (col of columns(); track col.key) {
           @if (col.primary) {
@@ -41,10 +41,11 @@
     }
   </div>
 
-  <div class="table-scroll">
+  <div class="table-scroll" [style.min-height.px]="minTableHeight()">
     <table
       mat-table
       [dataSource]="rows()"
+      [trackBy]="trackRow"
       matSort
       [matSortActive]="sort()?.active ?? ''"
       [matSortDirection]="sort()?.direction ?? ''"
@@ -74,7 +75,7 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
       <tr class="mat-row" *matNoDataRow>
         <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns().length">
-          @if (!loading()) {
+          @if (meta()) {
             <div class="no-data">
               <mat-icon>info</mat-icon>
               <p>Žiadne záznamy na zobrazenie</p>

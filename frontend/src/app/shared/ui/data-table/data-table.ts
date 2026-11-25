@@ -31,6 +31,11 @@ export class DataTable<T> {
   readonly columns = input.required<TableColumn<T>[]>();
   readonly rows = input.required<T[]>();
   readonly loading = input(false);
+  readonly rowKey = input<(row: T) => string | number>();
+  protected readonly trackRow = (index: number, row: T): string | number =>
+    this.rowKey()?.(row) ?? index;
+
+  protected readonly minTableHeight = computed(() => 44 + (this.meta()?.perPage ?? 10) * 56);
 
   readonly meta = input<PageMeta>();
   readonly pageChange = output<PageEvent>();
