@@ -6,7 +6,7 @@ import {
   input,
   numberAttribute,
 } from '@angular/core';
-import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
 import { PageHeaderData } from '@shared/ui/page-header/models/page-header.model';
@@ -80,21 +80,20 @@ export class Organizations {
 
   protected readonly loading = this.organizationState.loading;
   protected readonly error = this.organizationState.error;
+  protected readonly reloadOrganizations = this.organizationState.reload;
 
   protected readonly organizations = this.organizationState.organizations;
   protected readonly hasActiveFilters = this.organizationState.hasActiveFilters;
 
-  private readonly kpisResource = rxResource({
-    stream: () => this.organizationFacade.getOrganizationKpis(),
-  });
+  private readonly kpis = this.organizationFacade.connectKpis();
 
   protected readonly pageHeaderData = computed<PageHeaderData>(() => {
-    const kpis = this.kpisResource.hasValue() ? this.kpisResource.value() : undefined;
-
     return {
       ...ORGANIZATIONS_PAGE_CONFIG,
-      kpis: this.organizationFacade.toKpiCards(kpis),
-      loading: this.kpisResource.isLoading(),
+      kpis: this.organizationFacade.toKpiCards(this.kpis.kpis()),
+      loading: this.kpis.loading(),
+      error: this.kpis.error(),
+      reloadKpis: this.kpis.reload,
     };
   });
 

@@ -5,6 +5,17 @@
 
   <app-progress-bar [loading]="loading()" />
 
+  @if (error()) {
+    <div class="table-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>Nepodarilo sa načítať dáta.</span>
+      <button mat-stroked-button type="button" [disabled]="loading()" (click)="reload()()">
+        <mat-icon>refresh</mat-icon>
+        Skúsiť znova
+      </button>
+    </div>
+  }
+
   <div class="card-list">
     @for (row of rows(); track trackRow($index, row)) {
       <article class="row-card">
@@ -32,7 +43,7 @@
         </dl>
       </article>
     } @empty {
-      @if (!loading()) {
+      @if (!loading() && !error()) {
         <div class="no-data">
           <mat-icon>info</mat-icon>
           <p>Žiadne dáta na zobrazenie</p>
@@ -75,7 +86,7 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
       <tr class="mat-row" *matNoDataRow>
         <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns().length">
-          @if (meta()) {
+          @if (meta() && !error()) {
             <div class="no-data">
               <mat-icon>info</mat-icon>
               <p>Žiadne záznamy na zobrazenie</p>

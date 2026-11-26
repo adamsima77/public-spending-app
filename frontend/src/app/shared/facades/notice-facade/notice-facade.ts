@@ -26,6 +26,16 @@ export class NoticeFacade {
   private readonly filterService = inject(FilterService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly kpisResource = rxResource({
+    stream: () => this.getKpis(),
+  });
+
+  private readonly kpisState = {
+    kpis: computed(() => (this.kpisResource.hasValue() ? this.kpisResource.value() : undefined)),
+    loading: this.kpisResource.isLoading,
+    error: computed(() => this.kpisResource.error() !== undefined),
+    reload: () => this.kpisResource.reload(),
+  };
 
   public getInitialFilterValues(): NoticeFilterForm {
     const params = this.route.snapshot.queryParamMap;
@@ -52,8 +62,8 @@ export class NoticeFacade {
       'form_type[]': v.form_type.length ? v.form_type : null,
       procedure_id: v.procedure_id ?? null,
       is_latest: v.is_latest ?? null,
-      published_from: v.published_from ?? null,
-      published_to: v.published_to ?? null,
+      published_from: this.emptyToNull(v.published_from),
+      published_to: this.emptyToNull(v.published_to),
       page: null,
     };
   }
@@ -147,6 +157,10 @@ export class NoticeFacade {
     const response$: Observable<NoticeKpisModel> = this.noticeService.noticeKpis();
 
     return response$.pipe(map(({ data }) => data));
+  }
+
+  public connectKpis(): typeof this.kpisState {
+    return this.kpisState;
   }
 
   public getAllNotices(params: NoticeQueryParams): Observable<Paginated<Notice>> {
@@ -258,6 +272,10 @@ export class NoticeFacade {
     }
 
     return '';
+  }
+
+  private emptyToNull<T extends string | Date | null>(value: T): T | null {
+    return value === '' ? null : value;
   }
 
   private queryValues(

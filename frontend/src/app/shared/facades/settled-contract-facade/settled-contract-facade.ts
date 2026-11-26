@@ -37,6 +37,16 @@ export class SettledContractFacade {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly filterService = inject(FilterService);
+  private readonly kpisResource = rxResource({
+    stream: () => this.getSettledContractKpis(),
+  });
+
+  private readonly kpisState = {
+    kpis: computed(() => (this.kpisResource.hasValue() ? this.kpisResource.value() : undefined)),
+    loading: this.kpisResource.isLoading,
+    error: computed(() => this.kpisResource.error() !== undefined),
+    reload: () => this.kpisResource.reload(),
+  };
 
   public getInitialFilterValues(): SettledContractFilterForm {
     const params = this.route.snapshot.queryParamMap;
@@ -204,6 +214,10 @@ export class SettledContractFacade {
 
   public getSettledContractKpis(): Observable<SettledContractKpiResource> {
     return this.settledContractService.settledContractKpis().pipe(map(({ data }) => data));
+  }
+
+  public connectKpis(): typeof this.kpisState {
+    return this.kpisState;
   }
 
   public getAllSettledContracts(

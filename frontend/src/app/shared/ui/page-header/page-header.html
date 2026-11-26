@@ -9,6 +9,21 @@
   <mat-divider />
 
   @if (data.kpis; as kpis) {
+    @if (data.error && data.reloadKpis) {
+      <div class="kpi-actions">
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Obnoviť KPI"
+          title="Obnoviť KPI"
+          [disabled]="data.loading"
+          (click)="data.reloadKpis()"
+        >
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+    }
+
     <section class="kpi-grid" [attr.aria-busy]="data.loading">
       @for (kpi of kpis; track kpi.label) {
         <mat-card appearance="outlined" class="kpi-card" [class.is-loading]="data.loading">

@@ -6,7 +6,6 @@ import {
   input,
   numberAttribute,
 } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
@@ -56,20 +55,20 @@ export class SettledContracts {
 
   protected readonly settledContracts = this.state.settledContracts;
   protected readonly loading = this.state.loading;
+  protected readonly error = this.state.error;
+  protected readonly reloadSettledContracts = this.state.reload;
   protected readonly hasActiveFilters = this.state.hasActiveFilters;
   protected readonly buyers = this.state.buyers;
 
-  private readonly kpisResource = rxResource({
-    stream: () => this.facade.getSettledContractKpis(),
-  });
+  private readonly kpis = this.facade.connectKpis();
 
   protected readonly pageHeaderData = computed<PageHeaderData>(() => {
-    const kpis = this.kpisResource.hasValue() ? this.kpisResource.value() : undefined;
-
     return {
       ...SETTLED_CONTRACTS_PAGE_CONFIG,
-      kpis: this.facade.toKpiCards(kpis),
-      loading: this.kpisResource.isLoading(),
+      kpis: this.facade.toKpiCards(this.kpis.kpis()),
+      loading: this.kpis.loading(),
+      error: this.kpis.error(),
+      reloadKpis: this.kpis.reload,
     };
   });
 

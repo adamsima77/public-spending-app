@@ -27,6 +27,16 @@ export class OrganizationFacade {
   private readonly filterService = inject(FilterService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly kpisResource = rxResource({
+    stream: () => this.getOrganizationKpis(),
+  });
+
+  private readonly kpisState = {
+    kpis: computed(() => (this.kpisResource.hasValue() ? this.kpisResource.value() : undefined)),
+    loading: this.kpisResource.isLoading,
+    error: computed(() => this.kpisResource.error() !== undefined),
+    reload: () => this.kpisResource.reload(),
+  };
 
   public getInitialFilterValues(): OrganizationFilterForm {
     const params = this.route.snapshot.queryParamMap;
@@ -132,6 +142,10 @@ export class OrganizationFacade {
       this.organizationService.organizationKpis();
 
     return response$.pipe(map(({ data }) => data));
+  }
+
+  public connectKpis(): typeof this.kpisState {
+    return this.kpisState;
   }
 
   public getAllOrganizations(params: OrganizationQueryParams): Observable<Paginated<Organization>> {

@@ -9,6 +9,8 @@ export interface PageHeaderData {
   description: string;
   kpis?: PageHeaderKpi[];
   loading?: boolean;
+  error?: boolean;
+  reloadKpis?: () => boolean;
 }
 
 export const KPI_PLACEHOLDER = '—';

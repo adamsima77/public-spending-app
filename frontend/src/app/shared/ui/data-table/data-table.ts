@@ -1,5 +1,6 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -15,6 +16,7 @@ import { ProgressBar } from '@shared/ui/loaders/progress-bar/progress-bar';
 @Component({
   imports: [
     ProgressBar,
+    MatButtonModule,
     MatCardModule,
     RouterLink,
     MatPaginatorModule,
@@ -31,6 +33,8 @@ export class DataTable<T> {
   readonly columns = input.required<TableColumn<T>[]>();
   readonly rows = input.required<T[]>();
   readonly loading = input(false);
+  readonly error = input(false);
+  readonly reload = input.required<() => boolean>();
   readonly rowKey = input<(row: T) => string | number>();
   protected readonly trackRow = (index: number, row: T): string | number =>
     this.rowKey()?.(row) ?? index;

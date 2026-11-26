@@ -6,7 +6,7 @@ import {
   input,
   numberAttribute,
 } from '@angular/core';
-import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
@@ -64,19 +64,19 @@ export class Notices {
 
   protected readonly notices = this.noticeState.notices;
   protected readonly loading = this.noticeState.loading;
+  protected readonly error = this.noticeState.error;
+  protected readonly reloadNotices = this.noticeState.reload;
   protected readonly hasActiveFilters = this.noticeState.hasActiveFilters;
 
-  private readonly kpisResource = rxResource({
-    stream: () => this.noticeFacade.getKpis(),
-  });
+  private readonly kpis = this.noticeFacade.connectKpis();
 
   protected readonly pageHeaderData = computed<PageHeaderData>(() => {
-    const kpis = this.kpisResource.hasValue() ? this.kpisResource.value() : undefined;
-
     return {
       ...NOTICE_PAGE_CONFIG,
-      kpis: this.noticeFacade.toKpiCards(kpis),
-      loading: this.kpisResource.isLoading(),
+      kpis: this.noticeFacade.toKpiCards(this.kpis.kpis()),
+      loading: this.kpis.loading(),
+      error: this.kpis.error(),
+      reloadKpis: this.kpis.reload,
     };
   });
 
